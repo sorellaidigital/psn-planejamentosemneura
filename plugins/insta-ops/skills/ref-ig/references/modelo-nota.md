@@ -71,6 +71,20 @@ _Visual:_ ...
 
 ## Análise
 
+> "texto do slide 1"
+
+O que esse slide faz com quem lê (1 frase).
+
+---
+
+> "texto do slide 2"
+
+(1 frase)
+
+---
+
+(um bloco por slide, na ordem; depois os 6 bullets)
+
 - **Gancho:** o que a capa promete e por que segura o scroll (1–2 linhas).
 - **Estrutura:** nome do esqueleto + sequência (ex.: `tutorial-3-passos-com-print`: gancho → dor → reframe → 3 passos com print → pra quem serve → CTA).
 - **Desenvolvimento:** como cada bloco entrega (1 linha por bloco relevante).
