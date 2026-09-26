@@ -12,13 +12,22 @@ v0 do mecanismo "referências → padrões → pautas → carrossel" para Instag
 
 ## Instalar
 
+No terminal:
+
 ```bash
 claude plugin marketplace add sorellaidigital/mecanismo-inst
 claude plugin install insta-ops@sorellai
+```
+
+A partir de um clone local, troque a primeira linha por `claude plugin marketplace add ./mecanismo-inst`.
+
+Dentro do Claude Code, aponte o vault (a pasta que contém `.obsidian/`):
+
+```
 /plugin configure insta-ops
 ```
 
-O `configure` pede o caminho da pasta raiz do vault (`vault_dir`). Sem isso configurado, a skill pergunta o caminho a cada execução.
+Sem `vault_dir` configurado, a skill pergunta o caminho a cada execução. Na primeira captura, o Claude Code vai pedir permissão para as ferramentas do Chrome e para `curl`, `cp` e `mkdir`; isso é esperado.
 
 ## Usar
 
@@ -28,7 +37,9 @@ O `configure` pede o caminho da pasta raiz do vault (`vault_dir`). Sem isso conf
 /insta-ops:ref-ig --manual
 ```
 
-Aceita um ou vários links de `instagram.com/p/...` ou `instagram.com/reel/...` na mesma chamada. Com `--manual`, funciona sem o Chrome: você cola legenda, autor e prints dos slides.
+Aceita um ou vários links de `instagram.com/p/...` ou `instagram.com/reel/...` na mesma chamada.
+
+Com `--manual`, funciona sem o Chrome. A skill pede, numa mensagem só: URL, @ do autor, legenda colada, formato, os prints dos slides como arquivos (arraste cada arquivo para o terminal, que cola o caminho) ou o texto de cada um, o que você souber de data, curtidas e comentários, e por que salvou.
 
 ## O que a nota contém
 
@@ -38,14 +49,33 @@ Aceita um ou vários links de `instagram.com/p/...` ou `instagram.com/reel/...` 
 - Seção de análise: por que funciona e o que reaproveitar como padrão.
 - Por que você salvou aquele post.
 
-Fica em `<vault>/Referências Instagram/<autor>/<id>.md`, com as imagens em `_anexos/<id>/` e um índice em `_Índice.md`.
+Fica em `<vault>/Referências Instagram/<autor>/<id>.md`, com as imagens em `_anexos/<id>/` e um índice em `_Índice.md`. O formato completo está em `skills/ref-ig/references/modelo-nota.md`. Esqueleto:
+
+```markdown
+---
+tipo: referencia-instagram
+id: ig-XXXXXXXXXXX
+autor: "@handle"
+formato: carrossel
+gancho: "linha de título da capa"
+estrutura: "capa → dor → promessa → passo 1 → passo 2 → passo 3 → pra-quem-serve → cta"
+cta: "texto verbatim do pedido de ação"
+por_que_salvei: "sua resposta"
+tags: [instagram/referencia, formato/carrossel, gancho/promessa-pessoal, cta/comente-palavra]
+---
+# linha de título da capa
+## Legenda (verbatim)
+## Slides            (imagem + texto verbatim + 1 linha de visual, por slide)
+## Análise           (1 frase por slide + gancho, estrutura, CTA, por que funciona, o que reaproveitar)
+## Não capturado
+```
 
 ## O que não faz
 
 - Não publica nada no Instagram.
 - Não baixa posts salvos em lote.
 - Não usa Instaloader nem nenhuma automação de scraping em massa.
-- Não guarda dado de terceiro além do @ público do autor do post (sem nome de exibição, bio, e-mail, seguidores ou handle de quem comentou).
+- Não guarda dado de terceiro além do @ público do autor do post no texto da nota (sem nome de exibição, bio, e-mail, seguidores ou handle de quem comentou). As imagens em `_anexos/` são os slides como publicados e podem mostrar nome, rosto ou posts de outras pessoas; o vault é seu e privado, mas não republique essas imagens.
 
 ## Limites conhecidos
 

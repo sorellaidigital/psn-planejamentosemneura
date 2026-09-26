@@ -5,11 +5,11 @@
 1. **Nunca inventar.** Se um slide não foi transcrito ou uma métrica não apareceu, o campo fica `null` e o item vai para `## Não capturado`. Nunca preencher com suposição.
 2. **Honestidade na análise.** Não elogiar gancho ou estrutura fraca só para preencher a nota. Se o post é fraco em algum ponto, dizer isso em `## Análise`.
 3. **Princípios acima de técnica.** Um post com tema fraco e técnica perfeita carrega menos que um post com tema forte e técnica simples. Ao descrever "por que funciona", aponte o que está carregando o post: tema, familiaridade, conflito, curiosidade ou aha (nessa ordem de peso).
-4. **Regra 6 — nunca copiar tema.** Copiar princípios, estrutura e gatilhos, nunca o tema literal. O esqueleto é reutilizável, a roupagem deve ser nova. Isso vale para toda a seção `## Análise`, sobretudo "O que reaproveitar".
+4. **Regra 6 — nunca copiar tema.** Copiar princípios, estrutura e gatilhos, nunca o tema literal. O esqueleto é reutilizável, a roupagem deve ser nova. Isso vale para as frases de análise e para os 6 bullets, sobretudo "O que reaproveitar"; as citações `> "..."` são verbatim por definição.
 
 ## `gancho`
 
-Texto da capa (slide 1), verbatim. Se o post é imagem única sem texto sobreposto, use a primeira linha da legenda.
+Linha de título da capa (o maior texto do slide 1), verbatim, sem subtítulo nem assinatura. Se o post é imagem única sem texto sobreposto, use a primeira linha da legenda.
 
 ## `tipo_gancho`
 
@@ -41,7 +41,7 @@ Esqueletos comuns (use um destes nomes quando encaixar, ou nomeie um novo do mes
 
 ## `cta` / `tipo_cta` / `palavra_chave`
 
-`cta`: texto verbatim do pedido de ação (geralmente último slide e/ou fim da legenda).
+`cta`: texto verbatim do pedido de ação do último slide. Se o último slide não pede ação, a frase de pedido da legenda. Uma fonte só.
 
 `tipo_cta`: `comente-palavra | salve | compartilhe | siga | link-bio | nenhum`.
 
@@ -62,7 +62,7 @@ tags:
   - <tema3>   # opcional
 ```
 
-As tags de tema (1 a 3) são palavras minúsculas, sem acento, que descrevem o assunto do post (ex.: `ia`, `produtividade`, `marketing`).
+As tags de tema (1 a 3) são palavras minúsculas, sem acento, que descrevem o assunto do post (ex.: `ia`, `produtividade`, `marketing`). Antes de escolher, rode Grep por `^  - [a-z]+$` nas notas de `Referências Instagram/` e reutilize uma tag existente quando servir. O campo `estrutura` do frontmatter leva só a sequência; o nome do esqueleto vai no bullet **Estrutura**.
 
 ## Seção `## Análise` da nota
 
@@ -77,14 +77,14 @@ Promessa pessoal + resultado concreto: quem lê pensa "eu também tenho esse pro
 
 ---
 
-> "e é bem mais fácil do que parece 👇"
+> "a gente salva mil coisas... e nunca mais acha"
 
-Reduz a barreira percebida e empurra pro próximo slide.
+Nomeia uma dor que quem lê reconhece na hora.
 
 ---
 ```
 
-Regras: um bloco por slide, nunca agrupar. Máximo 1 frase de análise por slide. `---` entre blocos.
+Regras: um bloco por slide, nunca agrupar. A citação é a linha de título do slide (o maior texto), não o slide inteiro. Máximo 1 frase de análise por slide. `---` entre blocos.
 
 ### Passo 2 — os 6 bullets do modelo
 
