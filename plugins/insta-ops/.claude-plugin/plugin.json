@@ -1,0 +1,17 @@
+{
+  "name": "insta-ops",
+  "version": "0.0.1",
+  "description": "Mecanismo de conteúdo para Instagram, em PT-BR. v0: /insta-ops:ref-ig salva um post do Instagram como nota de referência no seu vault do Obsidian (legenda verbatim, slides transcritos, gancho, estrutura, CTA, por que salvei). Não publica nada.",
+  "author": { "name": "Sorell AI" },
+  "repository": "https://github.com/sorellaidigital/mecanismo-inst",
+  "license": "MIT",
+  "keywords": ["instagram", "obsidian", "referencias", "conteudo", "pt-br"],
+  "userConfig": {
+    "vault_dir": {
+      "type": "directory",
+      "title": "Pasta do vault do Obsidian",
+      "description": "Caminho da pasta raiz do seu vault. As notas vão para '<vault>/Referências Instagram/'.",
+      "required": false
+    }
+  }
+}

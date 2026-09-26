@@ -1,0 +1,16 @@
+{
+  "name": "sorellai",
+  "description": "Plugins de operação de conteúdo da Sorell AI",
+  "owner": { "name": "Sorell AI" },
+  "metadata": { "pluginRoot": "./plugins" },
+  "plugins": [
+    {
+      "name": "insta-ops",
+      "source": "./insta-ops",
+      "description": "Salva posts do Instagram como notas de referência no Obsidian (v0). Base do mecanismo: referências → padrões → pautas → carrossel.",
+      "version": "0.0.1",
+      "category": "marketing",
+      "tags": ["instagram", "obsidian", "referencias", "pt-br"]
+    }
+  ]
+}
