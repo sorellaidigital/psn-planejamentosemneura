@@ -23,7 +23,7 @@ curl -sS "https://www.tiktok.com/oembed?url=https://www.tiktok.com/@<usuario>/vi
 Do JSON retornado:
 - `title` → `legenda` (é a legenda/caption do vídeo, verbatim).
 - `author_unique_id` (ou `author_name` se aquele faltar) → `autor` = `"@<valor>"`.
-- `thumbnail_url` → baixar imediatamente para um diretório temporário (`mktemp -d`) como `01.jpg` (`curl -L -sS -o "<tmp>/01.jpg" "<thumbnail_url>"`), depois enviar por upload ao Storage e gravar `imagem_path`.
+- `thumbnail_url` → baixar imediatamente para um diretório temporário (`mktemp -d`) (`curl -L -sS -o "<tmp>/01" "<thumbnail_url>"`), descobrir o tipo com `file --mime-type -b` (costuma ser PNG) e enviar ao Storage conforme a seção 5 de `SKILL.md`. Ler a capa com Read: o texto sobreposto no vídeo (título na tela) vai em `slides[0].texto` verbatim e, quando existir, é o `gancho`.
 - `html` não é usado (é embed, não texto).
 
 Se o oEmbed falhar (404, vídeo removido ou privado): parar, `mec_status = erro`, motivo `"tiktok: oembed indisponível (vídeo privado, removido ou indisponível)"`.
