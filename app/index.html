@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4A16A8">
+<title>Planejamento sem Neura</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%234A16A8'/><circle cx='50' cy='50' r='27' fill='none' stroke='%23D7FF3E' stroke-width='11' stroke-dasharray='128 42' stroke-linecap='round' transform='rotate(-90 50 50)'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ---- SUPERFÍCIES ---------------------------------------------------- */
+  --superficie-territorio:#4A16A8;        /* roxo. navegação, header, diretório */
+  --superficie-territorio-alta:#5C21C6;   /* camada elevada sobre roxo */
+  --superficie-territorio-baixa:#3B0F87;  /* camada rebaixada / trilhas */
+  --superficie-trabalho:#F2EFFA;          /* névoa. leitura e escrita longa */
+  --superficie-cartao:#FFFFFF;
+  --superficie-cartao-territorio:rgba(242,239,250,.10);
+  --superficie-peso:#1C1225;              /* tinta. sheets, captura */
+  --superficie-peso-alta:#2A1B38;
+
+  /* ---- AÇÃO E SINAL ---------------------------------------------------- */
+  --acao-ganho:#D7FF3E;                   /* ácido. só no que a pessoa ganha */
+  --sobre-ganho:#1C1225;                  /* texto obrigatório sobre ácido */
+  --selo-valor:#6E2639;                   /* bordô. selo, marco, conquista */
+  --alerta:#FF2D55;                       /* preenchimento de badge apenas */
+  --alerta-texto:#C4102F;                 /* variante AA para texto em névoa */
+
+  /* ---- TEXTO ----------------------------------------------------------- */
+  --texto-forte:#1C1225;
+  --texto-medio:#4B4160;
+  --texto-fraco:#6C6285;
+  --texto-invertido:#F2EFFA;
+  --texto-invertido-medio:rgba(242,239,250,.74);
+  --texto-invertido-fraco:rgba(242,239,250,.56);
+
+  /* ---- LINHAS ---------------------------------------------------------- */
+  --linha:rgba(28,18,37,.13);
+  --linha-forte:rgba(28,18,37,.24);
+  --linha-territorio:rgba(242,239,250,.20);
+
+  /* ---- TEMPERATURA (só onde a interface está medindo) ------------------ */
+  --temp-0:#FF6B1F;    /* 0–39   laranja */
+  --temp-40:#FF3D91;   /* 40–59  rosa */
+  --temp-60:#9B5CFF;   /* 60–79  roxo (clareado p/ legibilidade no anel) */
+  --temp-80:#D7FF3E;   /* 80–100 ácido */
+
+  /* ---- TIPOGRAFIA ------------------------------------------------------ */
+  --f-display:'Bricolage Grotesque',system-ui,sans-serif;
+  --f-ui:'Space Grotesk',system-ui,-apple-system,sans-serif;
+  --f-selo:'Instrument Serif',Georgia,serif;
+  --t-nano:11px; --t-micro:12px; --t-mini:13px; --t-base:15px;
+  --t-md:17px;  --t-lg:21px;  --t-xl:27px; --t-2xl:34px; --t-num:46px;
+  --tr-display:-.045em;   /* tracking de título: −4,5% */
+  --tr-rotulo:.16em;      /* caixa alta espaçada */
+
+  /* ---- ESPAÇO / RAIO / ALVO ------------------------------------------- */
+  --e1:4px; --e2:8px; --e3:12px; --e4:16px; --e5:24px; --e6:32px; --e7:48px;
+  --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+  --alvo:44px;
+  --sombra:0 10px 30px rgba(28,18,37,.18);
+  --sombra-peso:0 -14px 40px rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--superficie-territorio);color:var(--texto-invertido);
+  font:var(--t-base)/1.5 var(--f-ui);overscroll-behavior-y:contain;
+  -webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none;font-family:var(--f-ui)}
+a{color:var(--superficie-territorio);text-decoration:underline;text-underline-offset:3px}
+a:hover{color:var(--selo-valor)}
+.hide{display:none !important}
+:focus-visible{outline:3px solid var(--acao-ganho);outline-offset:2px;border-radius:6px}
+.clara :focus-visible{outline-color:var(--superficie-territorio)}
+::-webkit-scrollbar{height:6px;width:6px}
+::-webkit-scrollbar-thumb{background:var(--linha-forte);border-radius:9px}
+::selection{background:var(--acao-ganho);color:var(--sobre-ganho)}
+
+/* ===== primitivas ===================================================== */
+.num{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);
+  font-variant-numeric:tabular-nums;line-height:.9}
+.disp{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);
+  line-height:1.02;text-transform:lowercase}
+.rotulo{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);
+  text-transform:uppercase}
+.romano{font-family:var(--f-selo);font-weight:400;letter-spacing:0}
+
+/* anel de score — gesto emprestado do story ring, aqui vira medidor */
+.anel{position:relative;flex:none;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(from -90deg,var(--anel-cor) calc(var(--p) * 1%),var(--anel-trilha) 0)}
+.anel>i{position:absolute;inset:var(--anel-esp,4px);border-radius:50%;
+  background:var(--anel-miolo)}
+.anel>span{position:relative;z-index:1}
+.anel.vazio{background:var(--anel-trilha)}
+
+/* botões */
+.btn{min-height:var(--alvo);padding:0 var(--e4);border-radius:var(--r-pill);
+  font-weight:700;font-size:var(--t-base);display:inline-flex;align-items:center;
+  justify-content:center;gap:var(--e2);text-align:center;transition:transform .08s}
+.btn:active{transform:scale(.975)}
+.btn-ganho{background:var(--acao-ganho);color:var(--sobre-ganho)}
+.btn-fantasma{background:transparent;border:1.5px solid var(--linha-forte);color:var(--texto-forte)}
+.btn-fantasma-inv{background:var(--superficie-cartao-territorio);color:var(--texto-invertido);
+  border:1.5px solid var(--linha-territorio)}
+.btn-risco{background:transparent;border:1.5px solid rgba(196,16,47,.4);color:var(--alerta-texto)}
+.icb{width:var(--alvo);height:var(--alvo);border-radius:var(--r-sm);display:grid;
+  place-items:center;font-size:var(--t-md);flex:none;
+  background:var(--superficie-cartao-territorio);color:var(--texto-invertido)}
+.icb:active{background:rgba(242,239,250,.2)}
+.icb-ganho{background:var(--acao-ganho);color:var(--sobre-ganho)}
+.icb-clara{background:rgba(28,18,37,.07);color:var(--texto-forte)}
+
+/* campos */
+.campo{width:100%;background:var(--superficie-cartao);color:var(--texto-forte);
+  border:1.5px solid var(--linha);border-radius:var(--r-md);padding:var(--e3) var(--e4);
+  min-height:var(--alvo);resize:vertical;outline:none;font-size:var(--t-base);
+  line-height:1.55;font-family:var(--f-ui)}
+.campo::placeholder{color:var(--texto-fraco)}
+.campo:focus{border-color:var(--superficie-territorio);
+  box-shadow:0 0 0 3px rgba(74,22,168,.16)}
+.campo-inv{background:rgba(242,239,250,.08);color:var(--texto-invertido);
+  border-color:var(--linha-territorio)}
+.campo-inv::placeholder{color:var(--texto-invertido-fraco)}
+.campo-inv:focus{border-color:var(--acao-ganho);box-shadow:0 0 0 3px rgba(215,255,62,.22)}
+.lbl{display:block;font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);
+  text-transform:uppercase;color:var(--texto-medio);margin:var(--e5) 0 var(--e2)}
+.lbl:first-child{margin-top:0}
+.dica{font-size:var(--t-micro);color:var(--texto-fraco);margin:calc(var(--e1) * -1) 0 var(--e2);
+  line-height:1.45}
+
+/* ===== HEADER (território) =========================================== */
+header{position:sticky;top:0;z-index:30;background:var(--superficie-territorio);
+  padding:calc(env(safe-area-inset-top) + 14px) var(--e4) 0}
+.hrow{display:flex;align-items:center;gap:var(--e3);min-height:var(--alvo)}
+.hrow .tt{flex:1;min-width:0}
+.hrow .tt .n1{font-size:var(--t-md);font-weight:700;line-height:1.2;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow .tt .n2{font-size:var(--t-micro);color:var(--texto-invertido-medio);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.marca{display:flex;align-items:center;gap:var(--e3)}
+.marca .selo{width:38px;height:38px;border-radius:11px;background:var(--acao-ganho);
+  display:grid;place-items:center;flex:none}
+.marca .selo svg{width:26px;height:26px}
+
+/* placar do diretório: número primeiro */
+.placar{display:flex;gap:var(--e5);padding:var(--e5) 0 var(--e4);align-items:flex-end}
+.placar .it{display:flex;flex-direction:column;gap:2px}
+.placar .v{font-size:var(--t-2xl)}
+.placar .k{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);
+  text-transform:uppercase;color:var(--texto-invertido-medio)}
+.placar .it.ganho .v{color:var(--acao-ganho)}
+
+/* busca */
+.buscabox{position:relative;margin-bottom:var(--e4)}
+.buscabox .lupa{position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-size:var(--t-mini);color:var(--texto-invertido-fraco);pointer-events:none}
+.buscabox .campo{padding-left:38px}
+
+/* barra de stories: distribuição das ideias pelas 7 etapas */
+.stories{display:flex;gap:var(--e1);padding:var(--e2) 0 0}
+.stories span{flex:1;height:5px;border-radius:var(--r-pill);
+  background:var(--superficie-territorio-baixa)}
+.stories span.on{background:var(--acao-ganho)}
+.stories span.meio{background:rgba(242,239,250,.42)}
+
+/* abas de etapa */
+.abas{display:flex;gap:var(--e2);overflow-x:auto;padding:var(--e4) 0 var(--e4);
+  scrollbar-width:none}
+.abas::-webkit-scrollbar{display:none}
+.aba{white-space:nowrap;min-height:38px;padding:0 var(--e3);border-radius:var(--r-pill);
+  background:var(--superficie-cartao-territorio);color:var(--texto-invertido-medio);
+  font-size:var(--t-mini);font-weight:600;display:flex;gap:var(--e2);align-items:center;
+  border:1.5px solid transparent}
+.aba .n{background:rgba(242,239,250,.16);border-radius:var(--r-pill);
+  padding:1px 7px;font-size:var(--t-nano);font-weight:700;font-variant-numeric:tabular-nums}
+.aba.on{background:var(--acao-ganho);color:var(--sobre-ganho);font-weight:700}
+.aba.on .n{background:rgba(28,18,37,.16)}
+.aba .badge{background:var(--alerta);color:#fff;border-radius:var(--r-pill);
+  min-width:20px;height:20px;display:grid;place-items:center;font-size:var(--t-micro);
+  font-weight:700;padding:0 5px}
+
+/* ===== ÁREA DE TRABALHO (névoa) ====================================== */
+main{background:var(--superficie-trabalho);color:var(--texto-forte);
+  min-height:calc(100vh - 120px);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;
+  padding:var(--e5) var(--e4) 132px}
+main.territorio{background:transparent;color:var(--texto-invertido);border-radius:0;
+  padding-top:var(--e1)}
+.wrap{max-width:1580px;margin:0 auto}
+.secao-tit{display:flex;align-items:baseline;gap:var(--e3);margin:0 0 var(--e1)}
+.secao-tit h2{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);
+  font-size:var(--t-xl);margin:0;text-transform:lowercase;line-height:1.05}
+.secao-tit .qt{font-size:var(--t-lg);color:var(--texto-fraco)}
+.secao-sub{color:var(--texto-medio);font-size:var(--t-mini);margin:0 0 var(--e4);
+  max-width:52ch;text-wrap:pretty}
+
+/* pastas de canal */
+.pastas{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:var(--e3)}
+.pasta{background:var(--superficie-cartao-territorio);border:1.5px solid var(--linha-territorio);
+  border-radius:var(--r-lg);padding:var(--e4);position:relative;text-align:left;width:100%;
+  color:var(--texto-invertido);display:flex;flex-direction:column;gap:var(--e3);
+  min-height:180px;cursor:pointer;transition:transform .1s,background .15s}
+.pasta:hover{background:rgba(242,239,250,.16)}
+.pasta:active{transform:scale(.985)}
+.pasta .em{font-size:26px;line-height:1}
+.pasta .nm{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);
+  font-size:var(--t-md);line-height:1.1;word-break:break-word;text-transform:lowercase}
+.pasta .hd{color:var(--texto-invertido-fraco);font-size:var(--t-micro);margin-top:2px}
+.pasta .fim{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:var(--e2)}
+.pasta .fim .v{font-size:var(--t-xl);color:var(--acao-ganho)}
+.pasta .fim .k{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);
+  text-transform:uppercase;color:var(--texto-invertido-medio);line-height:1.3}
+.pasta .zap{position:absolute;top:var(--e2);right:var(--e2);width:var(--alvo);height:var(--alvo);
+  border-radius:12px;display:grid;place-items:center;font-size:var(--t-md);
+  background:rgba(28,18,37,.22);color:var(--texto-invertido)}
+.pasta .zap:hover{background:var(--acao-ganho);color:var(--sobre-ganho)}
+.pasta .sino{position:absolute;top:-6px;left:-6px;background:var(--alerta);color:#fff;
+  border-radius:var(--r-pill);min-width:24px;height:24px;display:grid;place-items:center;
+  font-size:var(--t-micro);font-weight:700;padding:0 6px;border:2px solid var(--superficie-territorio)}
+
+/* card de ideia */
+.card{background:var(--superficie-cartao);border:1.5px solid var(--linha);
+  border-radius:var(--r-lg);padding:var(--e4);margin-bottom:var(--e3);width:100%;
+  text-align:left;display:flex;gap:var(--e4);align-items:flex-start;color:var(--texto-forte);
+  cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.card:hover{border-color:var(--linha-forte);box-shadow:0 4px 16px rgba(28,18,37,.07)}
+.card .corpo{flex:1;min-width:0}
+.card h3{margin:0;font-family:var(--f-display);font-weight:600;letter-spacing:-.02em;
+  font-size:var(--t-md);line-height:1.22;text-wrap:pretty}
+.card .metas{display:flex;flex-wrap:wrap;gap:var(--e2);align-items:center;margin-top:var(--e3)}
+.chip{font-size:var(--t-nano);font-weight:600;padding:4px 9px;border-radius:var(--r-pill);
+  background:rgba(74,22,168,.09);color:var(--superficie-territorio);white-space:nowrap;
+  max-width:22ch;overflow:hidden;text-overflow:ellipsis}
+.chip-neutro{background:rgba(28,18,37,.07);color:var(--texto-medio)}
+.chip-selo{background:rgba(110,38,57,.11);color:var(--selo-valor)}
+.card .avanca{width:var(--alvo);height:var(--alvo);border-radius:12px;flex:none;
+  background:rgba(74,22,168,.09);color:var(--superficie-territorio);display:grid;
+  place-items:center;font-size:var(--t-md);font-weight:700}
+.card .avanca:hover{background:var(--acao-ganho);color:var(--sobre-ganho)}
+.card .lado{display:flex;flex-direction:column;align-items:center;gap:var(--e2);flex:none}
+.card[draggable=true]{cursor:grab}
+.card.arrastando{opacity:.4}
+
+/* estado vazio com propósito */
+.vazio{background:var(--superficie-cartao);border:1.5px solid var(--linha);
+  border-radius:var(--r-lg);padding:var(--e6) var(--e5);text-align:left;
+  display:flex;flex-direction:column;gap:var(--e3);align-items:flex-start}
+.vazio .n{font-size:var(--t-2xl);color:var(--linha-forte)}
+.vazio h4{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);
+  font-size:var(--t-lg);margin:0;text-transform:lowercase}
+.vazio p{margin:0;color:var(--texto-medio);font-size:var(--t-mini);max-width:44ch;text-wrap:pretty}
+.vazio.inv{background:var(--superficie-cartao-territorio);border-color:var(--linha-territorio);
+  color:var(--texto-invertido)}
+.vazio.inv .n{color:rgba(242,239,250,.28)}
+.vazio.inv p{color:var(--texto-invertido-medio)}
+
+/* filtros */
+.filtros{display:flex;gap:var(--e2);flex-wrap:wrap;margin-bottom:var(--e4)}
+.filtro{min-height:36px;padding:0 var(--e3);border-radius:var(--r-pill);font-size:var(--t-micro);
+  font-weight:600;background:rgba(28,18,37,.06);color:var(--texto-medio);
+  border:1.5px solid transparent}
+.filtro.on{background:var(--superficie-territorio);color:var(--texto-invertido);font-weight:700}
+
+/* kanban desktop */
+.kanban{display:flex;gap:var(--e3);overflow-x:auto;padding-bottom:var(--e4);align-items:flex-start}
+.col{flex:0 0 282px;background:rgba(28,18,37,.045);border:1.5px solid var(--linha);
+  border-radius:var(--r-lg);padding:var(--e3);transition:background .12s,border-color .12s}
+.col.alvo{background:rgba(215,255,62,.28);border-color:var(--superficie-territorio)}
+.col .ch{display:flex;align-items:center;gap:var(--e2);margin-bottom:var(--e1)}
+.col .ch .t{font-size:var(--t-micro);font-weight:700;letter-spacing:.02em;flex:1;line-height:1.25}
+.col .ch .q{font-size:var(--t-md);color:var(--texto-fraco)}
+.col .cd{color:var(--texto-fraco);font-size:var(--t-nano);margin:0 0 var(--e3);line-height:1.4;
+  min-height:2.8em}
+.col .card{padding:var(--e3);border-radius:var(--r-md);gap:var(--e3)}
+.col .card h3{font-size:var(--t-base)}
+.col .add{width:100%;min-height:var(--alvo);border-radius:var(--r-md);
+  border:1.5px dashed var(--linha-forte);color:var(--texto-medio);font-size:var(--t-micro);
+  font-weight:600}
+.col .add:hover{border-color:var(--superficie-territorio);color:var(--superficie-territorio)}
+
+/* ===== FABs ========================================================== */
+.fabs{position:fixed;left:var(--e4);right:var(--e4);
+  bottom:calc(env(safe-area-inset-bottom) + 16px);z-index:40;display:flex;gap:var(--e2)}
+.fabs .btn{flex:1;min-height:54px;box-shadow:var(--sombra);font-size:var(--t-md)}
+.fabs .btn-sec{flex:0 0 42%;background:var(--superficie-peso);color:var(--texto-invertido);
+  border:none}
+
+/* ===== SHEETS ======================================================== */
+.sheet{position:fixed;inset:0;z-index:50;background:var(--superficie-trabalho);
+  color:var(--texto-forte);overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding-bottom:calc(env(safe-area-inset-bottom) + 40px)}
+.sheethead{position:sticky;top:0;z-index:5;background:var(--superficie-territorio);
+  color:var(--texto-invertido);padding:calc(env(safe-area-inset-top) + 12px) var(--e4) var(--e3)}
+.sheetbody{padding:var(--e5) var(--e4) var(--e7);max-width:860px;margin:0 auto}
+@media(min-width:900px){.sheetbody{max-width:920px}}
+
+/* stepper de etapa (barra de stories que também move) */
+.stepper{padding:var(--e4) 0 0}
+.stepper .trilha{display:flex;gap:var(--e1)}
+.stepper .trilha button{flex:1;height:var(--e2);border-radius:var(--r-pill);
+  background:var(--superficie-territorio-baixa);position:relative}
+.stepper .trilha button::after{content:'';position:absolute;inset:-14px -2px;}
+.stepper .trilha button.feito{background:rgba(242,239,250,.5)}
+.stepper .trilha button.on{background:var(--acao-ganho)}
+.stepper .leg{display:flex;justify-content:space-between;align-items:center;
+  margin-top:var(--e3);gap:var(--e3)}
+.stepper .leg .at{font-size:var(--t-mini);font-weight:700;color:var(--acao-ganho)}
+.stepper .leg .prox{min-height:36px;padding:0 var(--e3);border-radius:var(--r-pill);
+  background:var(--acao-ganho);color:var(--sobre-ganho);font-size:var(--t-micro);font-weight:700}
+
+/* topo da ficha: número herói */
+.fichatopo{display:flex;gap:var(--e4);align-items:center;
+  background:var(--superficie-cartao);border:1.5px solid var(--linha);
+  border-radius:var(--r-lg);padding:var(--e4);margin-bottom:var(--e5)}
+.fichatopo .txt{flex:1;min-width:0}
+.fichatopo .rot{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);
+  text-transform:uppercase;color:var(--texto-fraco)}
+.fichatopo .frase{font-size:var(--t-mini);color:var(--texto-medio);margin-top:var(--e1);
+  line-height:1.45;text-wrap:pretty}
+
+/* acordeão de checklist */
+.grupo-tit{display:flex;align-items:center;gap:var(--e3);margin:var(--e6) 0 var(--e3)}
+.grupo-tit .t{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);
+  text-transform:uppercase;color:var(--texto-medio)}
+.grupo-tit .l{flex:1;height:1.5px;background:var(--linha)}
+.grupo-tit .agora{background:var(--acao-ganho);color:var(--sobre-ganho);border-radius:var(--r-pill);
+  padding:3px 9px;font-size:var(--t-nano);font-weight:700;letter-spacing:.06em}
+.acc{border:1.5px solid var(--linha);border-radius:var(--r-md);margin-bottom:var(--e2);
+  overflow:hidden;background:var(--superficie-cartao)}
+.acc.aberta{border-color:var(--linha-forte)}
+.acchead{width:100%;display:flex;align-items:center;gap:var(--e3);padding:var(--e3);
+  text-align:left;min-height:var(--alvo)}
+.acchead .nm{flex:1;font-size:var(--t-mini);font-weight:700;line-height:1.3}
+.acchead .ct{font-size:var(--t-micro);font-weight:700;color:var(--texto-fraco);
+  font-variant-numeric:tabular-nums}
+.acchead .ct.cheio{color:var(--selo-valor)}
+.accbody{padding:0 var(--e3) var(--e2)}
+.item{display:flex;gap:var(--e3);align-items:flex-start;padding:var(--e2) 0;
+  border-top:1.5px solid var(--linha);min-height:var(--alvo)}
+.item input{margin:3px 0 0;width:22px;height:22px;accent-color:var(--superficie-territorio);flex:none}
+.item label{font-size:var(--t-mini);line-height:1.45;flex:1;padding:var(--e1) 0;cursor:pointer}
+.item.done label{color:var(--texto-fraco);text-decoration:line-through}
+.item b{font-weight:700;color:var(--texto-forte)}
+.item.done b{color:var(--texto-fraco)}
+
+.linhabtn{display:flex;gap:var(--e2);margin-top:var(--e6)}
+.linhabtn .btn{flex:1}
+.linkout{display:inline-flex;align-items:center;gap:6px;margin-top:var(--e4);
+  font-size:var(--t-micro);font-weight:600;color:var(--superficie-territorio)}
+
+/* captura rápida (tinta — foco total, zero decoração) */
+.qc{position:fixed;inset:0;z-index:60;background:rgba(28,18,37,.72);display:flex;
+  align-items:flex-end;backdrop-filter:blur(2px)}
+.qcbox{background:var(--superficie-peso);color:var(--texto-invertido);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;width:100%;max-width:660px;margin:0 auto;
+  padding:var(--e5) var(--e4) calc(env(safe-area-inset-bottom) + 20px);box-shadow:var(--sombra-peso)}
+.qcbox .rot{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);
+  text-transform:uppercase;color:var(--acao-ganho)}
+.qcbox h4{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);
+  font-size:var(--t-xl);margin:var(--e2) 0 var(--e1);text-transform:lowercase}
+.qcbox p{margin:0 0 var(--e4);color:var(--texto-invertido-medio);font-size:var(--t-mini)}
+.qcbox textarea{min-height:120px;font-size:var(--t-md)}
+.qcbox .pe{display:flex;gap:var(--e2);margin-top:var(--e4);align-items:center}
+.qcbox .pe .btn{flex:1;min-height:52px}
+.qcbox .dicatecla{font-size:var(--t-nano);color:var(--texto-invertido-fraco);
+  margin-top:var(--e3);text-align:center}
+
+/* menu de ações */
+.menu{position:fixed;inset:0;z-index:60;background:rgba(28,18,37,.72);display:flex;
+  align-items:flex-end}
+.menubox{background:var(--superficie-cartao);color:var(--texto-forte);width:100%;
+  max-width:520px;margin:0 auto var(--e2);border-radius:var(--r-xl);overflow:hidden;
+  padding:var(--e2)}
+.menubox button{width:100%;min-height:52px;text-align:left;padding:0 var(--e4);
+  border-radius:var(--r-md);font-size:var(--t-base);font-weight:600;
+  display:flex;align-items:center;gap:var(--e3)}
+.menubox button:hover{background:rgba(28,18,37,.05)}
+.menubox button.risco{color:var(--alerta-texto)}
+.menubox .sep{height:1.5px;background:var(--linha);margin:var(--e2) var(--e4)}
+
+/* seletor de emoji */
+.emgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--alvo),1fr));gap:var(--e2)}
+.emgrid button{aspect-ratio:1;min-height:var(--alvo);border-radius:var(--r-md);font-size:22px;
+  background:var(--superficie-cartao);border:1.5px solid var(--linha);display:grid;place-items:center}
+.emgrid button.on{border-color:var(--superficie-territorio);background:rgba(74,22,168,.1);
+  box-shadow:0 0 0 2px rgba(74,22,168,.3)}
+
+/* toast — ancorado no topo, nunca sobre o botão do sheet */
+.toast{position:fixed;left:50%;transform:translate(-50%,-16px);
+  top:calc(env(safe-area-inset-top) + 12px);z-index:99;
+  background:var(--superficie-peso);color:var(--texto-invertido);font-weight:700;
+  font-size:var(--t-mini);padding:var(--e3) var(--e4);border-radius:var(--r-pill);
+  opacity:0;transition:opacity .18s,transform .18s;pointer-events:none;max-width:88vw;
+  text-align:center;box-shadow:var(--sombra);display:flex;align-items:center;gap:var(--e2)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast .pt{width:8px;height:8px;border-radius:50%;background:var(--acao-ganho);flex:none}
+.toast.err .pt{background:var(--alerta)}
+.carregando{padding:var(--e7) 0;text-align:center;color:var(--texto-invertido-medio);
+  font-size:var(--t-mini)}
+
+@media(min-width:900px){
+  header{padding-left:var(--e6);padding-right:var(--e6)}
+  main{padding:var(--e6) var(--e6) 120px}
+  .pastas{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:var(--e4)}
+  .fabs{left:auto;right:var(--e6);width:auto}
+  .fabs .btn,.fabs .btn-sec{flex:0 0 auto;padding:0 var(--e5)}
+  .placar{gap:var(--e7)}
+  .placar .v{font-size:var(--t-num)}
+  .sheethead{padding-left:var(--e6);padding-right:var(--e6)}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div id="hd"></div>
+  <div class="abas hide" id="abas"></div>
+</header>
+
+<main id="view"><div class="carregando">carregando…</div></main>
+
+<div id="fabslot"></div>
+
+<!-- ficha da ideia -->
+<div class="sheet hide clara" id="sheet">
+  <div class="sheethead">
+    <div class="hrow">
+      <button class="icb" id="sClose" aria-label="Voltar">←</button>
+      <div class="tt"><div class="n1" id="sTitle">Ideia</div><div class="n2" id="sSub"></div></div>
+      <button class="icb icb-ganho" id="sDone" aria-label="Salvar e fechar">✓</button>
+    </div>
+    <div class="stepper" id="sStepper"></div>
+  </div>
+  <div class="sheetbody" id="sBody"></div>
+</div>
+
+<!-- intenção de comando -->
+<div class="sheet hide clara" id="sheet2">
+  <div class="sheethead">
+    <div class="hrow">
+      <button class="icb" id="s2Close" aria-label="Voltar">←</button>
+      <div class="tt"><div class="n1" id="s2Title">Intenção de comando</div>
+        <div class="n2">a base estratégica do canal</div></div>
+      <button class="icb icb-ganho" id="s2Done" aria-label="Salvar e fechar">✓</button>
+    </div>
+  </div>
+  <div class="sheetbody" id="s2Body"></div>
+</div>
+
+<!-- formulário de canal (substitui prompt()) -->
+<div class="sheet hide clara" id="sheet3">
+  <div class="sheethead">
+    <div class="hrow">
+      <button class="icb" id="s3Close" aria-label="Cancelar">←</button>
+      <div class="tt"><div class="n1" id="s3Title">Novo canal</div>
+        <div class="n2">uma pasta por criador</div></div>
+    </div>
+  </div>
+  <div class="sheetbody" id="s3Body"></div>
+</div>
+
+<!-- captura rápida -->
+<div class="qc hide" id="qc">
+  <div class="qcbox">
+    <div class="rot">Tempestade de ideias</div>
+    <h4>joga aqui antes de esquecer</h4>
+    <p id="qcSub">Lapida depois. Sem internet, guarda no aparelho e sobe sozinha.</p>
+    <textarea class="campo campo-inv" id="qcTxt" placeholder="ex: o erro que todo mundo comete ao cortar o primeiro segundo do vídeo"></textarea>
+    <div class="pe">
+      <button class="btn btn-fantasma-inv" id="qcCancel">Cancelar</button>
+      <button class="btn btn-ganho" id="qcSave">Salvar ideia</button>
+    </div>
+    <div class="dicatecla">⌘/Ctrl + Enter salva</div>
+  </div>
+</div>
+
+<!-- menu de ações do canal -->
+<div class="menu hide" id="menu">
+  <div class="menubox" id="menubox"></div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span class="pt"></span><span id="toastTxt"></span></div>
+
+<script>
+/* ============ SUPABASE (projeto financeiro.sorellai · tabelas psn_*) ============ */
+const SB_URL = "https://hvmmkwafzeqbjpusdmin.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2bW1rd2FmemVxYmpwdXNkbWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NTg3NzAsImV4cCI6MjA5NzEzNDc3MH0.5PvlUk7i27UdhSlypicm3S39cHkPjeDRyv6HoRTM2NM";
+
+async function db(path, opts={}){
+  const res = await fetch(SB_URL+"/rest/v1/"+path, {
+    ...opts,
+    headers:{ apikey:SB_KEY, Authorization:"Bearer "+SB_KEY,
+      "Content-Type":"application/json", Prefer:"return=representation", ...(opts.headers||{}) }
+  });
+  if(!res.ok) throw new Error(await res.text());
+  const t = await res.text();
+  return t ? JSON.parse(t) : null;
+}
+
+/* ============ MODELO (quadro "Planejamento sem Neura 3.0") ============ */
+const STAGES = [
+  {id:"tempestade", nome:"0) Tempestade de ideias", curto:"Tempestade", desc:"Anote tudo, sem julgamento, a qualquer hora."},
+  {id:"descarregar", nome:"1) Descarregar",  curto:"Descarregar", desc:"Tire da cabeça e coloque no papel."},
+  {id:"estruturar",  nome:"2) Estruturar",   curto:"Estruturar",  desc:"Formato, começo e fim do vídeo."},
+  {id:"lapidar",     nome:"3) Lapidar",      curto:"Lapidar",     desc:"Relevância, conflito, contraste, moral."},
+  {id:"gravar",      nome:"4) Gravar",       curto:"Gravar",      desc:"Câmera na mão. Roteiro resolvido."},
+  {id:"editar",      nome:"5) Editar",       curto:"Editar",      desc:"Cortes, trilha, letterings, cor."},
+  {id:"postar",      nome:"6) Pronto pra postar", curto:"Postar", desc:"Publicado ou na fila. Sem surto."}
+];
+const INTENCAO = [
+  {id:"empatia",  nome:"Pesquisa de empatia", hint:"Dores, desejos, medos e falas literais do público."},
+  {id:"lider",    nome:"O líder",   hint:"Quem é o personagem/líder construído nos vídeos?"},
+  {id:"produto",  nome:"O produto", hint:"O que vende e qual transformação entrega."},
+  {id:"movimento",nome:"O movimento", hint:"A narrativa, a bandeira, o que se defende."},
+  {id:"sementes", nome:"Sementes para venda", hint:"Frases que plantam a venda sem ser chato."}
+];
+const ROMANOS = ["I","II","III","IV","V","VI"];
+const CHECKLISTS = [
+  {id:"visual", nome:"2.1) Formato criativo: escolha o visual", items:[
+    "DINAMISMO","DIÁLOGO","TELEPATIA","CAIXINHA POLÊMICA","STORYTELLING VISUAL","COMPARAÇÃO",
+    "THE OFFICE (CONFESSIONÁRIO)","TRIVIAL","ESTRUTURA DE ROTEIRO","PALESTRINHA","ANÁLISE",
+    "VLOG","CHARLIE CHAPLIN","NARRADO","TELA VERDE","ANALOGIA"]},
+  {id:"estrutura", nome:"2.2) Formato criativo: estrutura", items:[
+    "I.H.C (IDENTIFICAÇÃO, HISTÓRIA, CONTEÚDO)","ELE, EU, VOCÊ, FUTURO","JEITO ERRADO X JEITO CERTO"]},
+  {id:"gatilhos", nome:"2.3) Formato criativo: gatilhos", items:[
+    "**Contraste de emoções**: o roteiro brinca com emoções diferentes ao longo dele",
+    "**Tema interessante**: cultura pop, tema universal, abrangente, em alta ou polêmico",
+    "**Identificação**: crenças, valores, sentimentos e situações da sua audiência",
+    "**Conflito e mudança**: você contou uma história com virada",
+    "**Lacuna da curiosidade**: criou curiosidade em cima de algo que interessa ao público",
+    "**Efeito fofoca**: deu a sensação de estar contando uma fofoca",
+    "**Situação relatável**: mostra uma situação que a maioria das pessoas passa"]},
+  {id:"intencao", nome:"3) Intenção de comando", items:[
+    "Você aumentou consciência para o LÍDER/PERSONAGEM",
+    "Você aumentou consciência para o seu PRODUTO",
+    "Você aumentou consciência para o seu MOVIMENTO/NARRATIVA",
+    "**CTA escondida**: deixou uma CTA no meio do roteiro",
+    "**Moral da história**: o recado final ficou claro e simples"]},
+  {id:"lapidar", nome:"4) Lapidar", items:[
+    "Veja outros criadores falando dessa bolha/tema",
+    "Veja outros criadores usando esse formato",
+    "**Reduzindo o roteiro**: remova o que não serve à intenção de comando"]},
+  {id:"editar", nome:"5) Editar", items:[
+    "Cortes dinâmicos","Método comendo palavras","Trilha sonora reforçando a emoção do roteiro",
+    "Transições e overlays","Letterings para destacar ideias","Filtro de cor"]}
+];
+const TOTAL = CHECKLISTS.reduce((s,c)=>s+c.items.length,0);
+/* qual checklist importa em qual etapa — define o que abre e o que colapsa */
+const CL_POR_STAGE = {
+  tempestade:[], descarregar:[], estruturar:["visual","estrutura","gatilhos"],
+  lapidar:["intencao","lapidar"], gravar:["intencao"], editar:["editar"], postar:[]
+};
+const EMOJIS = ["🎬","🎥","✨","🔥","💡","🎙️","📸","🧃","🌙","🍿","🧠","💅","🏋️","🍳","🐾","🎨","🚀","📚","🧪","🎧"];
+
+/* ============ ESTADO ============ */
+const $ = s=>document.querySelector(s);
+let criadores=[], ideias=[], atual=null, stage="tempestade", busca="", filtro="todas";
+const isDesk = ()=>window.matchMedia("(min-width:900px)").matches;
+const FILA = "psn_fila";
+
+function esc(s){return (s||"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+function md(s){return esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")}
+function nrm(s){return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+let tt; function toast(m,err){
+  $("#toastTxt").textContent=m;
+  const e=$("#toast"); e.className="toast on"+(err?" err":"");
+  clearTimeout(tt); tt=setTimeout(()=>e.classList.remove("on"),2400);
+}
+
+/* prontidão: 0–100 a partir dos 40 itens. É o número herói da ideia. */
+function score(i){
+  const n=CHECKLISTS.reduce((s,cl)=>s+cl.items.filter(t=>i.checks?.[cl.id+"::"+t]).length,0);
+  return {n, pct:Math.round(n/TOTAL*100)};
+}
+/* escala de temperatura — única exceção ao "zero gradiente", e só onde mede */
+function temp(p){ return p>=80?"var(--temp-80)":p>=60?"var(--temp-60)":p>=40?"var(--temp-40)":"var(--temp-0)" }
+function frase(p){
+  if(p>=80) return "Prontidão alta. Pode gravar sem medo.";
+  if(p>=60) return "Está roxo. Falta lapidar o que decide o vídeo.";
+  if(p>=40) return "Está rosa. O formato existe, a intenção ainda não.";
+  return "Está laranja. E laranja não vira vídeo publicado.";
+}
+function anel(p, tam, fonte, esp, miolo, trilha){
+  return `<div class="anel" role="img" aria-label="prontidão ${p} por cento"
+    style="width:${tam}px;height:${tam}px;--p:${p};--anel-cor:${temp(p)};
+    --anel-trilha:${trilha};--anel-miolo:${miolo};--anel-esp:${esp}px">
+    <i></i><span class="num" style="font-size:${fonte}px;color:${p>=80?"var(--texto-forte)":temp(p)}">${p}</span></div>`;
+}
+
+/* fila offline: ideias capturadas sem internet */
+function filaGet(){ try{return JSON.parse(localStorage.getItem(FILA)||"[]")}catch(e){return []} }
+function filaAdd(o){ const f=filaGet(); f.push(o); localStorage.setItem(FILA,JSON.stringify(f)) }
+async function filaFlush(){
+  const f=filaGet(); if(!f.length) return;
+  const restam=[];
+  for(const o of f){ try{ await db("psn_ideias",{method:"POST",body:JSON.stringify(o)}) }catch(e){ restam.push(o) } }
+  localStorage.setItem(FILA,JSON.stringify(restam));
+  if(f.length && !restam.length){ toast(f.length+" ideia(s) offline sincronizada(s)"); await carregar(); render() }
+}
+
+/* ============ CARGA ============ */
+async function carregar(){
+  try{
+    const [cs, is] = await Promise.all([
+      db("psn_criadores?select=*&order=ordem.asc,criado_em.asc"),
+      db("psn_ideias?select=*&order=criado_em.desc")
+    ]);
+    criadores=cs||[]; ideias=is||[];
+  }catch(e){ toast("Sem conexão com o banco",1); console.error(e); }
+}
+
+/* ============ ROTAS ============ */
+function rota(){
+  const m=location.hash.match(/^#\/c\/(.+)$/);
+  atual = m ? criadores.find(c=>c.id===m[1]) : null;
+  if(m && !atual){ location.hash="#/"; return }
+  busca=""; filtro="todas";
+  render();
+}
+window.addEventListener("hashchange",rota);
+let rz; window.addEventListener("resize",()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(atual) render() },160) });
+
+/* ============ RENDER ============ */
+function render(){ atual ? renderBoard() : renderHome() }
+
+/* ---------- TELA 1 · DIRETÓRIO DE CANAIS (território roxo) ---------- */
+function renderHome(){
+  const totIdeias=ideias.length;
+  const prontas=ideias.filter(i=>i.stage==="postar").length;
+  $("#hd").innerHTML = `
+    <div class="hrow marca">
+      <div class="selo"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="15"
+        stroke="#4A16A8" stroke-width="6" stroke-dasharray="70 100" stroke-linecap="round"
+        transform="rotate(-90 24 24)"/></svg></div>
+      <div class="tt">
+        <div class="disp" style="font-size:var(--t-lg)">planejamento sem neura</div>
+        <div class="rotulo" style="color:var(--texto-invertido-fraco);margin-top:2px">GlowUp Express · PSN 3.0</div>
+      </div>
+    </div>
+    <div class="placar">
+      <div class="it"><span class="v num">${criadores.length}</span><span class="k">canais</span></div>
+      <div class="it"><span class="v num">${totIdeias}</span><span class="k">ideias</span></div>
+      <div class="it ganho"><span class="v num">${prontas}</span><span class="k">prontas<br>pra postar</span></div>
+    </div>
+    ${criadores.length>4?`<div class="buscabox"><span class="lupa">⌕</span>
+      <input class="campo campo-inv" id="hBusca" type="text" placeholder="Buscar canal"
+      value="${esc(busca)}" autocomplete="off"></div>`:""}`;
+  $("#abas").classList.add("hide");
+
+  const lista = busca ? criadores.filter(c=>nrm(c.nome+" "+(c.handle||"")).includes(nrm(busca))) : criadores;
+  const view=$("#view"); view.className="territorio"; view.classList.remove("clara");
+
+  if(!criadores.length){
+    view.innerHTML = `<div class="wrap"><div class="vazio inv">
+      <span class="n num">0</span>
+      <h4>nenhum canal ainda</h4>
+      <p>Cada canal é uma pasta: um criador, um perfil, uma fila de ideias. Crie a primeira e a captura rápida já funciona.</p>
+      <button class="btn btn-ganho" id="vNovo">+ Criar o primeiro canal</button></div></div>`;
+    $("#vNovo").onclick=()=>formCanal();
+  } else if(!lista.length){
+    view.innerHTML = `<div class="wrap"><div class="vazio inv"><span class="n num">0</span>
+      <h4>nada com “${esc(busca)}”</h4><p>Tente outro nome ou o @ do perfil.</p></div></div>`;
+  } else {
+    view.innerHTML = `<div class="wrap"><div class="pastas">${lista.map(c=>{
+      const meus = ideias.filter(i=>i.criador_id===c.id);
+      const prontas = meus.filter(i=>i.stage==="postar").length;
+      const novas = meus.filter(i=>i.stage==="tempestade").length;
+      return `<div class="pasta" data-go="${c.id}" tabindex="0" role="button">
+        ${novas?`<span class="sino" title="${novas} na tempestade, ainda sem triagem">${novas}</span>`:""}
+        <button class="zap" data-zap="${c.id}" aria-label="Nova ideia rápida em ${esc(c.nome)}">⚡</button>
+        <span class="em">${esc(c.emoji||"🎬")}</span>
+        <div>
+          <div class="nm">${esc(c.nome)}</div>
+          ${c.handle?`<div class="hd">${esc(c.handle)}</div>`:""}
+        </div>
+        <div class="fim">
+          <span class="v num">${prontas}</span>
+          <span class="k">prontas<br>de ${meus.length}</span>
+        </div>
+      </div>`}).join("")}</div></div>`;
+  }
+
+  const bs=$("#hBusca");
+  if(bs) bs.oninput=e=>{ busca=e.target.value; const p=e.target.selectionStart;
+    renderHome(); const n=$("#hBusca"); if(n){n.focus(); n.setSelectionRange(p,p)} };
+
+  view.querySelectorAll("[data-go]").forEach(el=>{
+    const abrir=()=>location.hash="#/c/"+el.dataset.go;
+    el.onclick=e=>{ if(e.target.closest("[data-zap]")) return; abrir() };
+    el.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); abrir() } };
+  });
+  view.querySelectorAll("[data-zap]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); abrirQC(b.dataset.zap) });
+
+  $("#fabslot").innerHTML = `<div class="fabs"><button class="btn btn-ganho" id="fNovoCanal">+ Novo canal</button></div>`;
+  $("#fNovoCanal").onclick=()=>formCanal();
+}
+
+/* ---------- TELA 2 · PAINEL DO CANAL ---------- */
+function renderBoard(){
+  const c=atual, meus=ideias.filter(i=>i.criador_id===c.id);
+  const dist=STAGES.map(s=>meus.filter(i=>i.stage===s.id).length);
+  const iAt=STAGES.findIndex(s=>s.id===stage);
+
+  $("#hd").innerHTML = `
+    <div class="hrow">
+      <button class="icb" id="bVoltar" aria-label="Voltar aos canais">←</button>
+      <div class="tt">
+        <div class="n1">${esc(c.emoji||"🎬")} ${esc(c.nome)}</div>
+        <div class="n2">${esc(c.handle||"canal")} · ${meus.length} ideia${meus.length===1?"":"s"}</div>
+      </div>
+      <button class="icb" id="bIntencao" aria-label="Intenção de comando">🎯</button>
+      <button class="icb" id="bMenu" aria-label="Opções do canal">⋯</button>
+    </div>
+    <div class="stories" aria-hidden="true">${STAGES.map((s,k)=>
+      `<span class="${dist[k]?(k===6?"on":"meio"):""}"></span>`).join("")}</div>
+    <div class="buscabox" style="margin-top:var(--e4)"><span class="lupa">⌕</span>
+      <input class="campo campo-inv" id="bBusca" type="text" placeholder="Buscar ideia, bolha ou trecho do roteiro"
+        value="${esc(busca)}" autocomplete="off"></div>`;
+  $("#bVoltar").onclick=()=>location.hash="#/";
+  $("#bIntencao").onclick=abrirIntencao;
+  $("#bMenu").onclick=menuCanal;
+  const bb=$("#bBusca");
+  bb.oninput=e=>{ busca=e.target.value; const p=e.target.selectionStart;
+    renderBoard(); const n=$("#bBusca"); if(n){n.focus(); n.setSelectionRange(p,p)} };
+
+  const filtrar=arr=>arr.filter(i=>{
+    if(busca && !nrm(i.titulo+" "+(i.bolha||"")+" "+(i.roteiro||"")).includes(nrm(busca))) return false;
+    if(filtro==="semroteiro" && (i.roteiro||"").trim()) return false;
+    if(filtro==="fria" && score(i).pct>=40) return false;
+    return true;
+  });
+
+  const view=$("#view"); view.className="clara";
+  const fchips = `<div class="filtros">
+    ${[["todas","Todas"],["semroteiro","Sem roteiro"],["fria","Prontidão baixa"]].map(([k,n])=>
+      `<button class="filtro ${filtro===k?"on":""}" data-f="${k}">${n}</button>`).join("")}</div>`;
+
+  if(isDesk()){
+    $("#abas").classList.add("hide");
+    view.innerHTML = `<div class="wrap">${fchips}<div class="kanban">${STAGES.map((s,k)=>{
+      const cds=filtrar(meus.filter(i=>i.stage===s.id));
+      return `<div class="col" data-col="${s.id}">
+        <div class="ch"><span class="t">${esc(s.nome)}</span><span class="q num">${cds.length}</span></div>
+        <p class="cd">${esc(s.desc)}</p>
+        ${cds.map(i=>cardHTML(i,true)).join("")}
+        <button class="add" data-add="${s.id}">+ ideia aqui</button>
+      </div>`}).join("")}</div>
+      <p class="secao-sub" style="margin-top:var(--e4)">Arraste um card entre colunas para mudar a etapa.</p></div>`;
+    view.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>abrirQC(c.id,b.dataset.add));
+    ligarDnD();
+  } else {
+    $("#abas").classList.remove("hide");
+    $("#abas").innerHTML = STAGES.map(s=>{
+      const n=meus.filter(i=>i.stage===s.id).length;
+      const pend = s.id==="tempestade" && n>0;
+      return `<button class="aba ${s.id===stage?"on":""}" data-s="${s.id}">${esc(s.curto)}${
+        pend?`<span class="badge">${n}</span>`:(n?`<span class="n">${n}</span>`:"")}</button>`;
+    }).join("");
+    $("#abas").querySelectorAll(".aba").forEach(b=>b.onclick=()=>{ stage=b.dataset.s; renderBoard(); centrarAba() });
+    centrarAba();
+
+    const st=STAGES[iAt], cds=filtrar(meus.filter(i=>i.stage===stage));
+    const brutos=meus.filter(i=>i.stage===stage).length;
+    view.innerHTML = `<div class="wrap">
+      <div class="secao-tit"><h2>${esc(st.curto.toLowerCase())}</h2><span class="qt num">${brutos}</span></div>
+      <p class="secao-sub">${esc(st.desc)}</p>
+      ${brutos>3?fchips:""}
+      ${cds.length ? cds.map(i=>cardHTML(i,false)).join("") : vazioEtapa(st,brutos)}
+    </div>`;
+  }
+
+  view.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ filtro=b.dataset.f; renderBoard() });
+  view.querySelectorAll("[data-card]").forEach(el=>el.onclick=e=>{
+    if(e.target.closest("[data-avanca]")) return; abrirCard(el.dataset.card) });
+  view.querySelectorAll("[data-avanca]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); avancar(b.dataset.avanca) });
+
+  $("#fabslot").innerHTML = `<div class="fabs">
+    <button class="btn btn-sec" id="fCanais">← Canais</button>
+    <button class="btn btn-ganho" id="fNovaIdeia">⚡ Nova ideia</button></div>`;
+  $("#fCanais").onclick=()=>location.hash="#/";
+  $("#fNovaIdeia").onclick=()=>abrirQC(c.id, isDesk()?"tempestade":stage);
+}
+
+function centrarAba(){
+  const box=$("#abas"), a=box.querySelector(".aba.on"); if(!a) return;
+  box.scrollTo({left:a.offsetLeft - box.clientWidth/2 + a.offsetWidth/2, behavior:"smooth"});
+}
+
+function vazioEtapa(st,brutos){
+  if(brutos) return `<div class="vazio"><span class="n num">0</span>
+    <h4>nada com esse filtro</h4><p>Existem ${brutos} ideia(s) em ${esc(st.curto)}, mas nenhuma passa pela busca/filtro atual.</p>
+    <button class="btn btn-fantasma" data-f="todas">Limpar filtros</button></div>`;
+  const t={
+    tempestade:["a tempestade está limpa","Ideia boa aparece no ônibus, no banho, no meio de outra gravação. Toque em ⚡ e joga aqui antes de esquecer."],
+    descarregar:["nada pra descarregar","Quando uma ideia da tempestade merecer virar vídeo, arraste ela pra cá e escreva solto."],
+    estruturar:["nenhuma ideia estruturada","Aqui você escolhe formato, começo e fim. Traga uma ideia já descarregada."],
+    lapidar:["nada em lapidação","Lapidar é cortar. Traga um roteiro escrito e tire o que não serve à intenção de comando."],
+    gravar:["nada na fila de gravação","Só chega aqui roteiro resolvido. Se ainda dá pra melhorar no texto, volta pra lapidar."],
+    editar:["nada na edição","Material gravado entra aqui. Cortes, trilha, lettering, cor."],
+    postar:["nenhuma ideia pronta","Esse é o número que conta. Toda ideia que chega aqui virou post."]
+  }[st.id];
+  return `<div class="vazio"><span class="n num">0</span><h4>${t[0]}</h4><p>${t[1]}</p></div>`;
+}
+
+function cardHTML(i,desk){
+  const {n,pct}=score(i);
+  const fmts=CHECKLISTS[0].items.filter(t=>i.checks?.["visual::"+t]).slice(0,desk?1:2);
+  const iAt=STAGES.findIndex(s=>s.id===i.stage), prox=STAGES[iAt+1];
+  const pronta=i.stage==="postar";
+  return `<div class="card" data-card="${i.id}" ${desk?`draggable="true" data-drag="${i.id}"`:""}>
+    <div class="corpo">
+      <h3>${esc(i.titulo)}</h3>
+      <div class="metas">
+        ${i.bolha?`<span class="chip">🫧 ${esc(i.bolha)}</span>`:""}
+        ${fmts.map(f=>`<span class="chip chip-neutro">${esc(f)}</span>`).join("")}
+        ${pronta?`<span class="chip chip-selo">✦ publicada</span>`:`<span class="chip chip-neutro">${n}/${TOTAL} ✓</span>`}
+        ${!(i.roteiro||"").trim()?`<span class="chip chip-neutro">sem roteiro</span>`:""}
+      </div>
+    </div>
+    <div class="lado">
+      ${anel(pct, desk?46:54, desk?15:18, 4, "var(--superficie-cartao)", "rgba(28,18,37,.10)")}
+      ${prox?`<button class="avanca" data-avanca="${i.id}" aria-label="Mover para ${esc(prox.curto)}">→</button>`:""}
+    </div>
+  </div>`;
+}
+
+/* drag & drop desktop: move etapa sem abrir a ficha */
+function ligarDnD(){
+  let arrasto=null;
+  $("#view").querySelectorAll("[data-drag]").forEach(el=>{
+    el.ondragstart=e=>{ arrasto=el.dataset.drag; el.classList.add("arrastando");
+      e.dataTransfer.effectAllowed="move"; e.dataTransfer.setData("text/plain",arrasto) };
+    el.ondragend=()=>{ el.classList.remove("arrastando");
+      $("#view").querySelectorAll(".col").forEach(c=>c.classList.remove("alvo")) };
+  });
+  $("#view").querySelectorAll("[data-col]").forEach(col=>{
+    col.ondragover=e=>{ e.preventDefault(); col.classList.add("alvo") };
+    col.ondragleave=()=>col.classList.remove("alvo");
+    col.ondrop=e=>{ e.preventDefault(); col.classList.remove("alvo");
+      const id=arrasto||e.dataTransfer.getData("text/plain");
+      moverPara(id,col.dataset.col) };
+  });
+}
+async function moverPara(id,st){
+  const i=ideias.find(x=>x.id===id); if(!i||i.stage===st) return;
+  i.stage=st; render();
+  try{ await db("psn_ideias?id=eq."+id,{method:"PATCH",body:JSON.stringify({stage:st})});
+    toast("→ "+STAGES.find(s=>s.id===st).curto);
+  }catch(e){ toast("Não consegui mover",1) }
+}
+function avancar(id){
+  const i=ideias.find(x=>x.id===id); if(!i) return;
+  const k=STAGES.findIndex(s=>s.id===i.stage);
+  if(k<STAGES.length-1) moverPara(id,STAGES[k+1].id);
+}
+
+/* ============ CANAIS ============ */
+let canalEdit=null, emojiSel="🎬";
+function formCanal(c){
+  canalEdit=c||null;
+  emojiSel=c?.emoji||EMOJIS[criadores.length % EMOJIS.length];
+  $("#s3Title").textContent = c?"Editar canal":"Novo canal";
+  $("#s3Body").innerHTML=`
+    <label class="lbl" for="cNome">Nome do canal / criador</label>
+    <input class="campo" id="cNome" type="text" placeholder="ex: Dra. Marina" value="${esc(c?.nome||"")}">
+    <label class="lbl" for="cHandle">@ do perfil</label>
+    <p class="dica">Opcional. Ajuda a diferenciar canais do mesmo nome.</p>
+    <input class="campo" id="cHandle" type="text" placeholder="@dramarina" value="${esc(c?.handle||"")}">
+    <label class="lbl">Emoji da pasta</label>
+    <div class="emgrid" id="cEm">${EMOJIS.map(e=>
+      `<button type="button" data-e="${e}" class="${e===emojiSel?"on":""}">${e}</button>`).join("")}</div>
+    <div class="linhabtn">
+      <button class="btn btn-fantasma" id="cCancel">Cancelar</button>
+      <button class="btn btn-ganho" id="cSalvar">${c?"Salvar":"Criar canal"}</button>
+    </div>`;
+  $("#cEm").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    emojiSel=b.dataset.e;
+    $("#cEm").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+  });
+  $("#cCancel").onclick=fechar3;
+  $("#cSalvar").onclick=salvarCanal;
+  $("#sheet3").classList.remove("hide"); $("#sheet3").scrollTop=0;
+  document.body.style.overflow="hidden";
+  setTimeout(()=>$("#cNome").focus(),90);
+}
+const fechar3=()=>{ $("#sheet3").classList.add("hide"); document.body.style.overflow="" };
+$("#s3Close").onclick=fechar3;
+
+async function salvarCanal(){
+  const nome=$("#cNome").value.trim();
+  if(!nome){ toast("Falta o nome do canal",1); $("#cNome").focus(); return }
+  const handle=$("#cHandle").value.trim();
+  const patch={nome, handle, emoji:emojiSel};
+  try{
+    if(canalEdit){
+      const [u]=await db("psn_criadores?id=eq."+canalEdit.id,{method:"PATCH",body:JSON.stringify(patch)});
+      Object.assign(canalEdit,u);
+      const k=criadores.findIndex(x=>x.id===canalEdit.id); if(k>-1) criadores[k]=canalEdit;
+      fechar3(); render(); toast("Canal atualizado");
+    } else {
+      const [novo]=await db("psn_criadores",{method:"POST",
+        body:JSON.stringify({...patch, ordem:criadores.length})});
+      criadores.push(novo); fechar3(); render(); toast("Canal criado");
+    }
+  }catch(e){ toast("Não consegui salvar o canal",1) }
+}
+
+function menuCanal(){
+  $("#menubox").innerHTML=`
+    <button data-a="edit">✏️ Renomear / trocar emoji</button>
+    <button data-a="intencao">🎯 Intenção de comando</button>
+    <div class="sep"></div>
+    <button class="risco" data-a="del">Excluir canal e todas as ideias</button>
+    <div class="sep"></div>
+    <button data-a="fechar">Fechar</button>`;
+  $("#menubox").querySelectorAll("[data-a]").forEach(b=>b.onclick=async()=>{
+    const a=b.dataset.a; fecharMenu();
+    if(a==="edit") formCanal(atual);
+    if(a==="intencao") abrirIntencao();
+    if(a==="del") excluirCanal();
+  });
+  $("#menu").classList.remove("hide"); document.body.style.overflow="hidden";
+}
+const fecharMenu=()=>{ $("#menu").classList.add("hide"); document.body.style.overflow="" };
+$("#menu").onclick=e=>{ if(e.target.id==="menu") fecharMenu() };
+
+async function excluirCanal(){
+  const n=ideias.filter(i=>i.criador_id===atual.id).length;
+  if(!confirm("Excluir “"+atual.nome+"” e "+n+" ideia(s)? Não tem como desfazer.")) return;
+  try{
+    await db("psn_criadores?id=eq."+atual.id,{method:"DELETE"});
+    criadores=criadores.filter(c=>c.id!==atual.id);
+    ideias=ideias.filter(i=>i.criador_id!==atual.id);
+    location.hash="#/"; toast("Canal excluído");
+  }catch(e){ toast("Falhou ao excluir",1) }
+}
+
+/* ============ CAPTURA RÁPIDA ============ */
+let qcAlvo=null, qcStage="tempestade";
+function abrirQC(criadorId, st){
+  qcAlvo=criadorId; qcStage=st||"tempestade";
+  const c=criadores.find(x=>x.id===criadorId);
+  $("#qcSub").textContent = "Em "+(c?.nome||"canal")+" · lapida depois. Sem internet, guarda no aparelho e sobe sozinha.";
+  $("#qcTxt").value=""; $("#qc").classList.remove("hide");
+  document.body.style.overflow="hidden";
+  setTimeout(()=>$("#qcTxt").focus(),90);
+}
+function fecharQC(){ $("#qc").classList.add("hide"); document.body.style.overflow="" }
+$("#qcCancel").onclick=fecharQC;
+$("#qc").onclick=e=>{ if(e.target.id==="qc") fecharQC() };
+$("#qcTxt").addEventListener("keydown",e=>{ if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)) $("#qcSave").click() });
+$("#qcSave").onclick=async()=>{
+  const t=$("#qcTxt").value.trim(); if(!t) return fecharQC();
+  const linha=t.split("\n")[0].slice(0,120);
+  const payload={criador_id:qcAlvo, titulo:linha, stage:qcStage,
+    roteiro: t.length>linha.length ? t : ""};
+  fecharQC();
+  try{
+    const [novo]=await db("psn_ideias",{method:"POST",body:JSON.stringify(payload)});
+    ideias.unshift(novo); render(); toast("Ideia salva");
+  }catch(e){
+    filaAdd(payload); toast("Sem internet — guardei no aparelho ⚡");
+  }
+};
+
+/* ============ FICHA DA IDEIA ============ */
+let pend={}, pendId=null, pendTmr, aberta=null;
+function salvarDepois(id, patch){
+  if(pendId && pendId!==id) flush();
+  pendId=id; Object.assign(pend,patch);
+  clearTimeout(pendTmr); pendTmr=setTimeout(flush,600);
+}
+async function flush(){
+  clearTimeout(pendTmr);
+  if(!pendId || !Object.keys(pend).length) return;
+  const id=pendId, body=pend; pend={};
+  try{ await db("psn_ideias?id=eq."+id,{method:"PATCH",body:JSON.stringify(body)}) }
+  catch(e){ toast("Não consegui salvar essa alteração",1) }
+}
+
+function stepperHTML(c){
+  const k=STAGES.findIndex(s=>s.id===c.stage), prox=STAGES[k+1];
+  return `<div class="trilha">${STAGES.map((s,j)=>
+    `<button data-st="${s.id}" class="${j<k?"feito":""}${j===k?"on":""}"
+      aria-label="Mover para ${esc(s.nome)}" title="${esc(s.nome)}"></button>`).join("")}</div>
+    <div class="leg">
+      <span class="at">${esc(STAGES[k].nome)}</span>
+      ${prox?`<button class="prox" data-prox="1">Avançar para ${esc(prox.curto)} →</button>`:
+        `<span class="rotulo" style="color:var(--acao-ganho)">Publicada ✦</span>`}
+    </div>`;
+}
+function pintarStepper(c){
+  $("#sStepper").innerHTML=stepperHTML(c);
+  $("#sStepper").querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>mudarStage(c,b.dataset.st));
+  const p=$("#sStepper").querySelector("[data-prox]");
+  if(p) p.onclick=()=>{ const k=STAGES.findIndex(s=>s.id===c.stage); mudarStage(c,STAGES[k+1].id) };
+}
+function mudarStage(c,st){
+  if(c.stage===st) return;
+  c.stage=st; salvarDepois(c.id,{stage:st});
+  pintarStepper(c); pintarChecklists(c);
+  toast("→ "+STAGES.find(s=>s.id===st).curto);
+}
+
+function accHTML(cl,c,aberto){
+  const n=cl.items.filter(t=>c.checks[cl.id+"::"+t]).length;
+  return `<div class="acc ${aberto?"aberta":""}" data-cl="${cl.id}">
+    <button class="acchead" type="button" aria-expanded="${aberto?"true":"false"}">
+      <span class="nm">${esc(cl.nome)}</span>
+      <span class="ct ${n===cl.items.length?"cheio":""}">${n}/${cl.items.length}</span>
+      <span class="ct arrow">${aberto?"▴":"▾"}</span>
+    </button>
+    <div class="accbody ${aberto?"":"hide"}">${cl.items.map((t,i)=>{
+      const k=cl.id+"::"+t, on=!!c.checks[k];
+      return `<div class="item ${on?"done":""}">
+        <input type="checkbox" id="ck_${cl.id}_${i}" data-k="${esc(k)}" ${on?"checked":""}>
+        <label for="ck_${cl.id}_${i}">${md(t)}</label></div>`}).join("")}</div></div>`;
+}
+
+function pintarChecklists(c){
+  const rel=CL_POR_STAGE[c.stage]||[];
+  const agora=CHECKLISTS.filter(cl=>rel.includes(cl.id));
+  const resto=CHECKLISTS.filter(cl=>!rel.includes(cl.id));
+  const box=$("#sChecks");
+  box.innerHTML=`
+    ${agora.length?`<div class="grupo-tit"><span class="agora">AGORA</span>
+      <span class="t">${esc(STAGES.find(s=>s.id===c.stage).curto)}</span><span class="l"></span></div>
+      ${agora.map(cl=>accHTML(cl,c,true)).join("")}`:
+      `<div class="grupo-tit"><span class="t">Nesta etapa o trabalho é escrever, não marcar</span><span class="l"></span></div>`}
+    <div class="grupo-tit"><span class="t">Outras listas</span><span class="l"></span>
+      <span class="ct rotulo" style="color:var(--texto-fraco)">${score(c).n}/${TOTAL}</span></div>
+    ${resto.map(cl=>accHTML(cl,c,false)).join("")}`;
+  ligarChecks(c);
+}
+
+function ligarChecks(c){
+  $("#sChecks").querySelectorAll(".acchead").forEach(h=>h.onclick=()=>{
+    const b=h.nextElementSibling, fechado=b.classList.toggle("hide");
+    h.setAttribute("aria-expanded",String(!fechado));
+    h.closest(".acc").classList.toggle("aberta",!fechado);
+    h.querySelector(".arrow").textContent=fechado?"▾":"▴";
+  });
+  $("#sChecks").querySelectorAll("input[type=checkbox]").forEach(cb=>cb.onchange=()=>{
+    c.checks[cb.dataset.k]=cb.checked;
+    cb.closest(".item").classList.toggle("done",cb.checked);
+    const acc=cb.closest(".acc"), cl=CHECKLISTS.find(x=>x.id===acc.dataset.cl);
+    const n=cl.items.filter(t=>c.checks[cl.id+"::"+t]).length;
+    const ct=acc.querySelector(".ct");
+    ct.textContent=n+"/"+cl.items.length;
+    ct.classList.toggle("cheio",n===cl.items.length);
+    pintarTopo(c);
+    salvarDepois(c.id,{checks:c.checks});
+  });
+}
+
+function pintarTopo(c){
+  const {n,pct}=score(c);
+  $("#sTopo").innerHTML=`
+    ${anel(pct,84,30,6,"var(--superficie-cartao)","rgba(28,18,37,.10)")}
+    <div class="txt">
+      <div class="rot">Prontidão · ${n} de ${TOTAL} itens</div>
+      <div class="frase">${frase(pct)}</div>
+    </div>`;
+}
+
+function abrirCard(id){
+  const c=ideias.find(x=>x.id===id); if(!c) return;
+  aberta=c; c.checks=c.checks||{};
+  $("#sTitle").textContent=c.titulo||"Ideia";
+  $("#sSub").textContent=(atual?.nome||"")+(c.bolha?" · 🫧 "+c.bolha:"");
+  $("#sBody").innerHTML=`
+    <div class="fichatopo" id="sTopo"></div>
+
+    <label class="lbl" for="fTitulo">Nome da ideia</label>
+    <input class="campo" type="text" id="fTitulo" value="${esc(c.titulo)}">
+
+    <label class="lbl" for="fBolha">Qual bolha você quer furar</label>
+    <p class="dica">Uma bolha, não um público inteiro. Quem precisa se sentir chamado pelo nome.</p>
+    <input class="campo" type="text" id="fBolha" placeholder="ex: editores iniciantes, mães empreendedoras" value="${esc(c.bolha)}">
+
+    <label class="lbl" for="fRoteiro">Roteiro / anotações</label>
+    <p class="dica">Começo, meio e fim. Escreve solto — lapidar é outra etapa.</p>
+    <textarea class="campo" id="fRoteiro" rows="12" placeholder="Escreve solto.">${esc(c.roteiro)}</textarea>
+
+    <div class="acc" style="margin-top:var(--e5)">
+      <button class="acchead" type="button" id="refHead" aria-expanded="false">
+        <span class="nm">Referência</span>
+        <span class="ct">${(c.referencia||"").trim()?"preenchida":"vazia"}</span>
+        <span class="ct arrow">▾</span></button>
+      <div class="accbody hide" id="refBody" style="padding-top:var(--e2)">
+        <p class="dica">Cole o link ou conte de onde surgiu a ideia.</p>
+        <textarea class="campo" id="fRef" rows="3" placeholder="link, print, conversa, vídeo que vi...">${esc(c.referencia)}</textarea>
+      </div>
+    </div>
+
+    <div id="sChecks"></div>
+
+    <a class="linkout" href="https://trello.com/b/VOx6su53/formatos-criativos-de-conteudo-alunos" target="_blank" rel="noopener">Ver o quadro de Formatos Criativos ↗</a>
+
+    <div class="linhabtn"><button class="btn btn-risco" id="fDel">Excluir ideia</button></div>`;
+
+  pintarTopo(c); pintarStepper(c); pintarChecklists(c);
+
+  $("#refHead").onclick=()=>{
+    const b=$("#refBody"), f=b.classList.toggle("hide");
+    $("#refHead").setAttribute("aria-expanded",String(!f));
+    $("#refHead").querySelector(".arrow").textContent=f?"▾":"▴";
+  };
+  [["fTitulo","titulo"],["fRef","referencia"],["fBolha","bolha"],["fRoteiro","roteiro"]]
+    .forEach(([el,campo])=>{
+      $("#"+el).oninput=e=>{ c[campo]=e.target.value;
+        if(campo==="titulo") $("#sTitle").textContent=e.target.value||"Ideia";
+        if(campo==="bolha") $("#sSub").textContent=(atual?.nome||"")+(e.target.value?" · 🫧 "+e.target.value:"");
+        salvarDepois(c.id,{[campo]:e.target.value}); };
+    });
+  $("#fDel").onclick=async()=>{
+    if(!confirm("Excluir “"+c.titulo+"”?")) return;
+    pend={}; pendId=null; clearTimeout(pendTmr);
+    try{ await db("psn_ideias?id=eq."+c.id,{method:"DELETE"});
+      ideias=ideias.filter(x=>x.id!==c.id); fecharCard(); toast("Excluída");
+    }catch(e){ toast("Falhou ao excluir",1) }
+  };
+  $("#sheet").classList.remove("hide"); $("#sheet").scrollTop=0;
+  document.body.style.overflow="hidden";
+}
+function fecharCard(){ flush(); $("#sheet").classList.add("hide"); document.body.style.overflow="";
+  aberta=null; render() }
+$("#sClose").onclick=fecharCard;
+$("#sDone").onclick=async()=>{ await flush(); toast("Salvo"); fecharCard() };
+
+/* ============ INTENÇÃO DE COMANDO ============ */
+function abrirIntencao(){
+  const c=atual; c.intencao=c.intencao||{};
+  $("#s2Title").textContent="🎯 "+c.nome;
+  $("#s2Body").innerHTML=`<p class="dica" style="margin-bottom:var(--e5);font-size:var(--t-mini)">
+    Preencha uma vez e volte sempre que for lapidar. Isso é o que decide se o vídeo vende ou só entretém.</p>
+    ${INTENCAO.map((b,k)=>`
+      <div class="grupo-tit"><span class="romano" style="font-size:var(--t-lg);color:var(--superficie-territorio)">${ROMANOS[k]}</span>
+        <span class="t">${esc(b.nome)}</span><span class="l"></span></div>
+      <p class="dica">${esc(b.hint)}</p>
+      <textarea class="campo" rows="5" data-b="${b.id}">${esc(c.intencao[b.id]||"")}</textarea>`).join("")}`;
+  let t2;
+  $("#s2Body").querySelectorAll("textarea").forEach(t=>t.oninput=()=>{
+    c.intencao[t.dataset.b]=t.value;
+    clearTimeout(t2); t2=setTimeout(()=>salvarIntencao(c),700);
+  });
+  $("#sheet2").classList.remove("hide"); $("#sheet2").scrollTop=0;
+  document.body.style.overflow="hidden";
+}
+async function salvarIntencao(c){
+  try{ await db("psn_criadores?id=eq."+c.id,{method:"PATCH",body:JSON.stringify({intencao:c.intencao})}) }
+  catch(e){ toast("Não consegui salvar",1) }
+}
+const fechar2=()=>{ $("#sheet2").classList.add("hide"); document.body.style.overflow="" };
+$("#s2Close").onclick=fechar2;
+$("#s2Done").onclick=async()=>{ await salvarIntencao(atual); toast("Salvo"); fechar2() };
+
+/* Esc fecha a camada mais alta */
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape") return;
+  if(!$("#qc").classList.contains("hide")) return fecharQC();
+  if(!$("#menu").classList.contains("hide")) return fecharMenu();
+  if(!$("#sheet3").classList.contains("hide")) return fechar3();
+  if(!$("#sheet2").classList.contains("hide")) return fechar2();
+  if(!$("#sheet").classList.contains("hide")) return fecharCard();
+});
+
+/* ============ START ============ */
+(async()=>{ await carregar(); await filaFlush(); rota(); })();
+document.addEventListener("visibilitychange",()=>{ document.hidden ? flush() : filaFlush() });
+window.addEventListener("pagehide",flush);
+</script>
+</body>
+</html>
