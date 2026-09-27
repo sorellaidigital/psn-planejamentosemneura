@@ -1,16 +1,22 @@
 {
   "name": "insta-ops",
-  "version": "0.0.1",
-  "description": "Mecanismo de conteúdo para Instagram, em PT-BR. v0: /insta-ops:ref-ig salva um post do Instagram como nota de referência no seu vault do Obsidian (legenda verbatim, slides transcritos, gancho, estrutura, CTA, por que salvei). Não publica nada.",
+  "version": "0.1.0",
+  "description": "Mecanismo de conteúdo para Instagram e TikTok, em PT-BR. Processa a fila de ideias salvas no app 'Planejamento sem Neura' (/insta-ops:fila): captura o post, analisa (gancho, estrutura, CTA, slides), e grava o resultado no Supabase para aparecer na ficha da ideia. Não publica nada.",
   "author": { "name": "Sorell AI" },
   "repository": "https://github.com/sorellaidigital/mecanismo-inst",
   "license": "MIT",
-  "keywords": ["instagram", "obsidian", "referencias", "conteudo", "pt-br"],
+  "keywords": ["instagram", "tiktok", "supabase", "referencias", "conteudo", "pt-br"],
   "userConfig": {
-    "vault_dir": {
-      "type": "directory",
-      "title": "Pasta do vault do Obsidian",
-      "description": "Caminho da pasta raiz do seu vault. As notas vão para '<vault>/Referências Instagram/'.",
+    "supabase_url": {
+      "type": "string",
+      "title": "URL do projeto Supabase",
+      "description": "URL do projeto Supabase do app Planejamento sem Neura (ex.: https://xxxx.supabase.co).",
+      "required": false
+    },
+    "supabase_anon_key": {
+      "type": "string",
+      "title": "Chave anon do Supabase",
+      "description": "Chave anon (pública) do mesmo projeto Supabase, a mesma que está no app.",
       "required": false
     }
   }

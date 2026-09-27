@@ -27,7 +27,7 @@ Chamar `tabs_context_mcp` primeiro. Abrir NOVA aba (nunca reutilizar aba da pess
    ```
    Isso lista as imagens carregadas (o slide atual e os vizinhos) com a URL de maior largura do `srcset` (normalmente 1080w). Guardar a URL nova que ainda não estava na lista; clicar na seta "Avançar"/"Next" com `computer`; repetir até a seta desaparecer. Contagem de slides = nº de URLs distintas. Fallback se `srcset` não existir: `img.src`. Se nem isso: transcrever a partir do screenshot do `computer`, não criar arquivo nem embed, e registrar `imagem_NN: sem URL, só screenshot`. O filtro `w>=640` descarta avatares e miniaturas.
 6. **Reel:** capturar só a capa: `document.querySelector('article video')?.poster` ou a primeira `img` do `article`; legenda como no passo 4. Registrar `audio: transcrição não feita no v0`.
-7. **Baixar imagens:** para cada URL, `curl -L -sS -o "<vault>/Referências Instagram/_anexos/<id>/NN.jpg" "<url>"` (a URL tem `&`; sempre entre aspas). As URLs do CDN são públicas e temporárias; baixar na hora. Conferir com `file` que é imagem (JPEG, PNG ou WebP) e não HTML; se for WebP, renomear para `NN.webp` e usar essa extensão no embed. Se o download falhar: transcrever pelo screenshot e registrar `imagem_NN: CDN indisponível`.
+7. **Baixar imagens:** criar um diretório temporário uma vez por post (`mktemp -d`) e, para cada URL, `curl -L -sS -o "<tmp>/NN.jpg" "<url>"` (a URL tem `&`; sempre entre aspas). As URLs do CDN são públicas e temporárias; baixar na hora, antes de qualquer outro passo poder atrasar. Conferir com `file` que é imagem (JPEG, PNG ou WebP) e não HTML; se for WebP, renomear para `NN.webp`. Se o download falhar: transcrever pelo screenshot e registrar `{"item":"imagem_NN","motivo":"CDN indisponível"}`. Depois de transcrever (passo 8), fazer upload de cada arquivo do `<tmp>` para o Storage (`POST {url}/storage/v1/object/psn-referencias/<ideia_id>/NN.jpg`, `Content-Type` conforme a extensão, header `x-upsert: true`) e gravar em `slides[i].imagem_path` o caminho relativo `<ideia_id>/NN.jpg`.
 8. **Transcrição:** ler cada imagem com `Read` e copiar o texto visível verbatim, na ordem de leitura, no bloco do slide. Em `_Visual:_`, 1 linha descrevendo a imagem sem interpretar.
 9. **Não fazer:** não abrir comentários individuais, não capturar handles de comentaristas, não abrir perfil, bio ou link da bio, não curtir, não seguir, não comentar.
 10. **Fechar:** `tabs_close_mcp` na aba criada ao terminar a leva.
@@ -46,14 +46,11 @@ Chamar `tabs_context_mcp` primeiro. Abrir NOVA aba (nunca reutilizar aba da pess
 
 ## Saída esperada
 
-Este protocolo preenche frontmatter de `modelo-nota.md`:
-- `tipo`, `id`, `url`, `autor`, `formato`, `n_slides`, `data_publicacao`, `salvo_em`, `fonte: chrome`, `curtidas`, `comentarios`
-- Seção `## Legenda (verbatim)` e `## Slides` (cada slide com imagem, texto e visual)
+Este protocolo preenche os campos de `modelo-referencia.md`:
+- `post_id`, `url`, `autor`, `formato`, `n_slides`, `data_publicacao`, `fonte: chrome`, `curtidas`, `comentarios`
+- `legenda` e `slides` (cada slide com `texto`, `visual` e, depois do upload, `imagem_path`)
 
-Campos para análise (não preenchidos aqui):
-- `gancho`, `tipo_gancho`, `estrutura`, `cta`, `tipo_cta`, `palavra_chave`
+Campos de análise (preenchidos depois, em `analise.md`):
+- `gancho`, `tipo_gancho`, `estrutura`, `cta`, `tipo_cta`, `palavra_chave`, `tags`, `analise`
 
-Campo para a pessoa:
-- `por_que_salvei`
-
-`tags` é preenchido na análise (`analise.md`).
+`por_que` já vem da ideia (campo `por_que` de `psn_ideias`), não é perguntado aqui.
