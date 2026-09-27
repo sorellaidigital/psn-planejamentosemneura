@@ -402,6 +402,49 @@ main.territorio{background:transparent;color:var(--texto-invertido);border-radiu
 .carregando{padding:var(--e7) 0;text-align:center;color:var(--texto-invertido-medio);
   font-size:var(--t-mini)}
 
+/* segmentado: reels|estático, ideias|produção */
+.seg{display:flex;background:rgba(28,18,37,.06);border-radius:var(--r-pill);padding:3px;gap:2px}
+.seg button{flex:1;min-height:38px;border-radius:var(--r-pill);font-size:var(--t-mini);
+  font-weight:700;color:var(--texto-medio)}
+.seg button.on{background:var(--superficie-territorio);color:var(--texto-invertido)}
+
+/* seções do diretório (ideias / produção) */
+.secao-dir{margin-bottom:var(--e6)}
+.secao-dir:last-child{margin-bottom:0}
+
+/* chips extras de status do mecanismo */
+.chip-erro{background:rgba(196,16,47,.10);color:var(--alerta-texto)}
+.chip-proc{background:rgba(155,92,255,.16);color:#5C21C6}
+
+/* clamp de 2 linhas (por que chamou atenção) */
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* tira de slides da referência analisada */
+.slides{display:flex;gap:var(--e3);overflow-x:auto;padding:var(--e2) 0 var(--e3);
+  scroll-snap-type:x mandatory}
+.slide{flex:0 0 220px;scroll-snap-align:start;background:var(--superficie-cartao);
+  border:1.5px solid var(--linha);border-radius:var(--r-md);padding:var(--e3);
+  display:flex;flex-direction:column;gap:var(--e2)}
+.slide img{width:100%;border-radius:var(--r-sm);aspect-ratio:9/16;object-fit:cover;
+  background:rgba(28,18,37,.06)}
+.slide .sn{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);
+  text-transform:uppercase;color:var(--texto-fraco)}
+.slide .stx{font-size:var(--t-mini);white-space:pre-wrap;line-height:1.4}
+.slide .svi{font-size:var(--t-micro);color:var(--texto-fraco);font-style:italic}
+
+/* destaque de ganho — "o que reaproveitar" */
+.destaque{background:rgba(215,255,62,.22);border:1.5px solid rgba(215,255,62,.55);
+  border-radius:var(--r-md);padding:var(--e4);margin:var(--e3) 0}
+.destaque .t{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);
+  text-transform:uppercase;color:var(--selo-valor);margin-bottom:var(--e1)}
+
+/* sequência de estrutura em chips */
+.seq{display:flex;flex-wrap:wrap;gap:var(--e1);align-items:center}
+.seq .sep{color:var(--texto-fraco)}
+
+/* rótulos claros dentro da captura rápida (fundo escuro) */
+.qcbox .lbl{color:var(--texto-invertido-fraco)}
+
 @media(min-width:900px){
   header{padding-left:var(--e6);padding-right:var(--e6)}
   main{padding:var(--e6) var(--e6) 120px}
@@ -467,10 +510,24 @@ main.territorio{background:transparent;color:var(--texto-invertido);border-radiu
 <!-- captura rápida -->
 <div class="qc hide" id="qc">
   <div class="qcbox">
-    <div class="rot">Tempestade de ideias</div>
-    <h4>joga aqui antes de esquecer</h4>
+    <div class="rot" id="qcRot">Tempestade de ideias</div>
+    <h4 id="qcH4">joga aqui antes de esquecer</h4>
     <p id="qcSub">Lapida depois. Sem internet, guarda no aparelho e sobe sozinha.</p>
+    <div id="qcCanalWrap" class="hide">
+      <label class="lbl" for="qcCanalSel">Canal de ideias</label>
+      <select class="campo campo-inv" id="qcCanalSel"></select>
+    </div>
+    <label class="lbl" for="qcTxt">Ideia</label>
     <textarea class="campo campo-inv" id="qcTxt" placeholder="ex: o erro que todo mundo comete ao cortar o primeiro segundo do vídeo"></textarea>
+    <label class="lbl" for="qcRef">Referência (link)</label>
+    <div style="display:flex;gap:8px">
+      <input class="campo campo-inv" id="qcRef" type="url" placeholder="https://..." style="flex:1" autocomplete="off">
+      <button type="button" class="btn btn-fantasma-inv" id="qcColar">Colar</button>
+    </div>
+    <div id="qcPorQueWrap" class="hide">
+      <label class="lbl" for="qcPorQue">Por que chamou atenção?</label>
+      <textarea class="campo campo-inv" id="qcPorQue" rows="3" placeholder="o que fez você parar de rolar"></textarea>
+    </div>
     <div class="pe">
       <button class="btn btn-fantasma-inv" id="qcCancel">Cancelar</button>
       <button class="btn btn-ganho" id="qcSave">Salvar ideia</button>
@@ -614,12 +671,31 @@ async function carregar(){
   }catch(e){ toast("Sem conexão com o banco",1); console.error(e); }
 }
 
+/* extrai a primeira URL http(s) de um texto (link + texto colado junto) */
+function extrairUrl(s){
+  if(!s) return null;
+  const m=String(s).match(/https?:\/\/\S+/i);
+  return m ? m[0].replace(/[)\]\.,"']+$/,"") : null;
+}
+
 /* ============ ROTAS ============ */
 function rota(){
-  const m=location.hash.match(/^#\/c\/(.+)$/);
+  const hash=location.hash;
+  const capMatch = hash.match(/^#\/capturar(?:\?(.*))?$/);
+  if(capMatch){
+    atual=null; busca=""; filtro="todas";
+    const qs = capMatch[1] || location.search.replace(/^\?/,"");
+    const refRaw = new URLSearchParams(qs).get("ref") || "";
+    const url = extrairUrl(refRaw);
+    render();
+    if(url) abrirQCExterno(url); else toast("Link não reconhecido",1);
+    return;
+  }
+  const m=hash.match(/^#\/c\/(.+)$/);
   atual = m ? criadores.find(c=>c.id===m[1]) : null;
   if(m && !atual){ location.hash="#/"; return }
-  busca=""; filtro="todas";
+  busca="";
+  filtro = (atual && atual.finalidade==="ideias") ? "pendentes" : "todas";
   render();
 }
 window.addEventListener("hashchange",rota);
@@ -628,10 +704,51 @@ let rz; window.addEventListener("resize",()=>{ clearTimeout(rz); rz=setTimeout((
 /* ============ RENDER ============ */
 function render(){ atual ? renderBoard() : renderHome() }
 
+/* pasta de canal — muda de cara conforme finalidade */
+function pastaHTML(c){
+  const meus = ideias.filter(i=>i.criador_id===c.id);
+  if(c.finalidade==="ideias"){
+    const pend = meus.filter(i=>["pendente","processando","erro"].includes(i.mec_status)).length;
+    const proc = meus.filter(i=>i.mec_status==="processada").length;
+    return `<div class="pasta" data-go="${c.id}" tabindex="0" role="button">
+      ${pend?`<span class="sino" title="${pend} pendente(s) no mecanismo">${pend}</span>`:""}
+      <button class="zap" data-zap="${c.id}" aria-label="Nova referência rápida em ${esc(c.nome)}">⚡</button>
+      <span class="em">${esc(c.emoji||"💡")}</span>
+      <div>
+        <div class="nm">${esc(c.nome)}</div>
+        ${c.handle?`<div class="hd">${esc(c.handle)}</div>`:""}
+      </div>
+      <div class="fim">
+        <span class="v num">${proc}</span>
+        <span class="k">processadas<br>de ${meus.length}</span>
+      </div>
+    </div>`;
+  }
+  const prontas = meus.filter(i=>i.stage==="postar").length;
+  const novas = meus.filter(i=>i.stage==="tempestade").length;
+  return `<div class="pasta" data-go="${c.id}" tabindex="0" role="button">
+    ${novas?`<span class="sino" title="${novas} na tempestade, ainda sem triagem">${novas}</span>`:""}
+    <button class="zap" data-zap="${c.id}" aria-label="Nova ideia rápida em ${esc(c.nome)}">⚡</button>
+    <span class="em">${esc(c.emoji||"🎬")}</span>
+    <div>
+      <div class="nm">${esc(c.nome)}</div>
+      ${c.handle?`<div class="hd">${esc(c.handle)}</div>`:""}
+    </div>
+    <div class="fim">
+      <span class="v num">${prontas}</span>
+      <span class="k">prontas<br>de ${meus.length}</span>
+    </div>
+  </div>`;
+}
+
 /* ---------- TELA 1 · DIRETÓRIO DE CANAIS (território roxo) ---------- */
 function renderHome(){
   const totIdeias=ideias.length;
-  const prontas=ideias.filter(i=>i.stage==="postar").length;
+  const prontas=ideias.filter(i=>{
+    if(i.stage!=="postar") return false;
+    const ch=criadores.find(c=>c.id===i.criador_id);
+    return !ch || ch.finalidade!=="ideias";
+  }).length;
   $("#hd").innerHTML = `
     <div class="hrow marca">
       <div class="selo"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="15"
@@ -666,23 +783,18 @@ function renderHome(){
     view.innerHTML = `<div class="wrap"><div class="vazio inv"><span class="n num">0</span>
       <h4>nada com “${esc(busca)}”</h4><p>Tente outro nome ou o @ do perfil.</p></div></div>`;
   } else {
-    view.innerHTML = `<div class="wrap"><div class="pastas">${lista.map(c=>{
-      const meus = ideias.filter(i=>i.criador_id===c.id);
-      const prontas = meus.filter(i=>i.stage==="postar").length;
-      const novas = meus.filter(i=>i.stage==="tempestade").length;
-      return `<div class="pasta" data-go="${c.id}" tabindex="0" role="button">
-        ${novas?`<span class="sino" title="${novas} na tempestade, ainda sem triagem">${novas}</span>`:""}
-        <button class="zap" data-zap="${c.id}" aria-label="Nova ideia rápida em ${esc(c.nome)}">⚡</button>
-        <span class="em">${esc(c.emoji||"🎬")}</span>
-        <div>
-          <div class="nm">${esc(c.nome)}</div>
-          ${c.handle?`<div class="hd">${esc(c.handle)}</div>`:""}
-        </div>
-        <div class="fim">
-          <span class="v num">${prontas}</span>
-          <span class="k">prontas<br>de ${meus.length}</span>
-        </div>
-      </div>`}).join("")}</div></div>`;
+    const ideiasList = lista.filter(c=>c.finalidade==="ideias");
+    const producaoList = lista.filter(c=>c.finalidade!=="ideias");
+    view.innerHTML = `<div class="wrap">
+      ${ideiasList.length?`<div class="secao-dir">
+        <div class="secao-tit"><h2 style="color:var(--texto-invertido)">ideias</h2>
+          <span class="qt num" style="color:var(--texto-invertido-fraco)">${ideiasList.length}</span></div>
+        <div class="pastas">${ideiasList.map(pastaHTML).join("")}</div></div>`:""}
+      ${producaoList.length?`<div class="secao-dir">
+        <div class="secao-tit"><h2 style="color:var(--texto-invertido)">produção</h2>
+          <span class="qt num" style="color:var(--texto-invertido-fraco)">${producaoList.length}</span></div>
+        <div class="pastas">${producaoList.map(pastaHTML).join("")}</div></div>`:""}
+    </div>`;
   }
 
   const bs=$("#hBusca");
@@ -700,8 +812,104 @@ function renderHome(){
   $("#fNovoCanal").onclick=()=>formCanal();
 }
 
-/* ---------- TELA 2 · PAINEL DO CANAL ---------- */
+/* ---------- rótulos e chips do mecanismo (canais de ideias) ---------- */
+const MEC_LABEL = {pendente:"Pendente",processando:"Processando",processada:"Processada",erro:"Erro",descartada:"Descartada"};
+function mecChip(i){
+  const st=i.mec_status;
+  if(!st) return `<span class="chip chip-neutro">sem link</span>`;
+  const cls = st==="processada"?"chip-selo":st==="erro"?"chip-erro":st==="processando"?"chip-proc":"chip";
+  const title = st==="erro" && i.mec_erro ? ` title="${esc(i.mec_erro)}"` : "";
+  return `<span class="chip ${cls}"${title}>${MEC_LABEL[st]||st}</span>`;
+}
+function plataformaLabel(p){
+  return p==="instagram"?"📷 IG":p==="tiktok"?"🎵 TikTok":p?"🔗 Link":"";
+}
+
+/* ---------- TELA 2b · PAINEL DE IDEIAS (canal finalidade=ideias) ---------- */
+function renderPainelIdeias(){
+  const c=atual, meus=ideias.filter(i=>i.criador_id===c.id);
+  $("#hd").innerHTML = `
+    <div class="hrow">
+      <button class="icb" id="bVoltar" aria-label="Voltar aos canais">←</button>
+      <div class="tt">
+        <div class="n1">${esc(c.emoji||"💡")} ${esc(c.nome)}</div>
+        <div class="n2">${esc(c.handle||"canal")} · ${meus.length} referência${meus.length===1?"":"s"}</div>
+      </div>
+      <button class="icb" id="bMenu" aria-label="Opções do canal">⋯</button>
+    </div>
+    <div class="buscabox" style="margin-top:var(--e4)"><span class="lupa">⌕</span>
+      <input class="campo campo-inv" id="bBusca" type="text" placeholder="Buscar por título ou motivo"
+        value="${esc(busca)}" autocomplete="off"></div>`;
+  $("#abas").classList.add("hide");
+  $("#bVoltar").onclick=()=>location.hash="#/";
+  $("#bMenu").onclick=menuCanal;
+  const bb=$("#bBusca");
+  bb.oninput=e=>{ busca=e.target.value; const p=e.target.selectionStart;
+    renderPainelIdeias(); const n=$("#bBusca"); if(n){n.focus(); n.setSelectionRange(p,p)} };
+
+  const semLink = meus.filter(i=>!i.mec_status).length;
+  const grupos = {
+    pendentes: meus.filter(i=>["pendente","processando","erro"].includes(i.mec_status)),
+    processadas: meus.filter(i=>i.mec_status==="processada"),
+    descartadas: meus.filter(i=>i.mec_status==="descartada"),
+    todas: meus
+  };
+  if(!["pendentes","processadas","descartadas","todas"].includes(filtro)) filtro="pendentes";
+  let lista = grupos[filtro]||meus;
+  if(busca) lista = lista.filter(i=>nrm(i.titulo+" "+(i.por_que||"")).includes(nrm(busca)));
+
+  const view=$("#view"); view.className="clara";
+  const chips = [["pendentes","Pendentes",grupos.pendentes.length],
+    ["processadas","Processadas",grupos.processadas.length],
+    ["descartadas","Descartadas",grupos.descartadas.length],
+    ["todas","Todas",grupos.todas.length]];
+  const fchips = `<div class="filtros">
+    ${chips.map(([k,n,q])=>`<button class="filtro ${filtro===k?"on":""}" data-f="${k}">${n} ${q?"· "+q:""}</button>`).join("")}
+    ${semLink?`<span class="chip chip-neutro">🔗 ${semLink} sem link</span>`:""}
+  </div>`;
+
+  view.innerHTML = `<div class="wrap">${fchips}
+    ${lista.length? lista.map(cardIdeiaHTML).join("") : vazioIdeias(filtro)}
+  </div>`;
+
+  view.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ filtro=b.dataset.f; renderPainelIdeias() });
+  view.querySelectorAll("[data-card]").forEach(el=>el.onclick=()=>abrirFichaIdeia(el.dataset.card));
+
+  $("#fabslot").innerHTML = `<div class="fabs">
+    <button class="btn btn-sec" id="fCanais">← Canais</button>
+    <button class="btn btn-ganho" id="fNovaIdeia">⚡ Nova referência</button></div>`;
+  $("#fCanais").onclick=()=>location.hash="#/";
+  $("#fNovaIdeia").onclick=()=>abrirQC(c.id);
+}
+
+function cardIdeiaHTML(i){
+  const data = i.criado_em ? new Date(i.criado_em).toLocaleDateString("pt-BR") : "";
+  return `<div class="card" data-card="${i.id}">
+    <div class="corpo">
+      <h3>${esc(i.titulo)}</h3>
+      <div class="metas">
+        ${i.plataforma?`<span class="chip chip-neutro">${plataformaLabel(i.plataforma)}</span>`:""}
+        ${mecChip(i)}
+        ${data?`<span class="chip chip-neutro">${esc(data)}</span>`:""}
+      </div>
+      ${i.por_que?`<p class="clamp2" style="margin:var(--e2) 0 0;font-size:var(--t-mini);color:var(--texto-medio)">${esc(i.por_que)}</p>`:""}
+    </div>
+  </div>`;
+}
+
+function vazioIdeias(f){
+  const t = {
+    pendentes:["nada pendente","Cole um link no ⚡ e ele entra na fila do mecanismo."],
+    processadas:["nada processado ainda","Quando o mecanismo terminar de analisar uma referência, ela aparece aqui."],
+    descartadas:["nada descartado","Ideias descartadas na ficha aparecem aqui."],
+    todas:["nenhuma referência ainda","Toque em ⚡ pra guardar a primeira."]
+  }[f]||["nada aqui",""];
+  return `<div class="vazio"><span class="n num">0</span><h4>${t[0]}</h4><p>${t[1]}</p></div>`;
+}
+
+/* ---------- TELA 2 · PAINEL DO CANAL (produção) ---------- */
 function renderBoard(){
+  if(atual.finalidade==="ideias") return renderPainelIdeias();
   const c=atual, meus=ideias.filter(i=>i.criador_id===c.id);
   const dist=STAGES.map(s=>meus.filter(i=>i.stage===s.id).length);
   const iAt=STAGES.findIndex(s=>s.id===stage);
@@ -860,17 +1068,40 @@ function avancar(id){
 }
 
 /* ============ CANAIS ============ */
-let canalEdit=null, emojiSel="🎬";
-function formCanal(c){
+let canalEdit=null, emojiSel="🎬", tipoSel="reels", finalidadeSel="producao";
+function formCanal(c, finalidadePreset){
   canalEdit=c||null;
   emojiSel=c?.emoji||EMOJIS[criadores.length % EMOJIS.length];
+  tipoSel=c?.tipo_conteudo||"reels";
+  finalidadeSel=c?.finalidade||finalidadePreset||"producao";
   $("#s3Title").textContent = c?"Editar canal":"Novo canal";
+  const dicaFinalidade = v=> v==="ideias"
+    ? "Ideias: caixa de referências que alimenta o mecanismo."
+    : "Produção: funil de 7 etapas — descarregar, estruturar, lapidar, gravar, editar, postar.";
+  const finalidadeBloco = c ? `
+    <label class="lbl">Finalidade</label>
+    <p class="dica">${dicaFinalidade(finalidadeSel)}</p>
+    <span class="chip chip-neutro">${finalidadeSel==="ideias"?"💡 Ideias":"🎬 Produção"}</span>` : `
+    <label class="lbl">Finalidade</label>
+    <div class="seg" id="cFinalidade">
+      <button type="button" data-v="ideias" class="${finalidadeSel==="ideias"?"on":""}">💡 Ideias</button>
+      <button type="button" data-v="producao" class="${finalidadeSel==="producao"?"on":""}">🎬 Produção</button>
+    </div>
+    <p class="dica" id="cFinalidadeDica">${dicaFinalidade(finalidadeSel)}</p>`;
   $("#s3Body").innerHTML=`
+    ${finalidadeBloco}
     <label class="lbl" for="cNome">Nome do canal / criador</label>
     <input class="campo" id="cNome" type="text" placeholder="ex: Dra. Marina" value="${esc(c?.nome||"")}">
     <label class="lbl" for="cHandle">@ do perfil</label>
     <p class="dica">Opcional. Ajuda a diferenciar canais do mesmo nome.</p>
     <input class="campo" id="cHandle" type="text" placeholder="@dramarina" value="${esc(c?.handle||"")}">
+    <label class="lbl" for="cNicho">Nicho</label>
+    <input class="campo" id="cNicho" type="text" placeholder="ex: emagrecimento, maternidade" value="${esc(c?.nicho||"")}">
+    <label class="lbl">Tipo de conteúdo</label>
+    <div class="seg" id="cTipo">
+      <button type="button" data-v="reels" class="${tipoSel==="reels"?"on":""}">🎥 Reels</button>
+      <button type="button" data-v="estatico" class="${tipoSel==="estatico"?"on":""}">🖼️ Estático</button>
+    </div>
     <label class="lbl">Emoji da pasta</label>
     <div class="emgrid" id="cEm">${EMOJIS.map(e=>
       `<button type="button" data-e="${e}" class="${e===emojiSel?"on":""}">${e}</button>`).join("")}</div>
@@ -881,6 +1112,25 @@ function formCanal(c){
   $("#cEm").querySelectorAll("button").forEach(b=>b.onclick=()=>{
     emojiSel=b.dataset.e;
     $("#cEm").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+  });
+  const sugerirNome=()=>{
+    const n=$("#cNome"); if(!n) return;
+    const sugestoes=["Ideias · Reels","Ideias · Estático","Produção · Reels","Produção · Estático"];
+    if(!n.value.trim() || sugestoes.includes(n.value.trim())){
+      n.value=(finalidadeSel==="ideias"?"Ideias":"Produção")+" · "+(tipoSel==="reels"?"Reels":"Estático");
+    }
+  };
+  $("#cTipo").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    tipoSel=b.dataset.v;
+    $("#cTipo").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+    sugerirNome();
+  });
+  const fin=$("#cFinalidade");
+  if(fin) fin.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    finalidadeSel=b.dataset.v;
+    fin.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+    $("#cFinalidadeDica").textContent = dicaFinalidade(finalidadeSel);
+    sugerirNome();
   });
   $("#cCancel").onclick=fechar3;
   $("#cSalvar").onclick=salvarCanal;
@@ -895,7 +1145,9 @@ async function salvarCanal(){
   const nome=$("#cNome").value.trim();
   if(!nome){ toast("Falta o nome do canal",1); $("#cNome").focus(); return }
   const handle=$("#cHandle").value.trim();
-  const patch={nome, handle, emoji:emojiSel};
+  const nicho=$("#cNicho").value.trim();
+  const patch={nome, handle, emoji:emojiSel, nicho, tipo_conteudo:tipoSel};
+  if(!canalEdit) patch.finalidade=finalidadeSel;
   try{
     if(canalEdit){
       const [u]=await db("psn_criadores?id=eq."+canalEdit.id,{method:"PATCH",body:JSON.stringify(patch)});
@@ -911,11 +1163,12 @@ async function salvarCanal(){
 }
 
 function menuCanal(){
+  const isIdeias = atual.finalidade==="ideias";
   $("#menubox").innerHTML=`
-    <button data-a="edit">✏️ Renomear / trocar emoji</button>
-    <button data-a="intencao">🎯 Intenção de comando</button>
+    <button data-a="edit">✏️ Renomear / editar canal</button>
+    ${isIdeias?"":`<button data-a="intencao">🎯 Intenção de comando</button>`}
     <div class="sep"></div>
-    <button class="risco" data-a="del">Excluir canal e todas as ideias</button>
+    <button class="risco" data-a="del">Excluir canal e todas as ${isIdeias?"referências":"ideias"}</button>
     <div class="sep"></div>
     <button data-a="fechar">Fechar</button>`;
   $("#menubox").querySelectorAll("[data-a]").forEach(b=>b.onclick=async()=>{
@@ -941,30 +1194,82 @@ async function excluirCanal(){
 }
 
 /* ============ CAPTURA RÁPIDA ============ */
-let qcAlvo=null, qcStage="tempestade";
+let qcAlvo=null, qcStage="tempestade", qcExterno=false;
 function abrirQC(criadorId, st){
+  qcExterno=false;
   qcAlvo=criadorId; qcStage=st||"tempestade";
   const c=criadores.find(x=>x.id===criadorId);
+  const isIdeias = c?.finalidade==="ideias";
+  $("#qcRot").textContent = isIdeias?"Nova referência":"Tempestade de ideias";
+  $("#qcH4").textContent = isIdeias?"guarda o link antes de perder":"joga aqui antes de esquecer";
   $("#qcSub").textContent = "Em "+(c?.nome||"canal")+" · lapida depois. Sem internet, guarda no aparelho e sobe sozinha.";
-  $("#qcTxt").value=""; $("#qc").classList.remove("hide");
+  $("#qcCanalWrap").classList.add("hide");
+  $("#qcTxt").value=""; $("#qcRef").value=""; $("#qcPorQue").value="";
+  $("#qcPorQueWrap").classList.toggle("hide", !isIdeias);
+  $("#qc").classList.remove("hide");
   document.body.style.overflow="hidden";
   setTimeout(()=>$("#qcTxt").focus(),90);
 }
-function fecharQC(){ $("#qc").classList.add("hide"); document.body.style.overflow="" }
-$("#qcCancel").onclick=fecharQC;
-$("#qc").onclick=e=>{ if(e.target.id==="qc") fecharQC() };
+/* captura vinda de fora (atalho do iPhone): #/capturar?ref=<link> */
+function abrirQCExterno(url){
+  const ideiasCanais = criadores.filter(c=>c.finalidade==="ideias");
+  if(!ideiasCanais.length){
+    toast("Crie um canal de Ideias pra guardar esse link",1);
+    setTimeout(()=>formCanal(null,"ideias"),250);
+    return;
+  }
+  const baixo=(url||"").toLowerCase();
+  const sugestaoTipo = /tiktok\.com|\/reel\//.test(baixo) ? "reels"
+    : /instagram\.com\/p\//.test(baixo) ? "estatico" : null;
+  const sugerido = (sugestaoTipo && ideiasCanais.find(c=>c.tipo_conteudo===sugestaoTipo)) || ideiasCanais[0];
+
+  qcExterno=true; qcAlvo=sugerido.id; qcStage="tempestade";
+  $("#qcRot").textContent="Captura externa";
+  $("#qcH4").textContent="guarda essa referência";
+  $("#qcSub").textContent="Confira o canal e o link antes de salvar.";
+  $("#qcCanalWrap").classList.remove("hide");
+  $("#qcCanalSel").innerHTML = ideiasCanais.map(c=>
+    `<option value="${c.id}" ${c.id===sugerido.id?"selected":""}>${esc(c.emoji||"💡")} ${esc(c.nome)}</option>`).join("");
+  $("#qcTxt").value=""; $("#qcRef").value=url||""; $("#qcPorQue").value="";
+  $("#qcPorQueWrap").classList.remove("hide");
+  $("#qc").classList.remove("hide");
+  document.body.style.overflow="hidden";
+  setTimeout(()=>$("#qcTxt").focus(),90);
+}
+function fecharQC(){ $("#qc").classList.add("hide"); document.body.style.overflow=""; qcExterno=false }
+$("#qcCancel").onclick=()=>{ const ext=qcExterno; fecharQC(); if(ext) location.hash="#/" };
+$("#qc").onclick=e=>{ if(e.target.id==="qc"){ const ext=qcExterno; fecharQC(); if(ext) location.hash="#/" } };
 $("#qcTxt").addEventListener("keydown",e=>{ if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)) $("#qcSave").click() });
+$("#qcColar").onclick=async()=>{
+  try{
+    const t=await navigator.clipboard.readText();
+    if(t && /^https?:\/\//i.test(t.trim())) $("#qcRef").value=t.trim();
+  }catch(e){ /* sem permissão ou API indisponível: ignora silenciosamente */ }
+};
 $("#qcSave").onclick=async()=>{
-  const t=$("#qcTxt").value.trim(); if(!t) return fecharQC();
-  const linha=t.split("\n")[0].slice(0,120);
-  const payload={criador_id:qcAlvo, titulo:linha, stage:qcStage,
+  const t=$("#qcTxt").value.trim();
+  const ref=$("#qcRef").value.trim();
+  if(!t && !ref) return fecharQC();
+  const canalWrapVisivel = !$("#qcCanalWrap").classList.contains("hide");
+  const canalId = canalWrapVisivel ? $("#qcCanalSel").value : qcAlvo;
+  const c=criadores.find(x=>x.id===canalId);
+  const isIdeias = c?.finalidade==="ideias";
+  const linha=(t||ref).split("\n")[0].slice(0,120);
+  const payload={criador_id:canalId, titulo:linha||"(sem título)", stage:qcStage,
     roteiro: t.length>linha.length ? t : ""};
+  if(ref) payload.referencia=ref;
+  if(isIdeias){ const pq=$("#qcPorQue").value.trim(); if(pq) payload.por_que=pq; }
+  const voltarHome=qcExterno;
   fecharQC();
   try{
     const [novo]=await db("psn_ideias",{method:"POST",body:JSON.stringify(payload)});
-    ideias.unshift(novo); render(); toast("Ideia salva");
+    ideias.unshift(novo);
+    if(voltarHome) location.hash="#/"; else render();
+    toast(isIdeias?"Referência salva":"Ideia salva");
   }catch(e){
-    filaAdd(payload); toast("Sem internet — guardei no aparelho ⚡");
+    filaAdd(payload);
+    if(voltarHome) location.hash="#/";
+    toast("Sem internet — guardei no aparelho ⚡");
   }
 };
 
@@ -1133,6 +1438,176 @@ function fecharCard(){ flush(); $("#sheet").classList.add("hide"); document.body
 $("#sClose").onclick=fecharCard;
 $("#sDone").onclick=async()=>{ await flush(); toast("Salvo"); fecharCard() };
 
+/* ============ FICHA DA REFERÊNCIA (canal de ideias) ============ */
+const TIPO_GANCHO_LABEL = {"promessa-pessoal":"Promessa pessoal",pergunta:"Pergunta",contradicao:"Contradição",
+  lista:"Lista","erro-comum":"Erro comum",bastidor:"Bastidor",dado:"Dado",outro:"Outro"};
+const TIPO_CTA_LABEL = {"comente-palavra":"Comente a palavra",salve:"Salve",compartilhe:"Compartilhe",
+  siga:"Siga","link-bio":"Link na bio",nenhum:"Nenhum"};
+function fmtNum(n){ return (n===null||n===undefined) ? null : Number(n).toLocaleString("pt-BR") }
+function fmtDataBR(d){ if(!d) return null; try{ return new Date(d+"T00:00:00").toLocaleDateString("pt-BR") }catch(e){ return d } }
+
+function abrirFichaIdeia(id){
+  const c=ideias.find(x=>x.id===id); if(!c) return;
+  aberta=c;
+  $("#sTitle").textContent=c.titulo||"Referência";
+  $("#sSub").textContent=(atual?.nome||"")+(c.plataforma?" · "+plataformaLabel(c.plataforma):"");
+  $("#sStepper").innerHTML="";
+  $("#sBody").innerHTML=`
+    <label class="lbl" for="fTitulo">Título</label>
+    <input class="campo" type="text" id="fTitulo" value="${esc(c.titulo)}">
+
+    <label class="lbl" for="fRefLink">Referência</label>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input class="campo" type="url" id="fRefLink" placeholder="https://..." value="${esc(c.referencia||"")}" style="flex:1">
+      ${/^https?:\/\//i.test(c.referencia||"")?`<a class="btn btn-fantasma" href="${esc(c.referencia)}" target="_blank" rel="noopener">Abrir ↗</a>`:""}
+    </div>
+
+    <label class="lbl" for="fPorQue">Por que chamou atenção?</label>
+    <textarea class="campo" id="fPorQue" rows="4">${esc(c.por_que||"")}</textarea>
+
+    <label class="lbl">Status</label>
+    <div style="margin-bottom:var(--e3)">${mecChip(c)}</div>
+    <div class="linhabtn" id="fAcoesMec"></div>
+
+    <div id="fAnalise"></div>
+
+    <div class="linhabtn"><button class="btn btn-risco" id="fDel">Excluir</button></div>`;
+
+  const acoes=$("#fAcoesMec"); const btns=[];
+  if(c.mec_status!=="descartada") btns.push(`<button class="btn btn-fantasma" id="fDescartar">Descartar</button>`);
+  if(c.mec_status==="descartada" && (c.referencia||"").trim()) btns.push(`<button class="btn btn-fantasma" id="fRestaurar">Restaurar</button>`);
+  if(["processada","erro"].includes(c.mec_status)) btns.push(`<button class="btn btn-ganho" id="fReprocessar">Reprocessar</button>`);
+  acoes.innerHTML=btns.join("");
+  const bD=$("#fDescartar"); if(bD) bD.onclick=()=>mudarMecStatus(c,"descartada");
+  const bR=$("#fRestaurar"); if(bR) bR.onclick=()=>mudarMecStatus(c,"pendente");
+  const bP=$("#fReprocessar"); if(bP) bP.onclick=()=>mudarMecStatus(c,"pendente");
+
+  [["fTitulo","titulo"],["fRefLink","referencia"],["fPorQue","por_que"]].forEach(([el,campo])=>{
+    $("#"+el).oninput=e=>{ c[campo]=e.target.value;
+      if(campo==="titulo") $("#sTitle").textContent=e.target.value||"Referência";
+      salvarDepois(c.id,{[campo]:e.target.value}); };
+  });
+  $("#fDel").onclick=async()=>{
+    if(!confirm("Excluir “"+c.titulo+"”?")) return;
+    pend={}; pendId=null; clearTimeout(pendTmr);
+    try{ await db("psn_ideias?id=eq."+c.id,{method:"DELETE"});
+      ideias=ideias.filter(x=>x.id!==c.id); fecharCard(); toast("Excluída");
+    }catch(e){ toast("Falhou ao excluir",1) }
+  };
+
+  renderAnalise(c);
+
+  $("#sheet").classList.remove("hide"); $("#sheet").scrollTop=0;
+  document.body.style.overflow="hidden";
+}
+
+async function mudarMecStatus(c,st){
+  const antes=c.mec_status; c.mec_status=st;
+  try{
+    const [u]=await db("psn_ideias?id=eq."+c.id,{method:"PATCH",body:JSON.stringify({mec_status:st})});
+    Object.assign(c,u);
+    toast(st==="descartada"?"Descartada":"Reenviada pro mecanismo");
+    abrirFichaIdeia(c.id);
+  }catch(e){ c.mec_status=antes; toast("Não consegui atualizar",1) }
+}
+
+async function renderAnalise(c){
+  const box=$("#fAnalise");
+  if(c.mec_status!=="processada"){
+    box.innerHTML = c.mec_status==="processando"
+      ? `<p class="dica" style="margin-top:var(--e5)">Processando… volte em instantes.</p>`
+      : `<p class="dica" style="margin-top:var(--e5)">Análise ainda não disponível.</p>`;
+    return;
+  }
+  box.innerHTML = `<p class="dica" style="margin-top:var(--e5)">Carregando análise…</p>`;
+  try{
+    const rows = await db("psn_referencias?ideia_id=eq."+c.id+"&select=*");
+    const r = rows && rows[0];
+    if(!r){ box.innerHTML = `<p class="dica" style="margin-top:var(--e5)">Análise ainda não disponível.</p>`; return }
+    box.innerHTML = analiseHTML(r);
+    const head=box.querySelector("#legHead");
+    if(head) head.onclick=()=>{
+      const b=box.querySelector("#legBody"), f=b.classList.toggle("hide");
+      head.setAttribute("aria-expanded",String(!f));
+      head.querySelector(".arrow").textContent=f?"▾":"▴";
+    };
+  }catch(e){
+    box.innerHTML = `<p class="dica" style="margin-top:var(--e5)">Não consegui carregar a análise.</p>`;
+  }
+}
+
+function analiseHTML(r){
+  const metaBits=[
+    r.autor?"@"+String(r.autor).replace(/^@+/,""):null,
+    r.formato,
+    r.n_slides>1?r.n_slides+" slides":null,
+    fmtNum(r.curtidas)!=null?fmtNum(r.curtidas)+" curtidas":null,
+    fmtNum(r.comentarios)!=null?fmtNum(r.comentarios)+" comentários":null,
+    fmtNum(r.views)!=null?fmtNum(r.views)+" views":null,
+    fmtDataBR(r.data_publicacao)
+  ].filter(Boolean);
+
+  const estruturaChips = (r.estrutura||"").split(/->|→|>/).map(s=>s.trim()).filter(Boolean);
+
+  const slides=(r.slides||[]).map(s=>`
+    <div class="slide">
+      ${s.imagem_path?`<img loading="lazy" src="${esc(SB_URL+"/storage/v1/object/public/psn-referencias/"+s.imagem_path)}" onerror="this.style.display='none'" alt="">`:""}
+      <div class="sn">${s.n!=null?esc(String(s.n))+" · ":""}${esc(s.funcao||"")}</div>
+      ${s.texto?`<div class="stx">${esc(s.texto)}</div>`:""}
+      ${s.visual?`<div class="svi">${esc(s.visual)}</div>`:""}
+    </div>`).join("");
+
+  const an=r.analise||{};
+  const naoCapt=r.nao_capturado||[];
+
+  return `
+    <div class="fichatopo" style="align-items:flex-start;flex-direction:column;gap:var(--e2)">
+      <div class="rot">Referência</div>
+      <div class="secao-sub" style="margin:0">${esc(metaBits.join(" · "))}</div>
+    </div>
+
+    ${r.gancho?`<div class="grupo-tit"><span class="t">Gancho</span><span class="l"></span>
+      ${r.tipo_gancho?`<span class="chip">${esc(TIPO_GANCHO_LABEL[r.tipo_gancho]||r.tipo_gancho)}</span>`:""}</div>
+      <p style="white-space:pre-wrap">${esc(r.gancho)}</p>
+      ${an.gancho?`<p class="dica" style="white-space:pre-wrap">${esc(an.gancho)}</p>`:""}`:""}
+
+    ${estruturaChips.length?`<div class="grupo-tit"><span class="t">Estrutura</span><span class="l"></span></div>
+      <div class="seq">${estruturaChips.map((e,k)=>
+        `<span class="chip chip-neutro">${esc(e)}</span>${k<estruturaChips.length-1?'<span class="sep">→</span>':""}`).join("")}</div>
+      ${an.estrutura?`<p class="dica" style="white-space:pre-wrap">${esc(an.estrutura)}</p>`:""}`:""}
+
+    ${(r.cta||r.tipo_cta)?`<div class="grupo-tit"><span class="t">CTA</span><span class="l"></span>
+      ${r.tipo_cta?`<span class="chip">${esc(TIPO_CTA_LABEL[r.tipo_cta]||r.tipo_cta)}</span>`:""}
+      ${r.palavra_chave?`<span class="chip chip-neutro">🔑 ${esc(r.palavra_chave)}</span>`:""}</div>
+      ${r.cta?`<p style="white-space:pre-wrap">${esc(r.cta)}</p>`:""}
+      ${an.cta?`<p class="dica" style="white-space:pre-wrap">${esc(an.cta)}</p>`:""}`:""}
+
+    ${slides?`<div class="grupo-tit"><span class="t">Slides</span><span class="l"></span></div>
+      <div class="slides">${slides}</div>`:""}
+
+    ${r.legenda?`<div class="acc" style="margin-top:var(--e3)">
+      <button class="acchead" type="button" id="legHead" aria-expanded="false">
+        <span class="nm">Legenda original</span><span class="ct arrow">▾</span></button>
+      <div class="accbody hide" id="legBody" style="padding-top:var(--e2);white-space:pre-wrap;font-size:var(--t-mini)">${esc(r.legenda)}</div>
+    </div>`:""}
+
+    ${(an.por_que_funciona||an.desenvolvimento||an.o_que_reaproveitar)?
+      `<div class="grupo-tit"><span class="t">Análise</span><span class="l"></span></div>`:""}
+    ${an.por_que_funciona?`<div class="rotulo" style="margin-top:var(--e3)">Por que funciona</div><p style="white-space:pre-wrap;margin-top:var(--e1)">${esc(an.por_que_funciona)}</p>`:""}
+    ${an.desenvolvimento?`<div class="rotulo" style="margin-top:var(--e3)">Desenvolvimento</div><p style="white-space:pre-wrap;margin-top:var(--e1)">${esc(an.desenvolvimento)}</p>`:""}
+    ${an.o_que_reaproveitar?`<div class="destaque"><div class="t">O que reaproveitar</div>
+      <p style="margin:0;white-space:pre-wrap">${esc(an.o_que_reaproveitar)}</p></div>`:""}
+
+    ${(r.tags||[]).length?`<div class="metas" style="margin-top:var(--e4)">
+      ${r.tags.map(t=>`<span class="chip chip-neutro">${esc(t)}</span>`).join("")}</div>`:""}
+
+    ${naoCapt.length?`<div class="grupo-tit"><span class="t">Não capturado</span><span class="l"></span></div>
+      <ul style="margin:0;padding-left:1.2em;color:var(--texto-fraco);font-size:var(--t-micro)">
+        ${naoCapt.map(x=>`<li>${esc(x.item||"")}${x.motivo?" — "+esc(x.motivo):""}</li>`).join("")}
+      </ul>`:""}
+  `;
+}
+
 /* ============ INTENÇÃO DE COMANDO ============ */
 function abrirIntencao(){
   const c=atual; c.intencao=c.intencao||{};
@@ -1163,7 +1638,7 @@ $("#s2Done").onclick=async()=>{ await salvarIntencao(atual); toast("Salvo"); fec
 /* Esc fecha a camada mais alta */
 document.addEventListener("keydown",e=>{
   if(e.key!=="Escape") return;
-  if(!$("#qc").classList.contains("hide")) return fecharQC();
+  if(!$("#qc").classList.contains("hide")){ const ext=qcExterno; fecharQC(); if(ext) location.hash="#/"; return }
   if(!$("#menu").classList.contains("hide")) return fecharMenu();
   if(!$("#sheet3").classList.contains("hide")) return fechar3();
   if(!$("#sheet2").classList.contains("hide")) return fechar2();
