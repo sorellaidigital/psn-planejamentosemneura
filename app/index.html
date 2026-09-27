@@ -128,7 +128,7 @@ a:hover{color:var(--selo-valor)}
 .campo-inv:focus{border-color:var(--acao-ganho);box-shadow:0 0 0 3px rgba(215,255,62,.22)}
 .lbl{display:block;font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);
   text-transform:uppercase;color:var(--texto-medio);margin:var(--e5) 0 var(--e2)}
-.lbl:first-child{margin-top:0}
+.sheetbody>.lbl:first-child{margin-top:0}
 .dica{font-size:var(--t-micro);color:var(--texto-fraco);margin:calc(var(--e1) * -1) 0 var(--e2);
   line-height:1.45}
 
@@ -524,10 +524,6 @@ main.territorio{background:transparent;color:var(--texto-invertido);border-radiu
       <input class="campo campo-inv" id="qcRef" type="url" placeholder="https://..." style="flex:1" autocomplete="off">
       <button type="button" class="btn btn-fantasma-inv" id="qcColar">Colar</button>
     </div>
-    <div id="qcPorQueWrap" class="hide">
-      <label class="lbl" for="qcPorQue">Por que chamou atenção?</label>
-      <textarea class="campo campo-inv" id="qcPorQue" rows="3" placeholder="o que fez você parar de rolar"></textarea>
-    </div>
     <div class="pe">
       <button class="btn btn-fantasma-inv" id="qcCancel">Cancelar</button>
       <button class="btn btn-ganho" id="qcSave">Salvar ideia</button>
@@ -547,6 +543,8 @@ main.territorio{background:transparent;color:var(--texto-invertido);border-radiu
 /* ============ SUPABASE (projeto financeiro.sorellai · tabelas psn_*) ============ */
 const SB_URL = "https://hvmmkwafzeqbjpusdmin.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2bW1rd2FmemVxYmpwdXNkbWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NTg3NzAsImV4cCI6MjA5NzEzNDc3MH0.5PvlUk7i27UdhSlypicm3S39cHkPjeDRyv6HoRTM2NM";
+
+const arroba = h => { h=(h||"").trim(); return h ? "@"+h.replace(/^@+/,"") : ""; };
 
 async function db(path, opts={}){
   const res = await fetch(SB_URL+"/rest/v1/"+path, {
@@ -612,7 +610,7 @@ const CL_POR_STAGE = {
   tempestade:[], descarregar:[], estruturar:["visual","estrutura","gatilhos"],
   lapidar:["intencao","lapidar"], gravar:["intencao"], editar:["editar"], postar:[]
 };
-const EMOJIS = ["🎬","🎥","✨","🔥","💡","🎙️","📸","🧃","🌙","🍿","🧠","💅","🏋️","🍳","🐾","🎨","🚀","📚","🧪","🎧"];
+const EMOJIS = ["🎬","🎥","✨","🔥","💡","🎙️","📸","🧃","🌙","🍿","🧠","💅","🏋️","🍳","🐾","🎨","🚀","📚","🧪","🎧","💻"];
 
 /* ============ ESTADO ============ */
 const $ = s=>document.querySelector(s);
@@ -661,14 +659,21 @@ async function filaFlush(){
 }
 
 /* ============ CARGA ============ */
+const CANAIS_CACHE="psn_canais_cache";
+let bancoOk=false;
 async function carregar(){
   try{
     const [cs, is] = await Promise.all([
       db("psn_criadores?select=*&order=ordem.asc,criado_em.asc"),
       db("psn_ideias?select=*&order=criado_em.desc")
     ]);
-    criadores=cs||[]; ideias=is||[];
-  }catch(e){ toast("Sem conexão com o banco",1); console.error(e); }
+    criadores=cs||[]; ideias=is||[]; bancoOk=true;
+    try{ localStorage.setItem(CANAIS_CACHE,JSON.stringify(criadores)) }catch(_){}
+  }catch(e){
+    // sem banco: usa os canais da última carga para a captura (inclusive pelo Atalho) seguir funcionando
+    try{ criadores=JSON.parse(localStorage.getItem(CANAIS_CACHE)||"[]") }catch(_){ criadores=[] }
+    toast("Sem conexão com o banco",1); console.error(e);
+  }
 }
 
 /* extrai a primeira URL http(s) de um texto (link + texto colado junto) */
@@ -712,11 +717,11 @@ function pastaHTML(c){
     const proc = meus.filter(i=>i.mec_status==="processada").length;
     return `<div class="pasta" data-go="${c.id}" tabindex="0" role="button">
       ${pend?`<span class="sino" title="${pend} pendente(s) no mecanismo">${pend}</span>`:""}
-      <button class="zap" data-zap="${c.id}" aria-label="Nova referência rápida em ${esc(c.nome)}">⚡</button>
+      <button class="zap" data-zap="${c.id}" aria-label="Nova ideia rápida em ${esc(c.nome)}">⚡</button>
       <span class="em">${esc(c.emoji||"💡")}</span>
       <div>
         <div class="nm">${esc(c.nome)}</div>
-        ${c.handle?`<div class="hd">${esc(c.handle)}</div>`:""}
+        ${c.handle?`<div class="hd">${esc(arroba(c.handle))}</div>`:""}
       </div>
       <div class="fim">
         <span class="v num">${proc}</span>
@@ -732,7 +737,7 @@ function pastaHTML(c){
     <span class="em">${esc(c.emoji||"🎬")}</span>
     <div>
       <div class="nm">${esc(c.nome)}</div>
-      ${c.handle?`<div class="hd">${esc(c.handle)}</div>`:""}
+      ${c.handle?`<div class="hd">${esc(arroba(c.handle))}</div>`:""}
     </div>
     <div class="fim">
       <span class="v num">${prontas}</span>
@@ -833,7 +838,7 @@ function renderPainelIdeias(){
       <button class="icb" id="bVoltar" aria-label="Voltar aos canais">←</button>
       <div class="tt">
         <div class="n1">${esc(c.emoji||"💡")} ${esc(c.nome)}</div>
-        <div class="n2">${esc(c.handle||"canal")} · ${meus.length} referência${meus.length===1?"":"s"}</div>
+        <div class="n2">${esc(arroba(c.handle)||"canal")} · ${meus.length} ideia${meus.length===1?"":"s"}</div>
       </div>
       <button class="icb" id="bMenu" aria-label="Opções do canal">⋯</button>
     </div>
@@ -868,7 +873,9 @@ function renderPainelIdeias(){
     ${semLink?`<span class="chip chip-neutro">🔗 ${semLink} sem link</span>`:""}
   </div>`;
 
-  view.innerHTML = `<div class="wrap">${fchips}
+  view.innerHTML = `<div class="wrap">
+    ${stageHeaderHTML(STAGES[0].curto.toLowerCase(), STAGES[0].desc, meus.length)}
+    ${fchips}
     ${lista.length? lista.map(cardIdeiaHTML).join("") : vazioIdeias(filtro)}
   </div>`;
 
@@ -877,7 +884,7 @@ function renderPainelIdeias(){
 
   $("#fabslot").innerHTML = `<div class="fabs">
     <button class="btn btn-sec" id="fCanais">← Canais</button>
-    <button class="btn btn-ganho" id="fNovaIdeia">⚡ Nova referência</button></div>`;
+    <button class="btn btn-ganho" id="fNovaIdeia">⚡ Nova ideia</button></div>`;
   $("#fCanais").onclick=()=>location.hash="#/";
   $("#fNovaIdeia").onclick=()=>abrirQC(c.id);
 }
@@ -907,6 +914,12 @@ function vazioIdeias(f){
   return `<div class="vazio"><span class="n num">0</span><h4>${t[0]}</h4><p>${t[1]}</p></div>`;
 }
 
+/* cabeçalho de etapa reaproveitado pelo painel de produção (mobile) e pelo painel de ideias */
+function stageHeaderHTML(titulo, desc, contagem){
+  return `<div class="secao-tit"><h2>${esc(titulo)}</h2><span class="qt num">${contagem}</span></div>
+    <p class="secao-sub">${esc(desc)}</p>`;
+}
+
 /* ---------- TELA 2 · PAINEL DO CANAL (produção) ---------- */
 function renderBoard(){
   if(atual.finalidade==="ideias") return renderPainelIdeias();
@@ -919,7 +932,7 @@ function renderBoard(){
       <button class="icb" id="bVoltar" aria-label="Voltar aos canais">←</button>
       <div class="tt">
         <div class="n1">${esc(c.emoji||"🎬")} ${esc(c.nome)}</div>
-        <div class="n2">${esc(c.handle||"canal")} · ${meus.length} ideia${meus.length===1?"":"s"}</div>
+        <div class="n2">${esc(arroba(c.handle)||"canal")} · ${meus.length} ideia${meus.length===1?"":"s"}</div>
       </div>
       <button class="icb" id="bIntencao" aria-label="Intenção de comando">🎯</button>
       <button class="icb" id="bMenu" aria-label="Opções do canal">⋯</button>
@@ -975,8 +988,7 @@ function renderBoard(){
     const st=STAGES[iAt], cds=filtrar(meus.filter(i=>i.stage===stage));
     const brutos=meus.filter(i=>i.stage===stage).length;
     view.innerHTML = `<div class="wrap">
-      <div class="secao-tit"><h2>${esc(st.curto.toLowerCase())}</h2><span class="qt num">${brutos}</span></div>
-      <p class="secao-sub">${esc(st.desc)}</p>
+      ${stageHeaderHTML(st.curto.toLowerCase(), st.desc, brutos)}
       ${brutos>3?fchips:""}
       ${cds.length ? cds.map(i=>cardHTML(i,false)).join("") : vazioEtapa(st,brutos)}
     </div>`;
@@ -1200,12 +1212,14 @@ function abrirQC(criadorId, st){
   qcAlvo=criadorId; qcStage=st||"tempestade";
   const c=criadores.find(x=>x.id===criadorId);
   const isIdeias = c?.finalidade==="ideias";
-  $("#qcRot").textContent = isIdeias?"Nova referência":"Tempestade de ideias";
-  $("#qcH4").textContent = isIdeias?"guarda o link antes de perder":"joga aqui antes de esquecer";
+  $("#qcRot").textContent = "Tempestade de ideias";
+  $("#qcH4").textContent = "joga aqui antes de esquecer";
   $("#qcSub").textContent = "Em "+(c?.nome||"canal")+" · lapida depois. Sem internet, guarda no aparelho e sobe sozinha.";
   $("#qcCanalWrap").classList.add("hide");
-  $("#qcTxt").value=""; $("#qcRef").value=""; $("#qcPorQue").value="";
-  $("#qcPorQueWrap").classList.toggle("hide", !isIdeias);
+  $("#qcTxt").placeholder = isIdeias
+    ? "o que chamou sua atenção e como isso entra no seu conteúdo"
+    : "ex: o erro que todo mundo comete ao cortar o primeiro segundo do vídeo";
+  $("#qcTxt").value=""; $("#qcRef").value="";
   $("#qc").classList.remove("hide");
   document.body.style.overflow="hidden";
   setTimeout(()=>$("#qcTxt").focus(),90);
@@ -1214,6 +1228,7 @@ function abrirQC(criadorId, st){
 function abrirQCExterno(url){
   const ideiasCanais = criadores.filter(c=>c.finalidade==="ideias");
   if(!ideiasCanais.length){
+    if(!bancoOk){ toast("Sem conexão agora. Compartilhe de novo em instantes.",1); return; }
     toast("Crie um canal de Ideias pra guardar esse link",1);
     setTimeout(()=>formCanal(null,"ideias"),250);
     return;
@@ -1224,14 +1239,14 @@ function abrirQCExterno(url){
   const sugerido = (sugestaoTipo && ideiasCanais.find(c=>c.tipo_conteudo===sugestaoTipo)) || ideiasCanais[0];
 
   qcExterno=true; qcAlvo=sugerido.id; qcStage="tempestade";
-  $("#qcRot").textContent="Captura externa";
-  $("#qcH4").textContent="guarda essa referência";
+  $("#qcRot").textContent="Tempestade de ideias";
+  $("#qcH4").textContent="joga aqui antes de esquecer";
   $("#qcSub").textContent="Confira o canal e o link antes de salvar.";
   $("#qcCanalWrap").classList.remove("hide");
   $("#qcCanalSel").innerHTML = ideiasCanais.map(c=>
     `<option value="${c.id}" ${c.id===sugerido.id?"selected":""}>${esc(c.emoji||"💡")} ${esc(c.nome)}</option>`).join("");
-  $("#qcTxt").value=""; $("#qcRef").value=url||""; $("#qcPorQue").value="";
-  $("#qcPorQueWrap").classList.remove("hide");
+  $("#qcTxt").placeholder = "o que chamou sua atenção e como isso entra no seu conteúdo";
+  $("#qcTxt").value=""; $("#qcRef").value=url||"";
   $("#qc").classList.remove("hide");
   document.body.style.overflow="hidden";
   setTimeout(()=>$("#qcTxt").focus(),90);
@@ -1255,17 +1270,17 @@ $("#qcSave").onclick=async()=>{
   const c=criadores.find(x=>x.id===canalId);
   const isIdeias = c?.finalidade==="ideias";
   const linha=(t||ref).split("\n")[0].slice(0,120);
-  const payload={criador_id:canalId, titulo:linha||"(sem título)", stage:qcStage,
-    roteiro: t.length>linha.length ? t : ""};
+  const payload={criador_id:canalId, titulo:linha||"(sem título)", stage:qcStage};
   if(ref) payload.referencia=ref;
-  if(isIdeias){ const pq=$("#qcPorQue").value.trim(); if(pq) payload.por_que=pq; }
+  if(isIdeias){ if(t) payload.por_que=t; }
+  else { payload.roteiro = t.length>linha.length ? t : ""; }
   const voltarHome=qcExterno;
   fecharQC();
   try{
     const [novo]=await db("psn_ideias",{method:"POST",body:JSON.stringify(payload)});
     ideias.unshift(novo);
     if(voltarHome) location.hash="#/"; else render();
-    toast(isIdeias?"Referência salva":"Ideia salva");
+    toast("Ideia salva");
   }catch(e){
     filaAdd(payload);
     if(voltarHome) location.hash="#/";
@@ -1462,14 +1477,14 @@ function abrirFichaIdeia(id){
       ${/^https?:\/\//i.test(c.referencia||"")?`<a class="btn btn-fantasma" href="${esc(c.referencia)}" target="_blank" rel="noopener">Abrir ↗</a>`:""}
     </div>
 
-    <label class="lbl" for="fPorQue">Por que chamou atenção?</label>
+    <label class="lbl" for="fPorQue">Ideia</label>
     <textarea class="campo" id="fPorQue" rows="4">${esc(c.por_que||"")}</textarea>
 
     <label class="lbl">Status</label>
     <div style="margin-bottom:var(--e3)">${mecChip(c)}</div>
     <div class="linhabtn" id="fAcoesMec"></div>
 
-    <div id="fAnalise"></div>
+    <div id="fAnalise" style="margin-top:var(--e5)"></div>
 
     <div class="linhabtn"><button class="btn btn-risco" id="fDel">Excluir</button></div>`;
 
