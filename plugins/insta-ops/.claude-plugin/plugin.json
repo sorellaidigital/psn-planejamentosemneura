@@ -1,7 +1,7 @@
 {
   "name": "insta-ops",
-  "version": "0.1.0",
-  "description": "Mecanismo de conteúdo para Instagram e TikTok, em PT-BR. Processa a fila de ideias salvas no app 'Planejamento sem Neura' (/insta-ops:fila): captura o post, analisa (gancho, estrutura, CTA, slides), e grava o resultado no Supabase para aparecer na ficha da ideia. Não publica nada.",
+  "version": "0.2.0",
+  "description": "Mecanismo de conteúdo para Instagram e TikTok, em PT-BR. Processa a fila de ideias salvas no app 'Planejamento sem Neura' (/insta-ops:fila): captura o post, analisa (gancho, estrutura, CTA, slides), e grava o resultado no Supabase para aparecer na ficha da ideia. Entende o foco de cada ideia (conteúdo, formato, gancho, série) e processa pastas de utilidade (aprendizado). Não publica nada.",
   "author": { "name": "Sorell AI" },
   "repository": "https://github.com/sorellaidigital/mecanismo-inst",
   "license": "MIT",

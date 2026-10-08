@@ -6,8 +6,8 @@
     {
       "name": "insta-ops",
       "source": "./plugins/insta-ops",
-      "description": "Processa a fila de ideias do app Planejamento sem Neura: captura e analisa posts do Instagram e TikTok, grava no Supabase. Base do mecanismo: referências → padrões → pautas → carrossel.",
-      "version": "0.1.0",
+      "description": "Processa a fila de ideias do app Planejamento sem Neura: captura e analisa posts do Instagram e TikTok, grava no Supabase, com foco por ideia (conteúdo, formato, gancho, série) e aprendizado de utilidades. Base do mecanismo: referências → padrões → pautas → carrossel.",
+      "version": "0.2.0",
       "category": "marketing",
       "tags": ["instagram", "tiktok", "supabase", "referencias", "pt-br"]
     }

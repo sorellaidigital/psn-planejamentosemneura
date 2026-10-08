@@ -25,18 +25,19 @@ Toda chamada REST leva os headers `apikey: <supabase_anon_key>` e `Authorization
 
 Esta skill é chamada de dois jeitos:
 
-**a) Com uma ideia já identificada** (chamada por `/insta-ops:fila`, que passa `ideia_id`, `referencia`, `plataforma`, `por_que` e os dados do canal). Pule para a seção 2.
+**a) Com uma ideia já identificada** (chamada por `/insta-ops:fila`, que passa `ideia_id`, `referencia`, `plataforma`, `por_que`, `foco`, `serie` e os dados do canal). Pule para a seção 2.
 
 **b) Com uma URL solta** (`$ARGUMENTS`), colada pela pessoa fora da fila. Nesse caso:
 
 1. Extrair a URL de `$ARGUMENTS`. Determinar `plataforma` pela mesma regra do banco: contém `instagram.com`/`instagr.am` → `instagram`; contém `tiktok.com` → `tiktok`; senão → `outro`.
 2. Se `plataforma = outro`: avisar que só Instagram e TikTok são suportados e parar.
 3. Verificar duplicidade: comparar a URL (por shortcode do Instagram ou id de vídeo do TikTok, não a string exata) com ideias existentes. `GET {supabase_url}/rest/v1/psn_ideias?select=id,referencia,criador:psn_criadores!inner(finalidade)&criador.finalidade=eq.ideias&referencia=ilike.*<trecho-do-shortcode-ou-id>*`. Se achar uma ideia com esse post e ela já tem `psn_referencias` (`GET {supabase_url}/rest/v1/psn_referencias?ideia_id=eq.<id>&select=id`), avisar a pessoa que já existe e oferecer reprocessar (voltar a `mec_status: pendente` e seguir) em vez de criar de novo.
-4. Sem duplicidade: `GET {supabase_url}/rest/v1/psn_criadores?finalidade=eq.ideias&select=id,nome,handle,nicho,tipo_conteudo`. Se vazio, avisar que não há canal de ideias configurado no app e parar. Se houver só um, use-o. Se houver mais de um, pergunte em uma linha qual canal (liste nome/handle das opções).
-5. Se `por_que` não foi dado junto com a URL, pergunte uma vez, em uma linha: "por que isso chamou sua atenção?". Se a pessoa não responder ou disser "depois", siga com `por_que: null`.
-6. `POST {supabase_url}/rest/v1/psn_ideias` com `Prefer: return=representation`, corpo `{"criador_id": <id>, "titulo": <título curto derivado da legenda ou do link>, "referencia": <url>, "por_que": <resposta ou null>}`. O trigger do banco preenche `plataforma` e `mec_status: pendente`. Guardar o `id` retornado como `ideia_id`.
+4. Sem duplicidade: `GET {supabase_url}/rest/v1/psn_criadores?finalidade=eq.ideias&select=id,nome,handle,nicho,tipo_conteudo`. Se vazio, avisar que não há canal de ideias configurado no app e parar. Se houver só um, use-o. Se houver mais de um, pergunte em uma linha qual canal, listando nome/handle e o tipo de cada opção (`utilidade` se `tipo_conteudo = utilidade`, senão `ideia`).
+5. Se o canal escolhido não é `utilidade`, pergunte uma vez, em uma linha, qual foco vale: `conteudo`, `formato`, `gancho`, `serie` (vários permitidos, opcional, aceita "nenhum"); se incluir `serie`, peça também o nome da série na mesma linha. Canal `utilidade` não pergunta foco. Sem resposta ou "nenhum": `foco: null`, `serie: null`.
+6. Se `por_que` não foi dado junto com a URL, pergunte uma vez, em uma linha: "por que isso chamou sua atenção?". Se a pessoa não responder ou disser "depois", siga com `por_que: null`.
+7. `POST {supabase_url}/rest/v1/psn_ideias` com `Prefer: return=representation`, corpo `{"criador_id": <id>, "titulo": <título curto derivado da legenda ou do link>, "referencia": <url>, "por_que": <resposta ou null>, "foco": <array ou null>, "serie": <nome ou null>}`. O trigger do banco preenche `plataforma` e `mec_status: pendente`. Guardar o `id` retornado como `ideia_id`.
 
-A partir daqui, o fluxo é o mesmo dos dois casos: você tem `ideia_id`, `referencia`, `plataforma`, `por_que` e os dados do canal (`handle`, `nicho`, `tipo_conteudo`) — busque os dados do canal se ainda não os tiver (`GET {supabase_url}/rest/v1/psn_ideias?id=eq.<ideia_id>&select=referencia,por_que,plataforma,criador:psn_criadores(handle,nicho,tipo_conteudo)`).
+A partir daqui, o fluxo é o mesmo dos dois casos: você tem `ideia_id`, `referencia`, `plataforma`, `por_que` `foco`, `serie` e os dados do canal (`handle`, `nicho`, `tipo_conteudo`) — busque o que faltar (`GET {supabase_url}/rest/v1/psn_ideias?id=eq.<ideia_id>&select=referencia,por_que,plataforma,foco,serie,criador:psn_criadores(handle,nicho,tipo_conteudo)`).
 
 ## 2. Marcar processando
 
@@ -62,9 +63,11 @@ Prints com caminho de arquivo: copie com `cp` para um diretório temporário (`m
 
 ## 5. Análise, upload e gravação
 
-1. Siga `${CLAUDE_SKILL_DIR}/references/analise.md` para preencher `gancho`, `tipo_gancho`, `estrutura`, `cta`, `tipo_cta`, `palavra_chave`, `tags` e o objeto `analise` (incluindo `o_que_reaproveitar` no contexto do canal — handle, nicho, tipo_conteudo — e do `por_que` da ideia).
+1. Ramificar pelo `tipo_conteudo` do canal:
+   - `utilidade`: siga `${CLAUDE_SKILL_DIR}/references/utilidade.md`. Preenche os campos do post (`gancho`, `tipo_gancho`, `estrutura`, `cta`, `tipo_cta`, `palavra_chave`, `tags`, `slides`, `legenda`) e o objeto `aprendizado`; `analise.o_que_reaproveitar` fica string vazia.
+   - qualquer outro (`reels`, `estatico`): siga `${CLAUDE_SKILL_DIR}/references/analise.md`, respeitando `foco` e `serie` da ideia. Preenche os campos do post e o objeto `analise` (incluindo `o_que_reaproveitar` no contexto do canal — handle, nicho, tipo_conteudo — e do `por_que` da ideia, mais as chaves da seção "Foco marcado").
 2. Para cada imagem baixada no diretório temporário: descobrir o tipo real com `file --mime-type -b <arquivo>` (a extensão do download não é confiável: o CDN do TikTok entrega PNG em URL de "image" e o do Instagram pode entregar WebP). Aceitar só `image/jpeg`, `image/png` ou `image/webp` (outro tipo = download falhou; registrar em `nao_capturado`). Extensão conforme o tipo (`jpg`, `png`, `webp`). `POST {supabase_url}/storage/v1/object/psn-referencias/<ideia_id>/NN.<ext>` com `Content-Type: <mime>`, header `x-upsert: true`, `--data-binary @<arquivo>`. Gravar em `slides[i].imagem_path` o caminho relativo `<ideia_id>/NN.<ext>`, com a mesma extensão do upload.
-3. Montar o JSON completo conforme `${CLAUDE_SKILL_DIR}/references/modelo-referencia.md`, com `ideia_id` no corpo. Escrever em um arquivo temporário com `python3 -c "import json; json.dump(obj, open(path,'w'), ensure_ascii=False)"` (nunca inline no shell: legendas têm aspas e quebras de linha).
+3. Montar o JSON completo (com `aprendizado` só para utilidade) conforme `${CLAUDE_SKILL_DIR}/references/modelo-referencia.md`, com `ideia_id` no corpo. Escrever em um arquivo temporário com `python3 -c "import json; json.dump(obj, open(path,'w'), ensure_ascii=False)"` (nunca inline no shell: legendas têm aspas e quebras de linha).
 4. `POST {supabase_url}/rest/v1/psn_referencias?on_conflict=ideia_id` com headers `Prefer: resolution=merge-duplicates,return=representation`, `Content-Type: application/json`, `--data-binary @<arquivo-temp>`.
 5. Se a resposta não for 2xx, ir para a seção 6.
 6. Sucesso: `PATCH {supabase_url}/rest/v1/psn_ideias?id=eq.<ideia_id>` com `Prefer: return=minimal`, corpo `{"mec_status":"processada","mec_processado_em":"<agora em ISO 8601, America/Sao_Paulo>","mec_erro":null}`.
@@ -77,7 +80,7 @@ Qualquer falha (plataforma não suportada, captura impossível, upload falhou, u
 
 Feche as abas que você abriu no Chrome. Apague o diretório temporário de imagens.
 
-Responda em 3 a 5 linhas: o que foi processado (autor, formato), o que ficou em `nao_capturado`, e que a análise já aparece na ficha da ideia no app.
+Responda em 3 a 5 linhas: o que foi processado (autor, formato; foco ou tema do aprendizado), o que ficou em `nao_capturado`, e que a análise já aparece na ficha da ideia no app.
 
 ## Regras
 

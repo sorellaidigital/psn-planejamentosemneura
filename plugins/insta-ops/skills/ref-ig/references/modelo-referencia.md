@@ -13,7 +13,7 @@ Uma referência por ideia. Grava em `psn_referencias`, upsert por `ideia_id` (`o
 7. **Datas** em `AAAA-MM-DD`, fuso America/Sao_Paulo, ou `null`.
 8. **Assinatura impressa no slide** (nome de exibição, cargo, logo em texto) não entra no texto do slide; registrar uma vez em `nao_capturado` como `{"item":"assinatura_slides","motivo":"nome de exibição omitido (regra 2)"}`.
 9. **Texto do slide = o que o autor escreveu.** Texto de interface de prints e fotos embutidos (menus, títulos de outros posts, mensagens de app) fica fora de `texto` e é citado só em `visual`. Quebras de linha de diagramação são juntadas; só a quebra entre blocos de texto separados é mantida.
-10. **`o_que_reaproveitar` é sempre para o contexto do canal.** Use o `handle`, o `nicho` e o `tipo_conteudo` (reels ou estatico) do canal da ideia, mais o `por_que` que a pessoa escreveu ao salvar — descreva como ESSE canal adaptaria o padrão, nunca uma recomendação genérica.
+10. **`o_que_reaproveitar` é sempre para o contexto do canal** (ideias de post; em utilidade fica `""`). Use o `handle`, o `nicho` e o `tipo_conteudo` (reels ou estatico) do canal da ideia, mais o `por_que` que a pessoa escreveu ao salvar — descreva como ESSE canal adaptaria o padrão, nunca uma recomendação genérica.
 
 ## Valores válidos (iguais aos checks do banco)
 
@@ -22,6 +22,8 @@ Uma referência por ideia. Grava em `psn_referencias`, upsert por `ideia_id` (`o
 - `fonte`: `chrome | manual | oembed`
 - `tipo_gancho`: `promessa-pessoal | pergunta | contradicao | lista | erro-comum | bastidor | dado | outro`
 - `tipo_cta`: `comente-palavra | salve | compartilhe | siga | link-bio | nenhum`
+- `foco` (na ideia, `psn_ideias.foco text[]`): subconjunto de `conteudo | formato | gancho | serie`; `serie` (`psn_ideias.serie`) é o nome da série. Definem quais chaves extras entram em `analise`.
+- `tipo_conteudo` do canal: `reels | estatico | utilidade`. `utilidade` = pasta de conteúdo para consumir; preenche `aprendizado` (ver `utilidade.md`).
 - `slides[].funcao`: `capa | dor | promessa | passo | prova | lista | pra-quem-serve | cta | outro`
 
 ## Campos
@@ -48,6 +50,7 @@ Uma referência por ideia. Grava em `psn_referencias`, upsert por `ideia_id` (`o
 | `tags` | text[] | 1 a 3 tags de tema, minúsculas, sem acento (ex.: `["ia","produtividade"]`). Só tema — nada de `formato/...`, `gancho/...` ou `cta/...`, que agora são colunas |
 | `slides` | jsonb[] | ver abaixo |
 | `analise` | jsonb | ver abaixo |
+| `aprendizado` | jsonb ou null | só utilidade: `{tema, resumo, pontos[], como_aplicar}`. Ideias de post: omitir ou `null` |
 | `nao_capturado` | jsonb[] | lista de `{item, motivo}` |
 
 ### `slides[i]`
@@ -69,6 +72,26 @@ Para reel/video: `n_slides: 1`, um único item com `n: 1`, `funcao: "capa"`, a i
   "por_que_funciona": "2 a 3 linhas, apontando o que carrega o post: tema, familiaridade, conflito, curiosidade ou aha, nessa ordem de peso",
   "o_que_reaproveitar": "2 a 4 itens (uma string, um por linha ou separados por ' | '), cada um dizendo como o canal @handle (nicho, tipo_conteudo) adaptaria esse padrão, considerando o por_que da ideia. Nunca o tema literal do post original",
   "por_slide": ["1 frase sobre o que o slide 1 faz com quem lê", "1 frase sobre o slide 2", "..."]
+}
+```
+
+Chaves extras, só conforme o `foco` da ideia (ver "Foco marcado" em `analise.md`):
+
+| chave | foco | tipo | conteúdo |
+|---|---|---|---|
+| `pauta` | `conteudo` | string | tema, ângulo, argumentos e pauta adaptada ao nicho/@ do canal (parágrafo curto) |
+| `formato_visual` | `formato` | string | diagramação, capa, hierarquia de texto, paleta, recursos, ritmo, e "como replicar" numerado (sem copiar o tema) |
+| `variacoes_gancho` | `gancho` | array de 3 strings | variações do gancho para o nicho do canal |
+| `serie` | `serie` | string | como o post se encaixa na série (`ideia.serie`) e o próximo episódio sugerido |
+
+### `aprendizado` (utilidade)
+
+```json
+{
+  "tema": "uma palavra minúscula sem acento (ganchos, estrategia, planejamento, copy, ferramentas, posicionamento)",
+  "resumo": "2 a 3 frases do que o post ensina",
+  "pontos": ["item verbatim quando o post é lista", "ou ponto-chave destilado"],
+  "como_aplicar": "concreto, no contexto do @/nicho do canal e do por_que da ideia"
 }
 ```
 
@@ -117,6 +140,66 @@ Para reel/video: `n_slides: 1`, um único item com `n: 1`, `funcao: "capa"`, a i
   "nao_capturado": [
     { "item": "assinatura_slides", "motivo": "nome de exibição omitido (regra 2)" }
   ]
+}
+```
+
+## Exemplo completo (utilidade)
+
+Canal `@meucanal` com `tipo_conteudo = utilidade`. Carrossel que lista ganchos. `analise.o_que_reaproveitar` vazio, `aprendizado` preenchido.
+
+```json
+{
+  "ideia_id": "b3f1c2a0-2222-4a2b-9c3d-000000000002",
+  "post_id": "ig-DxEXEMPLO01",
+  "url": "https://www.instagram.com/p/DxEXEMPLO01/",
+  "autor": "@exemplo.copy",
+  "plataforma": "instagram",
+  "formato": "carrossel",
+  "n_slides": 4,
+  "data_publicacao": "2026-09-14",
+  "fonte": "manual",
+  "curtidas": 5200,
+  "comentarios": 310,
+  "views": null,
+  "legenda": "5 ganchos que eu mais uso. salva pra consultar na hora de escrever 📌",
+  "gancho": "5 ganchos que nunca falham",
+  "tipo_gancho": "lista",
+  "estrutura": "capa → lista → lista → cta",
+  "cta": "salva esse post pra usar depois",
+  "tipo_cta": "salve",
+  "palavra_chave": null,
+  "tags": ["ganchos", "copy"],
+  "slides": [
+    { "n": 1, "funcao": "capa", "texto": "5 ganchos que nunca falham", "visual": "fundo liso com título grande", "imagem_path": "b3f1c2a0-2222-4a2b-9c3d-000000000002/01.jpg" },
+    { "n": 2, "funcao": "lista", "texto": "1. O erro que ninguém te conta sobre X\n2. Eu testei X por 30 dias", "visual": "texto sobre fundo liso", "imagem_path": "b3f1c2a0-2222-4a2b-9c3d-000000000002/02.jpg" },
+    { "n": 3, "funcao": "lista", "texto": "3. Pare de fazer X (faça Y)\n4. O que ninguém fala sobre X\n5. X em 3 passos", "visual": "texto sobre fundo liso", "imagem_path": "b3f1c2a0-2222-4a2b-9c3d-000000000002/03.jpg" },
+    { "n": 4, "funcao": "cta", "texto": "salva esse post pra usar depois", "visual": "fundo liso com texto centralizado", "imagem_path": "b3f1c2a0-2222-4a2b-9c3d-000000000002/04.jpg" }
+  ],
+  "analise": {
+    "gancho": "número + adjetivo absoluto (\"nunca falham\") promete atalho e segura o scroll.",
+    "estrutura": "lista-simples: capa → lista → lista → cta",
+    "por_que_funciona": "utilidade direta: o post é um banco de consulta, o aha é poder copiar na hora de escrever.",
+    "o_que_reaproveitar": "",
+    "por_slide": [
+      "Promete atalho com número e absoluto.",
+      "Entrega os dois primeiros ganchos prontos para copiar.",
+      "Completa a lista com mais três ganchos de mecanismos diferentes.",
+      "Pede salvar, porque o valor está em consultar depois."
+    ]
+  },
+  "aprendizado": {
+    "tema": "ganchos",
+    "resumo": "Lista de 5 formatos de gancho reutilizáveis, cada um com um mecanismo diferente: revelação, teste pessoal, contradição, bastidor e passo a passo. Serve como banco de consulta ao escrever capas.",
+    "pontos": [
+      "O erro que ninguém te conta sobre X",
+      "Eu testei X por 30 dias",
+      "Pare de fazer X (faça Y)",
+      "O que ninguém fala sobre X",
+      "X em 3 passos"
+    ],
+    "como_aplicar": "Para @meucanal (nicho fitness): trocar X por temas do nicho, ex. abrir um carrossel de treino com o formato de teste pessoal, e guardar os cinco formatos como checklist antes de fechar a capa, já que o por_que da ideia era \"ganhar ritmo nas capas\"."
+  },
+  "nao_capturado": []
 }
 ```
 

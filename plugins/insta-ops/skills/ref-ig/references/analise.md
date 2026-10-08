@@ -83,3 +83,13 @@ Depois de `por_slide`, preencha os demais campos exigidos por `modelo-referencia
 - **`cta`:** mecânica e o que a pessoa ganha ao agir.
 - **`por_que_funciona`:** 2 a 3 linhas, apontando o elemento que carrega o post (tema, familiaridade, conflito, curiosidade ou aha), na ordem de peso da hierarquia.
 - **`o_que_reaproveitar`:** 2 a 4 itens, cada um dizendo como o canal da ideia (handle, nicho, tipo_conteudo) adaptaria esse padrão, considerando o `por_que` da ideia (regra 5 acima). Nunca o tema literal do post original.
+
+## Foco marcado
+
+Vale para canais que não são `utilidade` (utilidade segue `utilidade.md`). A análise base (todos os campos acima) é sempre preenchida, com ou sem foco. `foco` (array de `conteudo | formato | gancho | serie`) e `serie` vêm da ideia. Cada foco acrescenta profundidade e uma chave em `analise`. Vários focos: preencher todos os aplicáveis. `o_que_reaproveitar` continua sempre preenchido.
+
+- **Sem foco (`null` ou vazio):** como acima, sem chave extra.
+- **`conteudo` → `analise.pauta`:** tema do post, ângulo, argumentos que sustentam, e uma pauta adaptada ao nicho e ao @ do canal (um parágrafo curto). Esqueleto e princípio, nunca o tema literal (regra 4).
+- **`formato` → `analise.formato_visual`:** diagramação, capa, hierarquia de texto, paleta, recursos usados (prints, memes, tela dividida, foto real…), ritmo de slides ou de cenas, e um "como replicar" numerado. Nunca copiar o tema. Exige olhar as imagens com atenção: ler (Read) cada imagem de slide, não só o texto transcrito. Sem imagem de um slide, registrar em `nao_capturado` e não descrever o que não viu.
+- **`gancho` → `analise.gancho` e `analise.cta` mais ricos** (mecanismo, por que segura o scroll, o que a pessoa ganha ao agir), mais `analise.variacoes_gancho`: array de 3 variações de gancho para o nicho do canal, mesmo mecanismo, tema novo.
+- **`serie` → `analise.serie`:** como este post se encaixa na série nomeada em `ideia.serie` e o próximo episódio sugerido. Sem nome de série, registrar em `nao_capturado` e pular a chave.

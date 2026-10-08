@@ -30,7 +30,7 @@ Ler `$ARGUMENTS`:
 ## 2. Listar a fila
 
 ```
-GET {supabase_url}/rest/v1/psn_ideias?select=id,titulo,referencia,por_que,plataforma,mec_status,criado_em,criador:psn_criadores!inner(id,nome,handle,nicho,tipo_conteudo,finalidade)&criador.finalidade=eq.ideias&mec_status=in.(pendente,erro,processando)&order=criado_em.asc
+GET {supabase_url}/rest/v1/psn_ideias?select=id,titulo,referencia,por_que,foco,serie,plataforma,mec_status,criado_em,criador:psn_criadores!inner(id,nome,handle,nicho,tipo_conteudo,finalidade)&criador.finalidade=eq.ideias&mec_status=in.(pendente,erro,processando)&order=criado_em.asc
 ```
 
 Ideias em `processando` só aparecem aqui se uma execução anterior foi interrompida no meio; entram na fila de novo como se fossem `pendente`.
@@ -41,9 +41,11 @@ Se a lista vier vazia: avisar "fila vazia, nada pra processar" e parar.
 
 Mostrar uma tabela compacta antes de começar:
 
-| canal | título | plataforma | status | por que |
-|---|---|---|---|---|
-| @handle | título (truncado a 40) | instagram | pendente | por_que (truncado a 40) ou "—" |
+| canal | tipo | título | plataforma | status | foco | por que |
+|---|---|---|---|---|---|---|
+| @handle | ideia ou utilidade | título (truncado a 40) | instagram | pendente | foco (e série) ou "—" | por_que (truncado a 40) ou "—" |
+
+`tipo` = `utilidade` se `criador.tipo_conteudo = utilidade`, senão `ideia`. Utilidade não tem foco: mostrar "—".
 
 ## 3. Checar Chrome
 
@@ -54,14 +56,14 @@ Rodar uma vez, antes do loop: `ToolSearch` com `select:mcp__claude-in-chrome__ta
 Para cada ideia da lista, na ordem:
 
 1. Se `plataforma = instagram` e Chrome indisponível e `--manual` não foi pedido: pular (deixar `pendente`), anotar no resumo final, ir para a próxima.
-2. Executar o procedimento de `/insta-ops:ref-ig` (seções 2 a 6 daquela skill, que já começa marcando `processando`: captura, modo manual se aplicável, análise, upload de imagens, upsert em `psn_referencias`, e o PATCH final de `processada` ou `erro`) usando `ideia_id = id`, `referencia`, `plataforma`, `por_que` e os dados do `criador` (handle, nicho, tipo_conteudo) já obtidos na listagem — não repetir a consulta. Passe `--manual` adiante se foi pedido nesta chamada de `fila`.
+2. Executar o procedimento de `/insta-ops:ref-ig` (seções 2 a 6 daquela skill, que já começa marcando `processando`: captura, modo manual se aplicável, análise, upload de imagens, upsert em `psn_referencias`, e o PATCH final de `processada` ou `erro`) usando `ideia_id = id`, `referencia`, `plataforma`, `por_que`, `foco`, `serie` e os dados do `criador` (handle, nicho, tipo_conteudo) já obtidos na listagem — não repetir a consulta. Passe `--manual` adiante se foi pedido nesta chamada de `fila`.
 3. Continuar para a próxima ideia independentemente do resultado (sucesso, erro ou pulada). Nunca parar a fila inteira por causa de uma ideia.
 
 ## 5. Resumo final
 
 Responder com:
 
-- Quantas processadas com sucesso (autor/formato de cada uma, uma linha).
+- Quantas processadas com sucesso, em duas listas separadas: **ideias** (autor, formato e foco de cada uma, uma linha) e **utilidades** (autor e `tema` do aprendizado, uma linha).
 - Quantas com erro, motivo curto de cada uma.
 - Quantas puladas (Instagram sem Chrome), com a sugestão de rodar no PC ou com `--manual`.
 - Itens relevantes de `nao_capturado` que apareceram (agrupado, sem repetir por post).
@@ -73,4 +75,4 @@ Nada de resumo longo. Direto ao ponto.
 1. **Nunca travar a fila.** Erro em uma ideia não impede as seguintes.
 2. **Sempre marcar `processando` antes de tentar**, para o app poder mostrar que está em andamento.
 3. **Reaproveitar dados já lidos.** Não repetir consultas ao canal ou à ideia dentro do mesmo processamento; use o que veio na listagem do passo 2.
-4. Demais regras de captura e análise são as de `skills/ref-ig/SKILL.md` (skill `/insta-ops:ref-ig`) e suas referências (`protocolo-chrome.md`, `protocolo-tiktok.md`, `analise.md`, `modelo-referencia.md`) — não duplicar aqui, seguir aqueles arquivos.
+4. Demais regras de captura e análise são as de `skills/ref-ig/SKILL.md` (skill `/insta-ops:ref-ig`) e suas referências (`protocolo-chrome.md`, `protocolo-tiktok.md`, `analise.md`, `utilidade.md`, `modelo-referencia.md`) — não duplicar aqui, seguir aqueles arquivos.
