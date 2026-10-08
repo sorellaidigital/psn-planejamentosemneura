@@ -345,8 +345,13 @@ header.solta{position:relative}
 .rail::-webkit-scrollbar{display:none}
 .rail .card{flex:0 0 86%;max-width:340px;scroll-snap-align:start;margin-bottom:0;display:flex;flex-direction:column;min-width:0}
 .rail .card .abre{flex:1}
-.acoes3 .btn{padding:0 var(--e2);font-size:var(--t-mini);min-width:0;flex:1}
-.acoes3 .btn-ganho{flex:1.35;font-size:var(--t-base)}
+.acoes3 .par{display:flex;flex:1;min-width:0;border-radius:var(--r-pill);overflow:hidden;border:1.5px solid var(--linha-forte)}
+.acoes3 .par .btn{flex:1;min-width:0;border:0;border-radius:0;padding:0 var(--e2);font-size:var(--t-base)}
+.acoes3 .par .btn-ganho{flex:1.3}
+.acoes3 .par .btn-fantasma{border-left:1.5px solid var(--linha-forte)}
+.btn-lix{flex:0 0 auto;width:var(--alvo);height:var(--alvo);display:inline-flex;align-items:center;justify-content:center;background:transparent;border:0;border-radius:50%;color:var(--alerta-texto);cursor:pointer}
+.btn-lix:hover{background:rgba(196,16,47,.08)}
+.btn-lix:focus-visible{outline:2px solid var(--alerta-texto);outline-offset:2px}
 .rail-pontos{display:flex;gap:4px;justify-content:center;margin:var(--e1) 0 var(--e3)}
 .rail-pontos i{width:6px;height:6px;border-radius:50%;background:var(--linha-forte)}
 .rail-pontos i.on{background:var(--chip-tx);width:16px;border-radius:3px}
@@ -725,9 +730,8 @@ function sugCard(p,i){
       ${p.confirmar?`<div class="precisa"><span>✋</span><span>Precisa de você: ${esc(p.confirmar)}</span></div>`:""}
     </button>
     <div class="acoes acoes3">
-      <button class="btn btn-ganho" data-produzir="${p.id}" aria-label="Produzir: ${esc(p.tema)}">Produzir</button>
-      <button class="btn btn-fantasma" data-banco="${p.id}" aria-label="Guardar no banco: ${esc(p.tema)}">Banco</button>
-      <button class="btn btn-fantasma" data-lixeira="${p.id}" aria-label="Mandar para a lixeira: ${esc(p.tema)}">Lixeira</button>
+      <div class="par"><button class="btn btn-ganho" data-produzir="${p.id}" aria-label="Produzir: ${esc(p.tema)}">Produzir</button><button class="btn btn-fantasma" data-banco="${p.id}" aria-label="Guardar no banco: ${esc(p.tema)}">Banco</button></div>
+      <button class="btn-lix" data-lixeira="${p.id}" aria-label="Mandar para a lixeira: ${esc(p.tema)}" title="Lixeira"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>
     </div></article>`;
 }
 
@@ -874,7 +878,7 @@ function renderBanco(){
     return `<article class="card ideia ${idade>30?"velha":""}"><div class="lin"><button class="abre" data-abrir="${p.id}">
       <h3>${esc(p.tema)}</h3>${p.angulo||p.gancho?`<p class="ang clamp2">${esc(p.angulo||p.gancho)}</p>`:""}
       <div class="metas">${chipF(p.formato)}${prazo}${idade>30?`<span class="chip chip-selo">há ${idade} dias · ainda vale?</span>`:`<span class="chip chip-neutro">${idade===0?"hoje":idade===1?"ontem":"há "+idade+" dias"}</span>`}${chipU(p.u)}${chipL(p.l)}${p.d!=="D0"?chipD(p.d):""}${ex(p)}</div></button>
-      <div class="lado"><button class="btn btn-ganho" data-produzir="${p.id}">Produzir</button><button class="btn btn-fantasma" data-lixeira="${p.id}" aria-label="Mandar para a lixeira: ${esc(p.tema)}">Lixeira</button></div></div></article>` };
+      <div class="lado"><button class="btn btn-ganho" data-produzir="${p.id}">Produzir</button><button class="btn-lix" data-lixeira="${p.id}" aria-label="Mandar para a lixeira: ${esc(p.tema)}" title="Lixeira"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></div></div></article>` };
   const opt=(o,v,ph)=>`<option value="">${ph}</option>`+Object.entries(o).map(([k,n])=>`<option value="${k}" ${v===k?"selected":""}>${k} ${n}</option>`).join("");
   $("#view").innerHTML=`<div class="wrap">
     ${A?`<div class="destaque"><div class="t">Escolhendo para ${diaTxt(A.dia)} · ${FORM[A.formato].nome}</div><p style="margin:0;font-size:var(--t-mini)">Toque em Produzir na ideia que quer nessa vaga. <button class="linkb" data-ir="#calendario" style="margin:0">Cancelar</button></p></div>`:""}
@@ -889,7 +893,7 @@ function renderBanco(){
     ${A?"":`<details class="grupo"><summary><span class="seta">›</span>produzidas no notion, nunca revisadas · ${legado.length}</summary>
       <p class="dica">Vieram da rotina antiga (${legado.reduce((a,b)=>a+b.png,0)} PNGs no estilo padrão). Ficam aqui para não lotar o Hoje. Decisão em aberto na spec.</p>
       ${legado.map(n=>`<article class="card"><h3>${esc(n.tema)}</h3><div class="metas" style="margin-top:var(--e2)"><span class="chip chip-neutro">${ddmm(n.data)} · ${n.png} slides</span>${chipU(n.u)}</div>
-        <div class="acoes"><a class="btn btn-fantasma" href="${esc(n.url)}" target="_blank" rel="noopener" style="text-decoration:none">Abrir no Notion ↗</a><button class="btn btn-fantasma" data-lixeira="${n.id}" aria-label="Mandar para a lixeira: ${esc(n.tema)}">Lixeira</button></div></article>`).join("")}</details>
+        <div class="acoes"><a class="btn btn-fantasma" href="${esc(n.url)}" target="_blank" rel="noopener" style="text-decoration:none">Abrir no Notion ↗</a><button class="btn-lix" data-lixeira="${n.id}" aria-label="Mandar para a lixeira: ${esc(n.tema)}" title="Lixeira"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></div></article>`).join("")}</details>
     <div class="rodape-lix"><button class="linkb" data-ir="#lixeira">Lixeira (${naLixeira().length}) →</button></div>
     <details class="simular"><summary>⚙ protótipo · envelhecer o banco</summary>
       <div class="filtros"><button class="filtro ${S.velho===0?"on":""}" data-velho="0">hoje</button><button class="filtro ${S.velho===40?"on":""}" data-velho="40">daqui a 40 dias</button></div></details>`}

@@ -116,7 +116,7 @@ Cartão (altura igual entre os 3, botões sempre no pé):
 - Chips: urgência (U + nome), linha (L + nome), degrau (só se ≠ D0).
 - "Por quê:" 1ª razão, 2 linhas no máximo.
 - "✋ Precisa de você: …" quando a rotina marcou algo que só ela sabe.
-- **3 botões:** **Produzir** (verde-ácido, maior) · **Banco** · **Lixeira**.
+- **3 destinos:** bloco único **Produzir** (verde-ácido, maior) | **Banco**, e ao lado o ícone vermelho da **Lixeira** (sem texto).
 - Tocar no corpo abre a ficha.
 
 Sugestão de **Reels** traz gancho falado e cenas curtas (cada cena: tempo, o que aparece/quem fala e a fala).
@@ -268,7 +268,7 @@ A tela lê `psn_ig_horarios` e escolhe as 2 faixas de maior `valor` por dia da s
 - **Formato único por ideia.** As ideias do Notion que tinham "Carrossel" e "Reels" juntos entram no banco com um formato (a rotina escolhe o que combina com o ângulo; a Duda pode produzir a outra versão pedindo "ajuste antes de produzir").
 - **Prazo:** `valida_ate` ≤ 3 dias → chip vermelho "vale até 10/10"; vencido → "passou do prazo (10/10)".
 - **Envelhecimento:** mais de 30 dias → grupo "mais de 30 dias · N", borda tracejada e "há 40 dias · ainda vale?". Sem exclusão automática.
-- Grupo recolhido **"produzidas no Notion, nunca revisadas · 4"** (decisão em aberto 1), com "Abrir no Notion ↗" e Lixeira.
+- Grupo recolhido **"produzidas no Notion, nunca revisadas · 4"** (decisão 1 da seção 13), com "Abrir no Notion ↗" e Lixeira.
 - Link **"Lixeira (N) →"** no fim. O antigo grupo "descartadas" foi substituído pela tela Lixeira.
 - Vazio com filtro: "Nenhuma ideia com esse filtro." + "Limpar filtros". Banco vazio: "Banco vazio. As sugestões que você guardar aparecem aqui."
 
@@ -313,7 +313,7 @@ Copiar: `navigator.clipboard.writeText` dentro do clique; no `catch`, o `<pre>` 
 ### 8.4 Push (rotinas)
 - 05:47: "Hoje: 3 sugestões de estático e 3 de Reels. Escolha até as 10h." → `#/`
 - Produção entregue: "Seu carrossel chegou: ‘A IA concorda com você…’. Revisar →" / "Seu roteiro de Reels chegou…" → `#/pauta/<id>`
-- (Decisão em aberto 2) 10:00 sem escolha: "Ainda dá tempo: escolha 1 das sugestões de hoje." → `#/`
+- (Decisão 2 da seção 13) 10:00 sem escolha: "Ainda dá tempo: escolha 1 das sugestões de hoje." → `#/`
 - Rotina falhou: sem push (o aviso fica no Hoje).
 
 ## 9. Status e transições
@@ -465,18 +465,15 @@ Candidatos já visíveis:
 13. Banco: filtros U, L e formato, 3 ordens, prazo por `valida_ate`, grupo "mais de 30 dias", formato único por ideia.
 14. Só tema claro (o app atual só tem claro); sem estado de fim de semana; sem fonte serifada na interface.
 
-## 13. Decisões em aberto para a Duda (com recomendação)
+## 13. Decisões tomadas pela Duda em 08/10 (protótipo v2 aprovado)
 
-Respondidas e removidas: meta de postagens (mínimo 1/dia, ideal 1+1), tema escuro (fora), nome do banco ("banco de ideias" + "Lixeira").
-
-1. **As 4 pautas já produzidas no Notion e nunca revisadas** (39 PNGs, estilo padrão antigo).
-   Opções: (a) entram no Hoje como "para revisar"; (b) ficam num grupo recolhido do banco; (c) mandar todas para a Lixeira.
-   Recomendo **(b)**: no Hoje elas virariam 4 cartões de revisão no primeiro dia e enterrariam as sugestões novas; estão no estilo
-   que foi substituído pelo editorial. No backfill entram com `status='para_revisar'` e `origem='notion'`, e o Hoje e o Calendário filtram `origem='notion'`
-   (no protótipo: grupo recolhido do banco, com "Abrir no Notion ↗" e Lixeira).
-2. **Lembrete das 10h** se nenhuma sugestão foi escolhida.
-   Recomendo **sim, um só push, todos os dias, só se não houver escolha**: é o ponto em que a pauta do dia ainda dá tempo de sair.
-   Desligável depois se incomodar.
+1. **As 4 pautas já produzidas no Notion e nunca revisadas** ficam num grupo recolhido do Banco ("produzidas no Notion,
+   nunca revisadas"), fora do Hoje e do Calendário. No backfill entram com `status='para_revisar'` e `origem='notion'`;
+   Hoje e Calendário filtram `origem='notion'`.
+2. **Lembrete das 10h:** sim, um só push por dia, todos os dias, só se nenhuma sugestão do dia foi escolhida.
+3. **Botões do cartão de sugestão:** "Produzir" e "Banco" juntos num mesmo bloco (escolha entre os dois); a Lixeira vira só
+   o ícone de lixeira em vermelho (`--alerta-texto`), sem texto, com `aria-label` e área de toque de 44 px. Nos cartões do
+   Banco, "Produzir" + ícone da lixeira. Na ficha da pauta a Lixeira segue com texto.
 
 Nota:
 - O protótipo mostra 8 ideias reais no banco (as 11 do inventário menos 3 repropostas hoje como sugestão: "o que nunca colar", "seu chefe pergunta se você usa IA" e "errei 3 vezes com o ChatGPT") e 1 ideia real já na Lixeira como exemplo ("Pode usar IA no trabalho? 3 perguntas…"). As 6 sugestões de hoje, o histórico do Calendário (21/09 a 07/10), os "melhores horários" e os números de "ontem no Instagram" são exemplos montados a partir do sinal real de 08/10, do `PUBLICO.md` e do inventário, todos marcados "exemplo". A sugestão de estático 1 usa o deck editorial real (`ia-concorda-editorial`); os slides são desenhados em CSS com o texto do deck, não são os PNGs. Só ela (e os Reels) têm material produzido no protótipo.
