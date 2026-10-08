@@ -1,0 +1,833 @@
+<title>Hoje no PSN</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif&family=Inter:ital,wght@0,500;0,700;1,700&family=Covered+By+Your+Grace&display=swap");
+:root{
+  /* tokens copiados de app/index.html (PSN 3.0) */
+  --superficie-territorio:#4A16A8;
+  --superficie-territorio-alta:#5C21C6;
+  --superficie-territorio-baixa:#3B0F87;
+  --superficie-trabalho:#F2EFFA;
+  --superficie-cartao:#FFFFFF;
+  --superficie-cartao-territorio:rgba(242,239,250,.10);
+  --superficie-peso:#1C1225;
+  --acao-ganho:#D7FF3E;
+  --sobre-ganho:#1C1225;
+  --selo-valor:#6E2639;
+  --alerta:#FF2D55;
+  --alerta-texto:#C4102F;
+  --ok-texto:#17683A;
+  --texto-forte:#1C1225;
+  --texto-medio:#4B4160;
+  --texto-fraco:#6C6285;
+  --texto-invertido:#F2EFFA;
+  --texto-invertido-medio:rgba(242,239,250,.74);
+  --texto-invertido-fraco:rgba(242,239,250,.56);
+  --linha:rgba(28,18,37,.13);
+  --linha-forte:rgba(28,18,37,.24);
+  --linha-territorio:rgba(242,239,250,.20);
+  /* tokens derivados (para o tema escuro funcionar) */
+  --chip-bg:rgba(74,22,168,.09);
+  --chip-tx:#4A16A8;
+  --chip-neutro-bg:rgba(28,18,37,.07);
+  --chip-selo-bg:rgba(110,38,57,.11);
+  --chip-erro-bg:rgba(196,16,47,.10);
+  --sutil:rgba(28,18,37,.06);
+  --aviso-bg:rgba(110,38,57,.08);
+  --aviso-borda:rgba(110,38,57,.28);
+  --ganho-suave:rgba(215,255,62,.22);
+  --ganho-borda:rgba(215,255,62,.55);
+  --foco:#4A16A8;
+  --f-display:'Bricolage Grotesque',system-ui,sans-serif;
+  --f-ui:'Space Grotesk',system-ui,-apple-system,sans-serif;
+  --f-selo:'Instrument Serif',Georgia,serif;
+  --t-nano:11px; --t-micro:12px; --t-mini:13px; --t-base:15px;
+  --t-md:17px; --t-lg:21px; --t-xl:27px; --t-2xl:34px; --t-num:46px;
+  --tr-display:-.045em; --tr-rotulo:.16em;
+  --e1:4px; --e2:8px; --e3:12px; --e4:16px; --e5:24px; --e6:32px; --e7:48px;
+  --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+  --alvo:44px;
+  --sombra:0 10px 30px rgba(28,18,37,.18);
+  /* cores do carrossel editorial (conteúdo, não mudam com o tema) */
+  --ed-grafite:#1F1E1D; --ed-offwhite:#F1ECE4; --ed-marsala:#5E0B1A; --ed-creme:#F1E4D8;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --superficie-territorio:#2C0D69; --superficie-territorio-alta:#3A1689; --superficie-territorio-baixa:#1D0749;
+    --superficie-trabalho:#15101C; --superficie-cartao:#211A2B; --superficie-peso:#0C0811;
+    --selo-valor:#E9A1B3; --alerta-texto:#FF7A90; --ok-texto:#7BDDA2;
+    --texto-forte:#F2EFFA; --texto-medio:#CFC7DE; --texto-fraco:#A79DBB;
+    --linha:rgba(242,239,250,.12); --linha-forte:rgba(242,239,250,.26);
+    --chip-bg:rgba(155,92,255,.20); --chip-tx:#D5C2FF; --chip-neutro-bg:rgba(242,239,250,.09);
+    --chip-selo-bg:rgba(233,161,179,.14); --chip-erro-bg:rgba(255,122,144,.14); --sutil:rgba(242,239,250,.07);
+    --aviso-bg:rgba(233,161,179,.08); --aviso-borda:rgba(233,161,179,.30);
+    --ganho-suave:rgba(215,255,62,.10); --ganho-borda:rgba(215,255,62,.35); --foco:#D7FF3E;
+    --sombra:0 10px 30px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --superficie-territorio:#2C0D69; --superficie-territorio-alta:#3A1689; --superficie-territorio-baixa:#1D0749;
+  --superficie-trabalho:#15101C; --superficie-cartao:#211A2B; --superficie-peso:#0C0811;
+  --selo-valor:#E9A1B3; --alerta-texto:#FF7A90; --ok-texto:#7BDDA2;
+  --texto-forte:#F2EFFA; --texto-medio:#CFC7DE; --texto-fraco:#A79DBB;
+  --linha:rgba(242,239,250,.12); --linha-forte:rgba(242,239,250,.26);
+  --chip-bg:rgba(155,92,255,.20); --chip-tx:#D5C2FF; --chip-neutro-bg:rgba(242,239,250,.09);
+  --chip-selo-bg:rgba(233,161,179,.14); --chip-erro-bg:rgba(255,122,144,.14); --sutil:rgba(242,239,250,.07);
+  --aviso-bg:rgba(233,161,179,.08); --aviso-borda:rgba(233,161,179,.30);
+  --ganho-suave:rgba(215,255,62,.10); --ganho-borda:rgba(215,255,62,.35); --foco:#D7FF3E;
+  --sombra:0 10px 30px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--superficie-territorio);color:var(--texto-invertido);
+  font:var(--t-base)/1.5 var(--f-ui);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none;font-family:var(--f-ui)}
+:focus-visible{outline:3px solid var(--acao-ganho);outline-offset:2px;border-radius:6px}
+main :focus-visible{outline-color:var(--foco)}
+.hide{display:none !important}
+.num{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);font-variant-numeric:tabular-nums;line-height:.9}
+.disp{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);line-height:1.02;text-transform:lowercase}
+.rotulo{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase}
+
+/* botões (vocabulário do app) */
+.btn{min-height:var(--alvo);padding:0 var(--e4);border-radius:var(--r-pill);font-weight:700;font-size:var(--t-base);
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--e2);text-align:center;transition:transform .08s}
+.btn:active{transform:scale(.975)}
+.btn-ganho{background:var(--acao-ganho);color:var(--sobre-ganho)}
+.btn-fantasma{background:transparent;border:1.5px solid var(--linha-forte);color:var(--texto-forte)}
+.btn-fantasma-inv{background:var(--superficie-cartao-territorio);color:var(--texto-invertido);border:1.5px solid var(--linha-territorio)}
+.btn-risco{background:transparent;border:1.5px solid var(--aviso-borda);color:var(--alerta-texto)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.icb{width:var(--alvo);height:var(--alvo);border-radius:var(--r-sm);display:grid;place-items:center;font-size:var(--t-md);flex:none;
+  background:var(--superficie-cartao-territorio);color:var(--texto-invertido)}
+.icb-clara{background:var(--sutil);color:var(--texto-forte)}
+.campo{width:100%;background:var(--superficie-cartao);color:var(--texto-forte);border:1.5px solid var(--linha);border-radius:var(--r-md);
+  padding:var(--e3) var(--e4);min-height:var(--alvo);resize:vertical;outline:none;font-size:var(--t-base);line-height:1.55;font-family:var(--f-ui)}
+.campo::placeholder{color:var(--texto-fraco)}
+.campo:focus{border-color:var(--foco);box-shadow:0 0 0 3px rgba(74,22,168,.16)}
+select.campo{min-height:40px;padding:0 var(--e3);font-size:var(--t-mini);font-weight:600}
+.lbl{display:block;font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-medio);margin:var(--e5) 0 var(--e2)}
+.dica{font-size:var(--t-micro);color:var(--texto-fraco);margin:var(--e1) 0 var(--e2);line-height:1.45}
+
+/* header território */
+header{position:sticky;top:0;z-index:30;background:var(--superficie-territorio);padding:calc(env(safe-area-inset-top) + 14px) var(--e4) 0}
+.hrow{display:flex;align-items:center;gap:var(--e3);min-height:var(--alvo)}
+.hrow .tt{flex:1;min-width:0}
+.hrow .tt .n1{font-size:var(--t-md);font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow .tt .n2{font-size:var(--t-micro);color:var(--texto-invertido-medio);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.marca .selo{width:38px;height:38px;border-radius:11px;background:var(--acao-ganho);display:grid;place-items:center;flex:none}
+.marca .selo svg{width:26px;height:26px}
+.placar{display:flex;gap:var(--e5);padding:var(--e4) 0 var(--e4);align-items:flex-end;flex-wrap:wrap}
+.placar .it{display:flex;flex-direction:column;gap:2px;text-align:left;color:inherit}
+.placar .v{font-size:var(--t-2xl)}
+.placar .v small{font-size:var(--t-md);color:var(--texto-invertido-fraco);letter-spacing:0}
+.placar .k{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-invertido-medio);line-height:1.3}
+.placar .it.ganho .v{color:var(--acao-ganho)}
+.hdia{font-family:var(--f-selo);font-size:var(--t-lg);color:var(--texto-invertido);line-height:1.1;margin-top:var(--e3)}
+.hdia i{color:var(--acao-ganho);font-style:normal}
+
+/* área de trabalho */
+main{background:var(--superficie-trabalho);color:var(--texto-forte);min-height:calc(100vh - 120px);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;padding:var(--e5) var(--e4) 140px}
+.wrap{max-width:720px;margin:0 auto}
+.secao-tit{display:flex;align-items:baseline;gap:var(--e3);margin:var(--e6) 0 var(--e1)}
+.secao-tit:first-child{margin-top:0}
+.secao-tit h2{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);font-size:var(--t-xl);margin:0;text-transform:lowercase;line-height:1.05}
+.secao-tit .qt{font-size:var(--t-lg);color:var(--texto-fraco)}
+.secao-sub{color:var(--texto-medio);font-size:var(--t-mini);margin:0 0 var(--e4);max-width:52ch;text-wrap:pretty}
+
+.chip{font-size:var(--t-nano);font-weight:600;padding:4px 9px;border-radius:var(--r-pill);background:var(--chip-bg);color:var(--chip-tx);
+  white-space:nowrap;max-width:24ch;overflow:hidden;text-overflow:ellipsis;display:inline-block}
+.chip-neutro{background:var(--chip-neutro-bg);color:var(--texto-medio)}
+.chip-selo{background:var(--chip-selo-bg);color:var(--selo-valor)}
+.chip-erro{background:var(--chip-erro-bg);color:var(--alerta-texto)}
+.chip-ganho{background:var(--acao-ganho);color:var(--sobre-ganho);font-weight:700}
+.chip-ex{background:transparent;border:1px dashed var(--linha-forte);color:var(--texto-fraco);font-weight:600}
+.metas{display:flex;flex-wrap:wrap;gap:var(--e2);align-items:center}
+
+.card{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e4);margin-bottom:var(--e3);
+  color:var(--texto-forte);position:relative}
+.card h3{margin:0;font-family:var(--f-display);font-weight:600;letter-spacing:-.02em;font-size:var(--t-md);line-height:1.22;text-wrap:pretty}
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.abre{display:block;width:100%;text-align:left;color:inherit;padding:0}
+.acoes{display:flex;gap:var(--e2);margin-top:var(--e4);align-items:center}
+.acoes .btn{flex:1}
+.acoes .btn-ganho{flex:1.4}
+
+/* sugestão */
+.sug .topo{display:flex;align-items:center;gap:var(--e2);margin-bottom:var(--e3);flex-wrap:wrap}
+.sug .ordem{font-family:var(--f-selo);font-size:26px;line-height:1;color:var(--selo-valor);margin-right:2px}
+.sug .gancho{font-family:var(--f-selo);font-size:var(--t-lg);line-height:1.15;margin:var(--e2) 0 var(--e3);color:var(--texto-forte)}
+.sug .gancho::before{content:"capa · ";font-family:var(--f-ui);font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);
+  text-transform:uppercase;color:var(--texto-fraco);vertical-align:middle}
+.porque{font-size:var(--t-mini);color:var(--texto-medio);margin:var(--e3) 0 0;line-height:1.45}
+.porque b{color:var(--texto-forte)}
+.precisa{margin-top:var(--e3);font-size:var(--t-micro);color:var(--selo-valor);font-weight:600;display:flex;gap:6px;align-items:flex-start}
+.decidida{display:flex;gap:var(--e3);align-items:center;font-size:var(--t-mini);color:var(--texto-medio);padding:var(--e3) var(--e4);
+  border:1.5px dashed var(--linha-forte);border-radius:var(--r-md);margin-bottom:var(--e2)}
+.decidida b{color:var(--texto-forte);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+
+/* acompanhamento (stories) */
+.trilha{display:flex;gap:var(--e1);margin:var(--e3) 0 var(--e2)}
+.trilha span{flex:1;height:6px;border-radius:var(--r-pill);background:var(--sutil)}
+.trilha span.feito{background:var(--chip-tx);opacity:.55}
+.trilha span.on{background:var(--acao-ganho);opacity:1;box-shadow:0 0 0 1px rgba(28,18,37,.15)}
+.trilha-leg{display:flex;justify-content:space-between;font-size:var(--t-nano);color:var(--texto-fraco);font-weight:600}
+.prev{font-size:var(--t-mini);color:var(--texto-medio);margin-top:var(--e2)}
+.prev b{color:var(--texto-forte)}
+
+/* miniaturas */
+.thumbs{display:flex;gap:6px;margin:var(--e3) 0 0}
+.thumbs .sl{flex:0 0 64px;border-radius:6px}
+
+/* avisos e destaque */
+.maviso{background:var(--aviso-bg);border:1.5px solid var(--aviso-borda);color:var(--texto-forte);border-radius:var(--r-md);
+  padding:var(--e4);margin:0 0 var(--e4);font-size:var(--t-mini);line-height:1.5}
+.maviso b{color:var(--selo-valor)}
+.maviso .btn{margin-top:var(--e3)}
+.destaque{background:var(--ganho-suave);border:1.5px solid var(--ganho-borda);border-radius:var(--r-md);padding:var(--e4);margin:var(--e3) 0}
+.destaque .t{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--selo-valor);margin-bottom:var(--e1)}
+
+.vazio{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e6) var(--e5);
+  display:flex;flex-direction:column;gap:var(--e3);align-items:flex-start;margin-bottom:var(--e3)}
+.vazio .n{font-size:var(--t-2xl);color:var(--acao-ganho);-webkit-text-stroke:1px var(--sobre-ganho)}
+.vazio h4{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);font-size:var(--t-lg);margin:0;text-transform:lowercase}
+.vazio p{margin:0;color:var(--texto-medio);font-size:var(--t-mini);max-width:46ch;text-wrap:pretty}
+.vazio ul{margin:0;padding-left:1.1em;color:var(--texto-medio);font-size:var(--t-mini)}
+
+/* métricas compactas */
+.mini{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e4);margin-bottom:var(--e3)}
+.mini .nums{display:flex;gap:var(--e5);margin:var(--e3) 0;flex-wrap:wrap}
+.mini .nums div{display:flex;flex-direction:column;gap:2px}
+.mini .nums .v{font-size:var(--t-xl)}
+.mini .nums .k{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-fraco)}
+.mini p{margin:0;font-size:var(--t-mini);color:var(--texto-medio);line-height:1.5}
+.mini p b{color:var(--texto-forte)}
+.linkb{display:inline-flex;align-items:center;gap:6px;margin-top:var(--e3);font-size:var(--t-micro);font-weight:700;color:var(--chip-tx);min-height:36px}
+
+/* atalhos para os módulos (destinos, não abas) */
+.atalhos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--e2);margin-top:var(--e6)}
+.atalho{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-md);padding:var(--e3);text-align:left;
+  display:flex;flex-direction:column;gap:2px;min-height:76px;color:var(--texto-forte)}
+.atalho .em{font-size:20px;line-height:1}
+.atalho .nm{font-weight:700;font-size:var(--t-mini);margin-top:auto;line-height:1.2}
+.atalho .hd{font-size:var(--t-nano);color:var(--texto-fraco)}
+
+/* simulador do protótipo */
+.simular{margin-top:var(--e7);border:1.5px dashed var(--linha-forte);border-radius:var(--r-md);padding:var(--e3) var(--e4)}
+.simular summary{cursor:pointer;font-size:var(--t-micro);font-weight:700;color:var(--texto-fraco);min-height:32px;display:flex;align-items:center}
+.filtros{display:flex;gap:var(--e2);flex-wrap:wrap;margin:var(--e2) 0}
+.filtro{min-height:36px;padding:0 var(--e3);border-radius:var(--r-pill);font-size:var(--t-micro);font-weight:600;background:var(--sutil);color:var(--texto-medio);border:1.5px solid transparent}
+.filtro.on{background:var(--superficie-territorio);color:var(--texto-invertido);font-weight:700}
+
+/* banco */
+.bfiltros{display:grid;grid-template-columns:1fr 1fr;gap:var(--e2);margin-bottom:var(--e3)}
+.seg{display:flex;background:var(--sutil);border-radius:var(--r-pill);padding:3px;gap:2px;margin-bottom:var(--e4)}
+.seg button{flex:1;min-height:36px;border-radius:var(--r-pill);font-size:var(--t-micro);font-weight:700;color:var(--texto-medio)}
+.seg button.on{background:var(--superficie-territorio);color:var(--texto-invertido)}
+.ideia .lin{display:flex;gap:var(--e3);align-items:flex-start}
+.ideia .lin .abre{flex:1;min-width:0}
+.ideia .ang{font-size:var(--t-mini);color:var(--texto-medio);margin:var(--e2) 0 0;line-height:1.45}
+.ideia .metas{margin-top:var(--e3)}
+.ideia.velha{border-style:dashed}
+.ideia .lado{display:flex;flex-direction:column;gap:var(--e2);flex:none}
+.ideia .lado .btn{min-height:40px;padding:0 var(--e3);font-size:var(--t-mini)}
+details.grupo{margin-top:var(--e5)}
+details.grupo>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:var(--e3);min-height:var(--alvo);
+  font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-medio)}
+details.grupo>summary::-webkit-details-marker{display:none}
+details.grupo>summary::after{content:"";flex:1;height:1.5px;background:var(--linha)}
+details.grupo>summary .seta{transition:transform .15s}
+details.grupo[open]>summary .seta{transform:rotate(90deg)}
+.semres{padding:var(--e5) 0;color:var(--texto-fraco);font-size:var(--t-mini)}
+
+/* ficha */
+.fstatus{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e3) var(--e4);margin-bottom:var(--e4)}
+.fstatus .linha1{display:flex;align-items:center;gap:var(--e2);flex-wrap:wrap;font-size:var(--t-mini);color:var(--texto-medio)}
+.ftema{font-family:var(--f-display);font-weight:700;letter-spacing:-.03em;font-size:var(--t-xl);line-height:1.08;margin:var(--e3) 0 var(--e2);text-wrap:balance}
+.fbloco{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e4);margin-top:var(--e3)}
+.fbloco h3{margin:0 0 var(--e2);font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-medio);
+  display:flex;align-items:center;gap:var(--e2)}
+.fbloco h3 .chip{letter-spacing:0;text-transform:none}
+.fbloco ol,.fbloco ul{margin:0;padding-left:1.3em;font-size:var(--t-mini);line-height:1.5}
+.fbloco li{margin-bottom:6px}
+.fbloco p{margin:0;font-size:var(--t-mini);line-height:1.55;color:var(--texto-medio)}
+.gancho-g{font-family:var(--f-selo);font-size:26px;line-height:1.12;color:var(--texto-forte);margin:0}
+.txtlongo{white-space:pre-wrap;font-size:var(--t-mini);line-height:1.55;color:var(--texto-forte);max-height:220px;overflow:auto;
+  background:var(--sutil);border-radius:var(--r-sm);padding:var(--e3);margin:0;font-family:var(--f-ui);user-select:text;-webkit-user-select:text}
+.txtlongo.aberto{max-height:none}
+.blocohead{display:flex;align-items:center;justify-content:space-between;gap:var(--e2);margin-bottom:var(--e2)}
+.blocohead h3{margin:0}
+.btn-mini{min-height:36px;padding:0 var(--e3);font-size:var(--t-micro);border-radius:var(--r-pill);font-weight:700;
+  background:var(--sutil);color:var(--texto-forte);display:inline-flex;align-items:center;gap:6px}
+.ajuste{background:var(--superficie-cartao);border:1.5px solid var(--foco);border-radius:var(--r-lg);padding:var(--e4);margin-top:var(--e3)}
+.ajuste .rapidos{display:flex;gap:var(--e2);flex-wrap:wrap;margin:var(--e2) 0 var(--e3)}
+.ajuste .acoes{margin-top:var(--e3)}
+.coment{font-size:var(--t-mini);color:var(--texto-medio);border-left:3px solid var(--selo-valor);padding:2px 0 2px var(--e3);margin-top:var(--e2)}
+.semdesc{font-size:var(--t-micro);color:var(--texto-fraco);margin-top:var(--e3)}
+
+/* barra fixa de ação */
+.barra{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--superficie-trabalho);border-top:1.5px solid var(--linha);
+  padding:var(--e3) var(--e4) calc(env(safe-area-inset-bottom) + 12px)}
+.barra .in{max-width:720px;margin:0 auto;display:flex;gap:var(--e2)}
+.barra .btn{flex:1;min-height:52px;font-size:var(--t-md)}
+.barra .btn-ganho{flex:1.5}
+.barra .icb{width:52px;height:52px}
+
+/* tira de slides (carrossel editorial desenhado em CSS) */
+.tira{display:flex;gap:var(--e3);overflow-x:auto;scroll-snap-type:x mandatory;padding:var(--e2) 0 var(--e3);
+  margin:0 calc(var(--e4) * -1);padding-left:var(--e4);padding-right:var(--e4);scroll-padding-left:var(--e4);scrollbar-width:none}
+.tira::-webkit-scrollbar{display:none}
+.tira .sl{flex:0 0 82%;max-width:360px;scroll-snap-align:start;border-radius:var(--r-sm);box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.tirainfo{display:flex;justify-content:space-between;align-items:center;font-size:var(--t-micro);color:var(--texto-fraco);font-weight:600}
+.pontos{display:flex;gap:4px}
+.pontos i{width:6px;height:6px;border-radius:50%;background:var(--linha-forte)}
+.pontos i.on{background:var(--chip-tx);width:16px;border-radius:3px}
+
+.sl{position:relative;aspect-ratio:4/5;overflow:hidden;container-type:inline-size;font-family:'Inter',system-ui,sans-serif;
+  background:var(--ed-grafite);color:#F4F1EC}
+.sl::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);background-size:3px 3px}
+.sl.t-offwhite{background:var(--ed-offwhite);color:#1F1E1D}
+.sl.t-offwhite::after{background-image:radial-gradient(rgba(0,0,0,.06) 1px,transparent 1px)}
+.sl.t-marsala{background:var(--ed-marsala);color:#F4EDE6}
+.sl-foto{position:absolute;inset:0;background:linear-gradient(165deg,#5b5560 0%,#2b2830 45%,#121114 100%);display:flex;align-items:flex-start;justify-content:flex-start}
+.sl-foto::before{content:"";position:absolute;width:38cqw;height:38cqw;border-radius:50%;right:16cqw;top:16cqw;
+  background:radial-gradient(circle at 40% 35%,#8d7f78,#4a403d 70%);opacity:.55}
+.sl-foto::after{content:"";position:absolute;width:70cqw;height:60cqw;border-radius:45% 45% 0 0;right:0;top:50cqw;background:#3a1a22;opacity:.6}
+.sl-foto span{position:relative;z-index:1;margin:3cqw;font:600 2.6cqw/1.2 'Space Grotesk',sans-serif;background:rgba(0,0,0,.45);color:#fff;
+  padding:.6cqw 1.6cqw;border-radius:2cqw;letter-spacing:.02em}
+.sl-imagem .sl-foto{bottom:auto;height:54%}
+.sl-in{position:absolute;inset:0;padding:7.8cqw;display:flex;flex-direction:column;z-index:2}
+.com-foto .sl-in{background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.78) 92%)}
+.sl-imagem .sl-in{background:none;padding-top:58%}
+.sl-serie{font-size:2.3cqw;font-weight:500;opacity:.75;letter-spacing:.04em;text-transform:uppercase}
+.sl-imagem .sl-serie{position:absolute;top:7.8cqw;left:7.8cqw}
+.sl-mid{margin:auto 0;display:flex;flex-direction:column;gap:2.6cqw}
+.com-foto .sl-mid,.sl-imagem .sl-mid{margin:auto 0 0}
+.sl-kicker{font-size:3.4cqw;font-weight:700;opacity:.9}
+.sl-tit{font-weight:700;letter-spacing:-.045em;line-height:1.02;font-size:9cqw;text-wrap:balance}
+.sl-capa-foto .sl-tit{font-size:8.6cqw}
+.sl-imagem .sl-tit{font-size:6.6cqw}
+.sl-citacao .sl-tit{font-size:9.6cqw}
+.sl-numero .sl-tit{font-size:5.8cqw}
+.sl-lista .sl-tit{font-size:6.2cqw}
+.sl-passo .sl-tit,.sl-cta .sl-tit{font-size:7.4cqw}
+.sl-num{font-size:26cqw;font-weight:700;letter-spacing:-.06em;line-height:.85;color:var(--ed-marsala)}
+.sl-sub,.sl-corpo{font-size:3.9cqw;line-height:1.3;font-weight:500;opacity:.92;text-wrap:pretty}
+.sl-citacao .sl-corpo{font-size:7cqw;font-weight:700;letter-spacing:-.04em;line-height:1.08;opacity:1}
+.sl-manus{font-family:'Covered By Your Grace',cursive;font-size:6.1cqw;line-height:1.05;opacity:.95}
+.t-offwhite .sl-manus{color:var(--ed-marsala)}
+.sl-fonte{font-size:2.3cqw;opacity:.65}
+.sl-itens{display:flex;flex-direction:column;gap:2.2cqw;margin-top:1cqw}
+.sl-itens div{font-size:3.2cqw;line-height:1.25;border-top:.3cqw solid currentColor;padding-top:1.6cqw;opacity:.95}
+.sl-itens b{display:block;font-size:3.4cqw}
+.sl-rod{display:flex;justify-content:space-between;font-size:2.3cqw;opacity:.7;margin-top:3cqw}
+.sl-logos{display:flex;gap:1.6cqw}
+.sl-logos span{font:700 2.4cqw/1 'Space Grotesk',sans-serif;background:rgba(255,255,255,.9);color:#1F1E1D;border-radius:9cqw;padding:1.2cqw 2.2cqw}
+.sl-ctapill{align-self:flex-start;font-size:3.2cqw;font-weight:700;background:var(--ed-marsala);color:#fff;border-radius:9cqw;padding:1.6cqw 3.4cqw}
+.sl em.dq{font-style:italic}
+.t-offwhite em.dq{color:var(--ed-marsala)}
+.t-grafite em.dq,.com-foto em.dq{background:var(--ed-marsala);color:#fff;padding:0 .14em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.t-marsala em.dq{color:var(--ed-creme)}
+.thumbs .sl .sl-in{padding:6cqw}
+
+/* toast com desfazer */
+.toast{position:fixed;left:50%;transform:translate(-50%,-16px);top:calc(env(safe-area-inset-top) + 12px);z-index:99;
+  background:var(--superficie-peso);color:#F2EFFA;font-weight:700;font-size:var(--t-mini);padding:var(--e2) var(--e2) var(--e2) var(--e4);
+  border-radius:var(--r-pill);opacity:0;transition:opacity .18s,transform .18s;pointer-events:none;max-width:calc(100vw - 32px);
+  box-shadow:var(--sombra);display:flex;align-items:center;gap:var(--e3);border:1px solid rgba(242,239,250,.14)}
+.toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast .pt{width:8px;height:8px;border-radius:50%;background:var(--acao-ganho);flex:none}
+.toast.err .pt{background:var(--alerta)}
+.toast .tx{padding:6px 0}
+.toast button{min-height:36px;padding:0 var(--e3);border-radius:var(--r-pill);background:rgba(242,239,250,.14);color:var(--acao-ganho);font-weight:700;font-size:var(--t-micro);flex:none}
+.toast.sem-btn{padding-right:var(--e4)}
+
+@media(min-width:900px){
+  header{padding-left:var(--e6);padding-right:var(--e6)}
+  main{padding:var(--e6) var(--e6) 140px}
+  .placar{gap:var(--e7)}
+  .placar .v{font-size:var(--t-num)}
+  .tira .sl{flex-basis:300px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+
+<header id="hd"></header>
+<main id="view"></main>
+<div id="barra"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><span class="pt"></span><span class="tx" id="toastTx"></span><button id="toastBtn" class="hide">Desfazer</button></div>
+
+<script>
+/* ===================== DADOS (protótipo) ===================== */
+const URG={U01:"Não confia em quem ensina",U02:"Falta o básico",U03:"Ficar para trás",U04:"Hype x valor",U05:"Perder o emprego",
+  U06:"Pode usar no trabalho?",U07:"Empresa não dá nem treina",U08:"Vazar dado",U09:"IA erra e vira retrabalho",U10:"Só teoria"};
+const LIN={L1:"IA no trabalho sem medo",L2:"Do zero de verdade 2026",L3:"IA com segurança",L4:"O COMO no trabalho real",L5:"Radar sem hype"};
+const DEG={D0:"Isca grátis",D1:"Low ticket",D2:"Turma ao vivo",D3:"Clube",D4:"Empresas"};
+const STATUS_TX={ideia:"no banco",sugerida:"sugestão de hoje",aprovada_producao:"na fila de produção",em_producao:"em produção",
+  para_revisar:"pronto para revisar",ajustar:"ajuste pedido",aprovado:"aprovado · falta postar",postado:"postado",descartado:"descartada"};
+
+/* deck real: mecanismo-car/entrada/ia-concorda-editorial.deck.json */
+const DECK={serie:"A IA concorda com você",slides:[
+ {layout:"capa-foto",tema:"grafite",kicker:"A IA concorda com você",logos:["Claude","Gemini","Copilot"],titulo:"49% mais do que um humano concordaria",foto:"cena-28 · vagão do metrô"},
+ {layout:"imagem",tema:"grafite",titulo:"Ou seja, toda vez que você pede um conselho",destaques:["conselho"],corpo:"Existe uma boa chance de estar apenas recebendo a sua própria opinião de volta.",foto:"cena-25 · celular, cética"},
+ {layout:"numero",tema:"offwhite",numero:"49%",titulo:"mais concordância do que um humano daria",destaques:["estava errada"],corpo:"Stanford testou 11 IAs com dilemas reais. Mesmo quando a pessoa estava errada, a IA deu razão a ela em 51% dos casos.",fonte:"Cheng et al., Science, mar/2026 (Stanford)"},
+ {layout:"citacao",tema:"marsala",titulo:"A boa notícia:",corpo:"Tem uma forma de resolver isso com um único prompt.",destaques:["resolver"]},
+ {layout:"texto",tema:"offwhite",titulo:"A solução é criar um conselho de IAs.",subtitulo:"A ideia vem do LLM Council, de Andrej Karpathy.",manuscrito:"ex-OpenAI e ex-diretor de IA da Tesla"},
+ {layout:"texto",tema:"grafite",titulo:"Em vez de pedir uma única resposta,",destaques:["única"],corpo:"você monta uma mesa de conselheiros com perspectivas diferentes."},
+ {layout:"lista",tema:"offwhite",titulo:"Peça para a IA responder como 5 especialistas:",itens:[["Advogado do diabo","procura riscos e falhas"],["Primeiros princípios","questiona as suas premissas"],["Expansionista","busca oportunidades e vantagens"],["Olhar de fora","analisa sem os vícios do seu mercado"],["Executor","só se importa com a execução"]]},
+ {layout:"texto",tema:"marsala",kicker:"Depois que cada um responder,",titulo:"peça que eles revisem as respostas dos outros.",subtitulo:"Sem saber quem escreveu o quê.",manuscrito:"o objetivo é desafiar os argumentos e encontrar pontos cegos"},
+ {layout:"passo",tema:"offwhite",titulo:"Por último, entra o presidente do conselho",destaques:["argumentos","sintetiza o que importa","recomendação final"],corpo:"Ele analisa todos os argumentos, sintetiza o que importa e entrega uma recomendação final com próximos passos claros."},
+ {layout:"imagem",tema:"grafite",titulo:"A IA para de ser espelho e vira conselho",destaques:["conselho"],corpo:"Você decide com os riscos na mesa, não só com a confirmação do que já pensava.",foto:"cena-29 · alívio, notebook"},
+ {layout:"cta",tema:"grafite",titulo:"O prompt completo está na legenda",corpo:"Salva este post e testa na próxima decisão difícil.",manuscrito:"e me conta o que ele disse",foto:"cena-26 · escada rolante"}
+]};
+const LEGENDA_DECK="A IA concorda com você 49% mais do que um humano concordaria. Quem mediu foi Stanford, num estudo publicado na Science em março de 2026.\n\nEles testaram 11 modelos (ChatGPT, Claude, Gemini e outros) com dilemas reais. Mesmo quando a pessoa estava errada, a IA deu razão a ela em cerca de metade das vezes. E quem recebeu a resposta bajuladora saiu mais convicta de que estava certa.\n\nOu seja: se você usa IA pra pensar uma decisão, pode estar só ouvindo a sua própria opinião de volta.\n\nO jeito que eu uso pra fugir disso vem do LLM Council do Andrej Karpathy: em vez de uma resposta, um conselho que discorda entre si. Copia o prompt:\n\n\"Quero tomar esta decisão: [descreva a situação e o que você está pensando em fazer].\nResponda como um conselho de 5 especialistas, cada um em um parágrafo:\n1. Advogado do diabo: procura riscos, falhas e o que pode dar errado.\n2. Primeiros princípios: questiona as premissas que eu assumi.\n3. Expansionista: mostra oportunidades que eu não estou vendo.\n4. Olhar de fora: analisa sem os vícios do meu mercado.\n5. Executor: só se importa com o que dá pra fazer amanhã.\nDepois, cada especialista revisa as respostas dos outros sem saber quem escreveu e aponta o ponto mais fraco de cada uma.\nPor último, um presidente do conselho junta os melhores argumentos e me dá uma recomendação final com 3 próximos passos. Não concorde comigo só para agradar.\"\n\nSalva pra usar na próxima decisão difícil e me conta o que o seu conselho disse.\n\nFonte: Cheng et al., \"Sycophantic AI decreases prosocial intentions and promotes dependence\", Science, 2026 (Stanford).\n\n#inteligenciaartificial #IA #chatgpt #claude #gemini #prompt #produtividade";
+const REELS_EX="Gancho (0 a 3 s): [Duda olhando para a câmera] \"Você pediu conselho pra IA e ela concordou com tudo?\"\n\n- \"Não é impressão. Stanford mediu: ela concorda com você 49% mais do que uma pessoa concordaria.\"\n- \"Até quando você está errada.\" [texto na tela: 49%]\n- \"O que eu faço: em vez de pedir uma resposta, peço um conselho de 5 especialistas que discordam entre si.\" [tela do prompt]\n- [Duda: uma decisão real em que o conselho te mostrou um risco]\n\nCTA (igual ao carrossel): \"O prompt tá na legenda. Salva e testa na próxima decisão difícil.\"";
+
+/* 3 sugestões de exemplo (montadas a partir do sinal real de 08/10 e do inventário do Notion) */
+const SUGS=[
+ {id:"s1",exemplo:true,tema:"A IA concorda com você 49% mais do que um humano",gancho:"A IA concorda com você 49% mais do que um humano concordaria",
+  estrutura:"notícia comentada",u:"U09",l:"L5",d:"D0",formatos:["Carrossel","Reels"],
+  roteiro:["Capa: 49% mais concordância que um humano (logos das 3 ferramentas)","Ou seja: quando pede conselho, você recebe a sua opinião de volta","O número: Stanford testou 11 IAs; deu razão até a quem estava errado","A boa notícia: dá para resolver com um prompt","A solução: um conselho de 5 especialistas (LLM Council, Karpathy)","Eles revisam as respostas uns dos outros sem saber quem escreveu","Um presidente junta tudo e dá a recomendação final","CTA: o prompt completo está na legenda, salva"],
+  porque:[["sinal","Carrossel ainda salva pouco (0,75 de média): tutorial com prompt pronto para copiar puxa salvo."],["radar","Estudo de Stanford na Science (mar/2026) ainda pouco explicado em português."],["rodízio","ChatGPT, Claude e Gemini juntos: tema comum vira \"IA\" com os logos."]],
+  fontes:"Cheng et al., \"Sycophantic AI decreases prosocial intentions and promotes dependence\", Science, 2026 (Stanford).",
+  confirmar:"",deck:true,criado:"2026-10-08"},
+ {id:"s2",exemplo:true,tema:"Copilot no Outlook: 40 e-mails resumidos em 1 minuto, sem colar nada fora",gancho:"Você ainda lê os 40 e-mails da segunda-feira um por um?",
+  estrutura:"tutorial",u:"U07",l:"L4",d:"D0",formatos:["Reels"],
+  roteiro:["Gancho: a caixa de entrada de segunda","Onde fica o botão do Copilot no Outlook (o que a empresa já paga)","Pedido 1: resumir a conversa em 3 linhas","Pedido 2: listar o que pedem para você e o prazo","Pedido 3: rascunho de resposta curta","Confere antes de mandar: ele erra nome e data","CTA: salva e manda para quem vive afogada em e-mail"],
+  porque:[["sinal","Reels de identificação puxam compartilhamento (59 nos últimos 10 posts)."],["rodízio","Copilot não aparece desde 25/09; ontem foi Claude."],["público","U07: quem tem Copilot pela empresa e ninguém ensinou."]],
+  fontes:"Experiência própria; sem afirmação nova sobre o produto.",
+  confirmar:"Se a sua conta do trabalho tem o Copilot no Outlook para gravar a tela.",criado:"2026-10-08"},
+ {id:"s3",exemplo:true,tema:"\"A IA vai te substituir\": mito ou verdade, tarefa por tarefa",gancho:"A IA não vai tirar o seu emprego. Mas vai mudar essas 4 tarefas",
+  estrutura:"mito×verdade",u:"U05",l:"L1",d:"D0",formatos:["Carrossel"],
+  roteiro:["Capa: o medo dito em voz alta","Mito: a IA faz o seu trabalho inteiro","Verdade: ela faz partes (rascunho, resumo, primeira versão)","Mito: quem não usa vai ser demitida amanhã","Verdade: quem confere e decide continua valendo mais","O que muda na sua semana, com 1 exemplo real","CTA: manda para a colega que tem esse medo"],
+  porque:[["público","U05 não aparece há mais de 30 dias (só em teste)."],["sinal","Tema de identificação: bom para compartilhamento."],["degrau","D0, sem promessa de renda nem de emprego garantido."]],
+  fontes:"Sem dado externo; se usar número de mercado, a produção cita a fonte.",
+  confirmar:"Um exemplo seu de tarefa que a IA mudou no BI.",criado:"2026-10-08"}
+];
+
+/* banco: as 11 ideias reais do Notion (14 "Ideia" menos 3 [TESTE]) */
+const BANCO=[
+ {id:"b1",tema:"Quanto tempo a IA te poupa de verdade? Cronometra uma tarefa",u:"U10",l:"L4",d:"D0",formatos:["Carrossel"],criado:"2026-10-08",angulo:"Medir uma tarefa antes e depois de usar IA (cronômetro, 3 passos) em vez de confiar na sensação. Prova da Duda: ela mede o ganho no BI.",confirmar:"Seu tempo antes e depois numa tarefa do BI."},
+ {id:"b2",tema:"Seu chefe pergunta se você usa IA: como responder com sinceridade",u:"U06",l:"L1",d:"D0",formatos:["Carrossel","Reels"],criado:"2026-10-08",angulo:"Roteiro de 3 respostas honestas (o que usa, o que confere, o que nunca cola) para quem esconde que usa IA. Reels de identificação."},
+ {id:"b3",tema:"O botão novo do Copilot no Word, Excel e PowerPoint (o que a empresa já paga)",u:"U07",l:"L2",d:"D0",formatos:["Carrossel"],criado:"2026-10-07",angulo:"Microsoft 365 Copilot ganha campo de pedido direto no botão do Copilot (rollout set–dez/2026). Tutorial de 3 pedidos prontos."},
+ {id:"b4",tema:"Claude para quem não é de tecnologia: o primeiro pedido em 10 minutos",u:"U02",l:"L2",d:"D0",formatos:["Carrossel","Reels"],criado:"2026-10-07",angulo:"Passo a passo do zero no Claude (criar conta, 1º pedido, pedir revisão) com prompts reais da Duda."},
+ {id:"b5",tema:"Gems do Gemini somem em 20/10: como não perder o que você criou",u:"U04",l:"L5",d:"D0",formatos:["Carrossel"],criado:"2026-10-07",valida_ate:"2026-10-20",angulo:"Google avisa que os Gems saem em 20/10 e viram Skills; passo a passo para salvar as instruções antes.",confirmar:"Confirmação oficial do Google antes de produzir."},
+ {id:"b6",tema:"Errei 3 vezes com o ChatGPT para você não errar",u:"U09",l:"L2",d:"D0",formatos:["Carrossel"],criado:"2026-10-05",angulo:"3 erros reais da Duda com IA no trabalho e o que ela passou a fazer.",confirmar:"Escolher os 3 erros reais."},
+ {id:"b7",tema:"IA para RH: 10 usos para amanhã sem expor dado de ninguém",u:"U07",l:"L4",d:"D4",formatos:["Carrossel","Reels"],criado:"2026-10-05",angulo:"Lista prática por área (RH) com o truque do apelido; CTA suave para levar ao time."},
+ {id:"b8",tema:"Antes/depois: a rotina de 2 horas que virou 15 minutos",u:"U10",l:"L4",d:"D0",formatos:["Carrossel"],criado:"2026-10-05",angulo:"Caso real de BI/dados da Duda com números. Sem números inventados.",confirmar:"Qual rotina, tempo antes e depois."},
+ {id:"b9",tema:"Gemini grátis muda dia 9: o que você perde e o que fazer",u:"U07",l:"L5",d:"D0",formatos:[],criado:"2026-10-05",valida_ate:"2026-10-10",angulo:"Quem usa a IA grátis no trabalho perde o 3.6 Flash e o 3.1 Pro em 09/10 e fica só no 3.5 Flash-Lite. O que muda e quando vale pagar."},
+ {id:"b10",tema:"O que nunca colar no ChatGPT (nem no Gemini)",u:"U08",l:"L3",d:"D0",formatos:[],criado:"2026-10-05",angulo:"Lista do que não colar (dado de cliente, salário, contrato, senha) e como anonimizar antes. CTA: comenta GUIA."},
+ {id:"b11",tema:"Pode usar IA no trabalho? 3 perguntas para fazer ao seu gestor",u:"U06",l:"L1",d:"D4",formatos:[],criado:"2026-10-05",angulo:"Tirar o uso de IA do escondido com 3 perguntas objetivas (o que pode, com que dado, com qual ferramenta)."}
+];
+/* 4 pautas reais produzidas no Notion e nunca revisadas (39 PNGs) */
+const LEGADO=[
+ {id:"n1",tema:"seu primeiro pedido ao Claude em 10 minutos",data:"2026-10-08",png:10,u:"U02",url:"https://app.notion.com/p/3f3d7db518aa8182a0d9dd54cf569b68"},
+ {id:"n2",tema:"IA no RH: 5 usos para amanhã sem expor ninguém",data:"2026-10-07",png:10,u:"U07",url:"https://app.notion.com/p/3f2d7db518aa8146be7defa61faaa018"},
+ {id:"n3",tema:"o Gemini agora guarda a tarefa que você repete",data:"2026-10-06",png:10,u:"U10",url:"https://app.notion.com/p/3f0d7db518aa81b3a629f6d0a4908286"},
+ {id:"n4",tema:"o que nunca colar na IA do trabalho",data:"2026-10-05",png:9,u:"U08",url:"https://app.notion.com/p/3f0d7db518aa81faa439d5a919e62f1e"}
+];
+
+/* ===================== ESTADO ===================== */
+const S={estado:"manha",agora:null,rotina:"ok",pautas:[],legado:[],filtro:{u:"",l:"",ordem:"recentes"},velho:0,ajuste:false};
+const ESTADOS=[["manha","manhã com sugestões"],["producao","em produção"],["revisar","pronto para revisar"],["feito","tudo feito"],["falhou","rotina falhou"],["fds","fim de semana"]];
+const clone=o=>JSON.parse(JSON.stringify(o));
+function montar(nome){
+  S.estado=nome; S.rotina="ok"; S.ajuste=false;
+  S.pautas=[...SUGS.map(s=>({...clone(s),status:"sugerida",data:"2026-10-08"})),...BANCO.map(b=>({...clone(b),status:"ideia",origem:"notion"}))];
+  S.legado=clone(LEGADO);
+  const s1=get("s1"),s2=get("s2"),s3=get("s3");
+  S.agora=new Date(2026,9,8,7,12);
+  if(nome==="producao"){ S.agora=new Date(2026,9,8,7,48); s1.status="em_producao"; s1.aprovado_producao_em=new Date(2026,9,8,7,15); s2.status="ideia"; s3.status="ideia" }
+  if(nome==="revisar"){ S.agora=new Date(2026,9,8,8,41); s1.status="para_revisar"; s1.aprovado_producao_em=new Date(2026,9,8,7,15); s1.produzido_em=new Date(2026,9,8,8,24); s2.status="ideia"; s3.status="ideia" }
+  if(nome==="feito"){ S.agora=new Date(2026,9,8,18,10); s1.status="postado"; s1.postado_em=new Date(2026,9,8,17,52); s2.status="ideia"; s3.status="descartado" }
+  if(nome==="falhou"){ S.pautas=S.pautas.filter(p=>!p.exemplo); S.rotina="falhou" }
+  if(nome==="fds"){ S.agora=new Date(2026,9,10,9,30); s1.status="aprovado"; s1.produzido_em=new Date(2026,9,8,8,24); s2.status="ideia"; s3.status="ideia" }
+}
+const get=id=>S.pautas.find(p=>p.id===id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=s=>document.querySelector(s);
+const DIAS=["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const hh=d=>String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+const ddmm=s=>{const [a,m,d]=s.split("-");return d+"/"+m};
+const fds=d=>d.getDay()===0||d.getDay()===6;
+function hojeISO(){const d=S.agora;return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function diasDesde(iso){const [a,m,d]=iso.split("-").map(Number);return Math.round((S.agora-new Date(a,m-1,d))/864e5)+S.velho}
+
+/* Produção da Pauta: rotina de hora em hora, seg–sex, 07h–20h BRT; leva ~30 min */
+function previsao(base){
+  const d=new Date(base||S.agora);
+  let slot=new Date(d); slot.setMinutes(0,0,0); slot.setHours(slot.getHours()+1);
+  if(slot.getHours()<7) slot.setHours(7);
+  while(fds(slot)||slot.getHours()>20){ slot.setDate(slot.getDate()+1); slot.setHours(7) }
+  const pronto=new Date(slot.getTime()+30*60000);
+  const mesmoDia=pronto.toDateString()===S.agora.toDateString();
+  return {rodada:hh(slot),pronto:hh(pronto),quando:mesmoDia?"hoje":DIAS[pronto.getDay()]};
+}
+
+/* ===================== AÇÕES ===================== */
+let tT;
+function toast(msg,desfazer,err){
+  const t=$("#toast"),b=$("#toastBtn");
+  $("#toastTx").textContent=msg; t.classList.toggle("err",!!err);
+  if(desfazer){ b.classList.remove("hide"); t.classList.remove("sem-btn"); b.onclick=()=>{ desfazer(); t.classList.remove("on"); clearTimeout(tT) } }
+  else { b.classList.add("hide"); t.classList.add("sem-btn") }
+  t.classList.add("on"); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove("on"),desfazer?5000:2600);
+}
+/* No app real: o PATCH sai depois de 5 s (janela do Desfazer) ou na hora se a página for escondida. */
+function mudar(id,status,extra,msg){
+  const p=get(id); const antes=clone(p);
+  Object.assign(p,{status},extra||{});
+  render();
+  toast(msg,()=>{ Object.keys(p).forEach(k=>delete p[k]); Object.assign(p,antes,{aprovado_producao_em:antes.aprovado_producao_em&&new Date(antes.aprovado_producao_em),produzido_em:antes.produzido_em&&new Date(antes.produzido_em),postado_em:antes.postado_em&&new Date(antes.postado_em)}); render() });
+}
+function produzir(id,ajuste){
+  const ja=S.pautas.filter(p=>["aprovada_producao","em_producao"].includes(p.status)).length;
+  const pv=previsao();
+  mudar(id,"aprovada_producao",{aprovado_producao_em:new Date(S.agora),revisado_em:new Date(S.agora),comentario:ajuste||""},
+    ja?`Na fila (${ja+1} em produção). Pronto ${pv.quando==="hoje"?"até ~"+pv.pronto:pv.quando+" ~"+pv.pronto}`:`Na fila. Pronto ${pv.quando==="hoje"?"até ~"+pv.pronto:pv.quando+" ~"+pv.pronto}`);
+}
+const guardar=id=>mudar(id,"ideia",{revisado_em:new Date(S.agora)},"Guardada no banco de ideias");
+const descartar=id=>mudar(id,"descartado",{revisado_em:new Date(S.agora)},"Descartada");
+const aprovar=id=>mudar(id,"aprovado",{revisado_em:new Date(S.agora)},"Aprovado. Agora é postar.");
+const postado=id=>mudar(id,"postado",{postado_em:new Date(S.agora)},"Postado! Conta na meta da semana.");
+function pedirAjuste(id,txt){ S.ajuste=false; const pv=previsao();
+  mudar(id,"ajustar",{comentario:txt,comentario_em:new Date(S.agora),revisado_em:new Date(S.agora)},`Ajuste enviado. Volta ${pv.quando==="hoje"?"até ~"+pv.pronto:pv.quando+" ~"+pv.pronto}`) }
+function simularEntrega(id){ const p=get(id); p.status="para_revisar"; p.produzido_em=new Date(S.agora); p.comentario_prev=p.comentario; render(); toast("Simulado: carrossel entregue pela rotina") }
+
+function copiar(txt,preId){
+  const ok=()=>toast("Copiado");
+  const falha=()=>{ const el=document.getElementById(preId);
+    if(el){ el.classList.add("aberto"); const r=document.createRange(); r.selectNodeContents(el); const s=getSelection(); s.removeAllRanges(); s.addRange(r) }
+    toast("Não deu para copiar sozinho. Texto selecionado: toque em Copiar",null,true) };
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok).catch(falha); else falha() }catch(e){ falha() }
+}
+
+/* ===================== COMPONENTES ===================== */
+const chipU=c=>`<span class="chip" title="${esc(c+" "+URG[c])}">${esc(c)} ${esc(URG[c])}</span>`;
+const chipL=c=>`<span class="chip chip-neutro" title="${esc(c+" "+LIN[c])}">${esc(c)} ${esc(LIN[c])}</span>`;
+const chipD=c=>`<span class="chip chip-selo">${esc(c)} ${esc(DEG[c])}</span>`;
+const chipF=f=>(f||[]).map(x=>`<span class="chip chip-neutro">${x==="Reels"?"▶ ":"▦ "}${esc(x)}</span>`).join("");
+const ex=p=>p.exemplo?`<span class="chip chip-ex">exemplo</span>`:"";
+
+function hl(txt,dq){
+  let h=esc(txt);
+  (dq||[]).forEach(d=>{ const e=esc(d); const i=h.indexOf(e); if(i>=0) h=h.slice(0,i)+`<em class="dq">${e}</em>`+h.slice(i+e.length) });
+  return h;
+}
+function slideHTML(s,i,n){
+  const foto=s.foto?`<div class="sl-foto"><span>foto: ${esc(s.foto)}</span></div>`:"";
+  const comFoto=s.foto&&s.layout!=="imagem";
+  return `<div class="sl sl-${s.layout} t-${s.tema}${comFoto?" com-foto":""}" role="img" aria-label="Slide ${i+1} de ${n}: ${esc(s.titulo)}">${foto}
+   <div class="sl-in"><div class="sl-serie">${esc(DECK.serie)}</div>
+    <div class="sl-mid">
+     ${s.kicker?`<div class="sl-kicker">${esc(s.kicker)}</div>`:""}
+     ${s.numero?`<div class="sl-num">${esc(s.numero)}</div>`:""}
+     <div class="sl-tit">${hl(s.titulo,s.destaques)}</div>
+     ${s.subtitulo?`<div class="sl-sub">${esc(s.subtitulo)}</div>`:""}
+     ${s.corpo?`<div class="sl-corpo">${hl(s.corpo,s.destaques)}</div>`:""}
+     ${s.itens?`<div class="sl-itens">${s.itens.map(([a,b])=>`<div><b>${esc(a)}</b>${esc(b)}</div>`).join("")}</div>`:""}
+     ${s.manuscrito?`<div class="sl-manus">${esc(s.manuscrito)}</div>`:""}
+     ${s.fonte?`<div class="sl-fonte">Fonte: ${esc(s.fonte)}</div>`:""}
+     ${s.logos?`<div class="sl-logos">${s.logos.map(l=>`<span>${esc(l)}</span>`).join("")}</div>`:""}
+     ${s.layout==="cta"?`<div class="sl-ctapill">🔖 Salvar</div>`:""}
+    </div>
+    <div class="sl-rod"><span>@dudafonte.s</span><span>${i+1}/${n}</span></div></div></div>`;
+}
+
+function trilhaHTML(st){
+  const et=["escolhida","produzindo","revisar","aprovado","postado"];
+  const idx={aprovada_producao:0,em_producao:1,ajustar:1,para_revisar:2,aprovado:3,postado:4}[st]??-1;
+  return `<div class="trilha" aria-hidden="true">${et.map((_,i)=>`<span class="${i<idx?"feito":i===idx?"on":""}"></span>`).join("")}</div>
+   <div class="trilha-leg">${et.map(e=>`<span>${e}</span>`).join("")}</div>`;
+}
+
+function sugCard(p,i){
+  return `<article class="card sug" aria-label="Sugestão ${i+1}">
+    <div class="topo"><span class="ordem">${i+1}</span>${chipF(p.formatos)}<span class="chip chip-neutro">${esc(p.estrutura)}</span>${ex(p)}</div>
+    <button class="abre" data-abrir="${p.id}">
+      <h3>${esc(p.tema)}</h3>
+      <p class="gancho">“${esc(p.gancho)}”</p>
+      <div class="metas">${chipU(p.u)}${chipL(p.l)}${chipD(p.d)}</div>
+      <p class="porque clamp2"><b>Por quê:</b> ${esc(p.porque[0][1])}</p>
+      ${p.confirmar?`<div class="precisa"><span>✋</span><span>Precisa de você: ${esc(p.confirmar)}</span></div>`:""}
+    </button>
+    <div class="acoes">
+      <button class="btn btn-ganho" data-produzir="${p.id}">Produzir</button>
+      <button class="btn btn-fantasma" data-guardar="${p.id}">Guardar</button>
+      <button class="icb icb-clara" data-descartar="${p.id}" aria-label="Descartar sugestão ${i+1}">✕</button>
+    </div></article>`;
+}
+
+/* ===================== HEADER ===================== */
+function hdHoje(){
+  const semana=S.pautas.filter(p=>p.status==="postado").length;
+  const rev=S.pautas.filter(p=>p.status==="para_revisar").length;
+  const banco=S.pautas.filter(p=>p.status==="ideia").length;
+  const d=S.agora;
+  $("#hd").innerHTML=`<div class="hrow marca">
+     <div class="selo"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="15" stroke="#4A16A8" stroke-width="6" stroke-dasharray="70 100" stroke-linecap="round" transform="rotate(-90 24 24)"/></svg></div>
+     <div class="tt"><div class="disp" style="font-size:var(--t-lg)">hoje</div>
+       <div class="rotulo" style="color:var(--texto-invertido-fraco);margin-top:2px">PSN · protótipo</div></div>
+   </div>
+   <div class="hdia">${DIAS[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]} <i>·</i> ${hh(d)}</div>
+   <div class="placar">
+     <button class="it ganho" data-ir="#hoje" aria-label="Postadas na semana: ${semana} de 3"><span class="v num">${semana}<small> /3</small></span><span class="k">postadas<br>na semana</span></button>
+     <button class="it" data-ir="#hoje"><span class="v num">${rev}</span><span class="k">para<br>revisar</span></button>
+     <button class="it" data-ir="#banco"><span class="v num">${banco}</span><span class="k">no banco<br>de ideias</span></button>
+   </div>`;
+}
+function hdSub(tit,sub,volta){
+  $("#hd").innerHTML=`<div class="hrow" style="padding-bottom:var(--e3)"><button class="icb" data-ir="${volta||"#hoje"}" aria-label="Voltar">←</button>
+    <div class="tt"><div class="n1">${esc(tit)}</div><div class="n2">${esc(sub)}</div></div></div>`;
+}
+
+/* ===================== TELA HOJE ===================== */
+function renderHoje(){
+  hdHoje(); $("#barra").innerHTML="";
+  const P=S.pautas, hoje=hojeISO();
+  const postar=P.filter(p=>p.status==="aprovado");
+  const revisar=P.filter(p=>p.status==="para_revisar");
+  const ajustando=P.filter(p=>p.status==="ajustar");
+  const sugs=P.filter(p=>p.data===hoje&&p.exemplo);
+  const pend=sugs.filter(p=>p.status==="sugerida");
+  const fila=P.filter(p=>["aprovada_producao","em_producao"].includes(p.status));
+  const banco=P.filter(p=>p.status==="ideia").length;
+  const ehFds=fds(S.agora);
+  let h="";
+
+  /* 1. bloqueio: rotina falhou */
+  if(S.rotina==="falhou"&&!ehFds) h+=`<div class="maviso" role="status"><b>As sugestões de hoje não chegaram.</b><br>
+     A rotina das 05:47 não terminou. Não é nada com você: já ficou registrado e ela tenta de novo amanhã.
+     Quer produzir algo hoje? Escolha uma do banco.<br>
+     <button class="btn btn-ganho" data-ir="#banco">Abrir banco de ideias (${banco})</button></div>`;
+  if(ehFds) h+=`<div class="maviso" role="status"><b>Fim de semana, sem sugestões novas.</b><br>
+     A próxima leva chega segunda às 05:47. Se mandar produzir algo do banco agora, fica pronto segunda até ~07:30.</div>`;
+
+  /* 2. postar (mais perto da meta) */
+  if(postar.length){ h+=`<div class="secao-tit"><h2>falta postar</h2><span class="qt num">${postar.length}</span></div>
+    <p class="secao-sub">Aprovado. Copie a legenda, poste no Instagram e marque aqui.</p>`;
+    postar.forEach(p=>{ h+=`<article class="card"><button class="abre" data-abrir="${p.id}"><div class="metas" style="margin-bottom:var(--e2)">${chipF(p.formatos)}${ex(p)}</div><h3>${esc(p.tema)}</h3>
+      <div class="thumbs">${DECK.slides.slice(0,4).map((s,i)=>slideHTML(s,i,DECK.slides.length)).join("")}</div></button>
+      <div class="acoes"><button class="btn btn-fantasma" data-copiar="${p.id}">Copiar legenda</button><button class="btn btn-ganho" data-postado="${p.id}">Postado ✓</button></div></article>` }) }
+
+  /* 3. revisar */
+  if(revisar.length){ h+=`<div class="secao-tit"><h2>pronto para revisar</h2><span class="qt num">${revisar.length}</span></div>
+    <p class="secao-sub">O carrossel que você escolheu chegou. Revise até as 10h para postar hoje.</p>`;
+    revisar.forEach(p=>{ h+=`<article class="card"><button class="abre" data-abrir="${p.id}"><div class="metas" style="margin-bottom:var(--e2)">${chipF(p.formatos)}<span class="chip chip-neutro">${DECK.slides.length} slides</span>${ex(p)}</div><h3>${esc(p.tema)}</h3>
+      <div class="thumbs">${DECK.slides.slice(0,4).map((s,i)=>slideHTML(s,i,DECK.slides.length)).join("")}</div>
+      <p class="porque">Chegou às ${hh(p.produzido_em)} · conferência automática: 0 erro</p></button>
+      <div class="acoes"><button class="btn btn-ganho" data-abrir="${p.id}">Revisar →</button></div></article>` }) }
+
+  /* 4. escolher (sugestões do dia) */
+  if(sugs.length){
+    h+=`<div class="secao-tit"><h2>${pend.length?pend.length+" sugest"+(pend.length>1?"ões":"ão")+" para hoje":"escolha feita"}</h2></div>`;
+    if(pend.length){
+      h+=`<p class="secao-sub">${fila.length?"Quer mais uma? Produzir também funciona aqui.":"Escolha 1 para produzir. O resto vai para o banco ou some."} ${S.agora.getHours()<10?"Escolhendo até 10h, fica pronto para postar hoje.":""}</p>`;
+      h+=pend.map((p)=>sugCard(p,sugs.indexOf(p))).join("");
+    }
+    const feitas=sugs.filter(p=>p.status!=="sugerida");
+    if(feitas.length){ if(!pend.length) h+=`<p class="secao-sub">Resumo da manhã. Toque para abrir.</p>`;
+      h+=feitas.map(p=>`<button class="decidida abre" data-abrir="${p.id}" style="display:flex"><span class="chip ${p.status==="descartado"?"chip-neutro":p.status==="ideia"?"chip-selo":""}">${esc(STATUS_TX[p.status])}</span><b>${esc(p.tema)}</b><span>›</span></button>`).join("") }
+  }
+
+  /* 5. acompanhar: em produção / ajuste */
+  if(fila.length||ajustando.length){ h+=`<div class="secao-tit"><h2>em produção</h2><span class="qt num">${fila.length+ajustando.length}</span></div>
+    <p class="secao-sub">Não precisa fazer nada. Avisamos no celular quando chegar.</p>`;
+    [...fila,...ajustando].forEach(p=>{ const pv=previsao(p.status==="em_producao"?new Date(S.agora.getTime()-3600000):S.agora);
+      h+=`<article class="card"><button class="abre" data-abrir="${p.id}"><h3>${esc(p.tema)}</h3>${trilhaHTML(p.status)}
+       <p class="prev">${p.status==="em_producao"?`A rotina das ${pv.rodada} está montando. <b>Pronto ${pv.quando==="hoje"?"até ~"+pv.pronto:pv.quando+" ~"+pv.pronto}</b>`:p.status==="ajustar"?`Refazendo com o seu comentário. <b>Volta ${pv.quando==="hoje"?"até ~"+pv.pronto:pv.quando+" ~"+pv.pronto}</b>`:`Na fila da rodada das ${pv.rodada}. <b>Pronto ${pv.quando==="hoje"?"até ~"+pv.pronto:pv.quando+" ~"+pv.pronto}</b>`}</p>
+       ${p.comentario?`<div class="coment">“${esc(p.comentario)}”</div>`:""}</button>
+       ${p.deck?`<button class="linkb" data-entregar="${p.id}">⟳ protótipo: simular entrega da rotina</button>`:`<p class="semdesc">No protótipo só a sugestão 1 tem slides. Use “simular estado” lá embaixo.</p>`}</article>` }) }
+
+  /* 6. tudo feito */
+  if(!postar.length&&!revisar.length&&!pend.length&&!fila.length&&!ajustando.length&&S.rotina!=="falhou"){
+    const prox=ehFds?"segunda":DIAS[(S.agora.getDay()+1)%7]==="sábado"?"segunda":"amanhã";
+    h+=`<div class="vazio" style="margin-top:var(--e2)"><span class="n num">✓</span><h4>nada esperando você</h4>
+      <p>${S.pautas.some(p=>p.status==="postado")?"O de hoje está postado. ":""}${prox==="amanhã"?"Amanhã":"Segunda"} às 05:47 chegam 3 sugestões novas, já pensadas a partir das métricas de hoje.</p>
+      <ul><li>${banco} ideias guardadas no banco</li><li>${S.pautas.filter(p=>p.status==="postado").length} de 3 postadas nesta semana</li></ul>
+      <button class="btn btn-fantasma" data-ir="#banco">Ver banco de ideias</button></div>`;
+  }
+
+  /* 7. sinal das métricas (informativo) */
+  h+=`<div class="secao-tit"><h2>ontem no instagram</h2></div>
+    <div class="mini"><div class="metas"><span class="chip chip-ex">exemplo</span><span class="chip chip-neutro">análise das 05:23</span></div>
+     <div class="nums"><div><span class="v num">2.696</span><span class="k">alcance</span></div><div><span class="v num">32</span><span class="k">salvos</span></div><div><span class="v num">59</span><span class="k">compart.</span></div></div>
+     <p><b>Sinal para a pauta:</b> Reels de identificação puxam compartilhamento. Carrossel ainda salva pouco: prefira tutorial com prompt pronto e CTA de salvar.</p>
+     <button class="linkb" data-ir="#metricas">Ver métricas →</button></div>`;
+
+  /* 8. destinos */
+  h+=`<div class="atalhos">
+     <button class="atalho" data-ir="#banco"><span class="em">🗂️</span><span class="nm">Banco de ideias</span><span class="hd">${banco} guardadas</span></button>
+     <button class="atalho" data-ir="#metricas"><span class="em">📊</span><span class="nm">Métricas</span><span class="hd">Instagram</span></button>
+     <button class="atalho" data-ir="#canais"><span class="em">📁</span><span class="nm">Canais</span><span class="hd">referências e funil</span></button></div>`;
+
+  /* simulador */
+  h+=`<details class="simular" ${S._simAberto?"open":""}><summary>⚙ protótipo · simular estado</summary>
+    <div class="filtros" role="group" aria-label="Simular estado">${ESTADOS.map(([k,n])=>`<button class="filtro ${S.estado===k?"on":""}" data-estado="${k}">${n}</button>`).join("")}</div>
+    <div class="filtros" role="group" aria-label="Tema"><button class="filtro" data-tema="light">claro</button><button class="filtro" data-tema="dark">escuro</button><button class="filtro" data-tema="">do sistema</button></div>
+    <p class="dica">Os botões mexem só neste protótipo. Nada é gravado.</p></details>`;
+
+  $("#view").innerHTML=`<div class="wrap">${h}</div>`;
+}
+
+/* ===================== BANCO DE IDEIAS ===================== */
+function renderBanco(){
+  const todas=S.pautas.filter(p=>p.status==="ideia");
+  hdSub("Banco de ideias",`${todas.length} guardadas · produzir a qualquer dia`,"#hoje"); $("#barra").innerHTML="";
+  const F=S.filtro;
+  let L=todas.filter(p=>(!F.u||p.u===F.u)&&(!F.l||p.l===F.l));
+  const ordU=p=>Number(p.u.slice(1));
+  if(F.ordem==="recentes") L.sort((a,b)=>b.criado.localeCompare(a.criado));
+  if(F.ordem==="antigas") L.sort((a,b)=>a.criado.localeCompare(b.criado));
+  if(F.ordem==="prazo") L.sort((a,b)=>(a.valida_ate||"9999").localeCompare(b.valida_ate||"9999")||b.criado.localeCompare(a.criado));
+  const novas=L.filter(p=>diasDesde(p.criado)<=30), velhas=L.filter(p=>diasDesde(p.criado)>30);
+  const desc=S.pautas.filter(p=>p.status==="descartado");
+  const card=p=>{ const idade=diasDesde(p.criado); let prazo="";
+    if(p.valida_ate){ const [a,m,d]=p.valida_ate.split("-").map(Number); const falta=Math.round((new Date(a,m-1,d)-S.agora)/864e5)-S.velho;
+      prazo=falta<0?`<span class="chip chip-erro">passou do prazo (${ddmm(p.valida_ate)})</span>`:falta<=3?`<span class="chip chip-erro">vale até ${ddmm(p.valida_ate)}</span>`:`<span class="chip chip-neutro">vale até ${ddmm(p.valida_ate)}</span>` }
+    return `<article class="card ideia ${idade>30?"velha":""}"><div class="lin"><button class="abre" data-abrir="${p.id}">
+      <h3>${esc(p.tema)}</h3>${p.angulo||p.gancho?`<p class="ang clamp2">${esc(p.angulo||p.gancho)}</p>`:""}
+      <div class="metas">${prazo}${idade>30?`<span class="chip chip-selo">há ${idade} dias · ainda vale?</span>`:`<span class="chip chip-neutro">${idade===0?"hoje":idade===1?"ontem":"há "+idade+" dias"}</span>`}${chipU(p.u)}${chipL(p.l)}${p.d!=="D0"?chipD(p.d):""}${ex(p)}</div></button>
+      <div class="lado"><button class="btn btn-ganho" data-produzir="${p.id}">Produzir</button><button class="btn btn-fantasma" data-descartar="${p.id}" aria-label="Descartar ${esc(p.tema)}">✕</button></div></div></article>` };
+  const opt=(o,v,ph)=>`<option value="">${ph}</option>`+Object.entries(o).map(([k,n])=>`<option value="${k}" ${v===k?"selected":""}>${k} ${n}</option>`).join("");
+  $("#view").innerHTML=`<div class="wrap">
+    <div class="bfiltros"><select class="campo" id="fU" aria-label="Filtrar por urgência">${opt(URG,F.u,"Todas as urgências")}</select>
+      <select class="campo" id="fL" aria-label="Filtrar por linha">${opt(LIN,F.l,"Todas as linhas")}</select></div>
+    <div class="seg" role="group" aria-label="Ordenar">${[["recentes","recentes"],["prazo","com prazo"],["antigas","antigas"]].map(([k,n])=>`<button class="${F.ordem===k?"on":""}" data-ordem="${k}">${n}</button>`).join("")}</div>
+    ${L.length?"":`<p class="semres">Nenhuma ideia com esse filtro. <button class="linkb" id="limpar">Limpar filtros</button></p>`}
+    ${novas.map(card).join("")}
+    ${velhas.length?`<details class="grupo" open><summary><span class="seta">›</span>mais de 30 dias · ${velhas.length}</summary>
+      <p class="dica">Ideia parada há mais de um mês: produza ou descarte. A rotina da manhã só repropõe se ainda fizer sentido.</p>${velhas.map(card).join("")}</details>`:""}
+    <details class="grupo"><summary><span class="seta">›</span>produzidas no notion, nunca revisadas · ${S.legado.length}</summary>
+      <p class="dica">Vieram da rotina antiga (${S.legado.reduce((a,b)=>a+b.png,0)} PNGs no estilo padrão). Ficam aqui para não lotar o Hoje. Decisão em aberto na spec.</p>
+      ${S.legado.map(n=>`<article class="card"><h3>${esc(n.tema)}</h3><div class="metas" style="margin-top:var(--e2)"><span class="chip chip-neutro">${ddmm(n.data)} · ${n.png} slides</span>${chipU(n.u)}</div>
+        <div class="acoes"><a class="btn btn-fantasma" href="${esc(n.url)}" target="_blank" rel="noopener" style="text-decoration:none">Abrir no Notion ↗</a><button class="icb icb-clara" data-legado="${n.id}" aria-label="Descartar ${esc(n.tema)}">✕</button></div></article>`).join("")}</details>
+    ${desc.length?`<details class="grupo"><summary><span class="seta">›</span>descartadas · ${desc.length}</summary>
+      ${desc.map(p=>`<div class="decidida"><b>${esc(p.tema)}</b><button class="btn-mini" data-restaurar="${p.id}">Restaurar</button></div>`).join("")}</details>`:""}
+    <details class="simular"><summary>⚙ protótipo · envelhecer o banco</summary>
+      <div class="filtros"><button class="filtro ${S.velho===0?"on":""}" data-velho="0">hoje</button><button class="filtro ${S.velho===40?"on":""}" data-velho="40">daqui a 40 dias</button></div></details>
+  </div>`;
+  $("#fU").onchange=e=>{F.u=e.target.value;renderBanco()};
+  $("#fL").onchange=e=>{F.l=e.target.value;renderBanco()};
+  const lp=$("#limpar"); if(lp) lp.onclick=()=>{F.u=F.l="";renderBanco()};
+}
+
+/* ===================== FICHA ===================== */
+function renderFicha(id){
+  const p=get(id); if(!p){ location.hash="#hoje"; return }
+  const produzida=["para_revisar","ajustar","aprovado","postado"].includes(p.status)&&p.deck;
+  hdSub(produzida?"Carrossel":"Sugestão",`${STATUS_TX[p.status]}${p.data?" · "+ddmm(p.data):""}`,p.status==="ideia"?"#banco":"#hoje");
+  const tags=`<div class="metas">${chipF(p.formatos)}${p.estrutura?`<span class="chip chip-neutro">${esc(p.estrutura)}</span>`:""}${chipU(p.u)}${chipL(p.l)}${chipD(p.d)}${ex(p)}</div>`;
+  let h="", barra="";
+  if(produzida){
+    const n=DECK.slides.length;
+    h+=`<div class="fstatus"><div class="linha1"><span class="chip ${p.status==="postado"?"chip-ganho":""}">${esc(STATUS_TX[p.status])}</span>
+        ${p.produzido_em?`<span>chegou ${hh(p.produzido_em)}</span>`:""}${p.postado_em?`<span>· postado ${hh(p.postado_em)}</span>`:""}</div>${trilhaHTML(p.status)}</div>
+      <div class="ftema">${esc(p.tema)}</div>${tags}
+      <div class="tira" id="tira" tabindex="0" aria-label="Slides do carrossel, deslize para o lado">${DECK.slides.map((s,i)=>slideHTML(s,i,n)).join("")}</div>
+      <div class="tirainfo"><span id="tiraN">1 de ${n} · deslize</span><span class="pontos" id="pontos">${DECK.slides.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</span></div>
+      <p class="semdesc">Conferência automática: 0 erro, 0 aviso · estilo editorial · 1080×1350${p.exemplo?" · slides desenhados a partir do deck real":""}</p>`;
+    if(p.status==="ajustar") h+=`<div class="maviso"><b>Ajuste pedido.</b> A rotina refaz e avisa quando voltar.<div class="coment">“${esc(p.comentario)}”</div></div>`;
+    if(S.ajuste&&p.status==="para_revisar") h+=`<div class="ajuste" id="ajBox"><label class="lbl" for="ajTx" style="margin-top:0">O que mudar?</label>
+       <div class="rapidos">${["Troca o gancho da capa","Outra foto na capa","Mais curto","Tom mais leve"].map(t=>`<button class="filtro" data-rapido="${esc(t)}">${t}</button>`).join("")}</div>
+       <textarea class="campo" id="ajTx" rows="3" placeholder="Ex.: slide 5 está longo; corta a parte do Karpathy"></textarea>
+       <p class="dica">A rotina lê isto e refaz só o que você pediu.</p>
+       <div class="acoes"><button class="btn btn-fantasma" id="ajCancela">Cancelar</button><button class="btn btn-ganho" id="ajEnvia" disabled>Enviar ajuste</button></div></div>`;
+    h+=`<div class="fbloco"><div class="blocohead"><h3>Legenda</h3><button class="btn-mini" data-copiar="${p.id}">⧉ Copiar legenda</button></div>
+        <pre class="txtlongo" id="legTx">${esc(LEGENDA_DECK)}</pre></div>`;
+    if(p.formatos.includes("Reels")) h+=`<div class="fbloco"><div class="blocohead"><h3>Roteiro do Reels <span class="chip chip-ex">exemplo</span></h3><button class="btn-mini" data-copiar-reels="${p.id}">⧉ Copiar</button></div>
+        <pre class="txtlongo" id="reelsTx">${esc(REELS_EX)}</pre></div>`;
+    h+=`<details class="fbloco"><summary style="cursor:pointer;font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-medio);min-height:28px">Proposta original e fontes</summary>
+        <p style="margin-top:var(--e2)"><b>Gancho:</b> ${esc(p.gancho)}</p><p style="margin-top:var(--e2)"><b>Fontes:</b> ${esc(p.fontes)}</p>${p.comentario_prev?`<div class="coment">Seu pedido antes de produzir: “${esc(p.comentario_prev)}”</div>`:""}</details>`;
+    if(["para_revisar","aprovado"].includes(p.status)) h+=`<div style="margin-top:var(--e6)"><button class="btn btn-risco" data-descartar="${p.id}" style="width:100%">Não vou postar este</button></div>`;
+    if(p.status==="para_revisar"&&!S.ajuste) barra=`<button class="btn btn-fantasma" id="bAjustar">Ajustar</button><button class="btn btn-ganho" data-aprovar="${p.id}">Aprovar</button>`;
+    if(p.status==="aprovado") barra=`<button class="btn btn-fantasma" data-copiar="${p.id}">Copiar legenda</button><button class="btn btn-ganho" data-postado="${p.id}">Postado ✓</button>`;
+  } else {
+    if(["aprovada_producao","em_producao","ajustar"].includes(p.status)){ const pv=previsao();
+      h+=`<div class="fstatus"><div class="linha1"><span class="chip">${esc(STATUS_TX[p.status])}</span><span>pronto ${pv.quando==="hoje"?"até ~"+pv.pronto:pv.quando+" ~"+pv.pronto}</span></div>${trilhaHTML(p.status)}</div>` }
+    if(["para_revisar","aprovado","postado"].includes(p.status)&&!p.deck) h+=`<div class="maviso">Sem slides neste protótipo (só a sugestão 1 tem deck).</div>`;
+    h+=`${tags}<div class="ftema">${esc(p.tema)}</div>`;
+    if(p.gancho) h+=`<div class="fbloco"><h3>Gancho da capa</h3><p class="gancho-g">“${esc(p.gancho)}”</p></div>`;
+    if(p.angulo) h+=`<div class="fbloco"><h3>Ângulo</h3><p>${esc(p.angulo)}</p>${!p.roteiro?`<p class="dica" style="margin-top:var(--e2)">Ideia guardada sem roteiro: a produção monta gancho e slides a partir do ângulo.</p>`:""}</div>`;
+    if(p.roteiro) h+=`<div class="fbloco"><h3>O que cada slide diz <span class="chip chip-neutro">${p.roteiro.length} slides</span></h3><ol>${p.roteiro.map(r=>`<li>${esc(r)}</li>`).join("")}</ol></div>`;
+    if(p.porque) h+=`<div class="fbloco"><h3>Por quê</h3><ul>${p.porque.map(([k,v])=>`<li><b>${esc(k)}:</b> ${esc(v)}</li>`).join("")}</ul></div>`;
+    if(p.fontes) h+=`<div class="fbloco"><h3>Fontes</h3><p>${esc(p.fontes)}</p></div>`;
+    if(p.confirmar) h+=`<div class="maviso" style="margin-top:var(--e3)"><b>Precisa de você:</b> ${esc(p.confirmar)}</div>`;
+    if(p.valida_ate) h+=`<div class="maviso"><b>Prazo:</b> só faz sentido até ${ddmm(p.valida_ate)}.</div>`;
+    if(["sugerida","ideia"].includes(p.status)){
+      h+=`<label class="lbl" for="ajPre">Ajuste antes de produzir <span style="text-transform:none;letter-spacing:0;font-weight:500">(opcional)</span></label>
+        <textarea class="campo" id="ajPre" rows="2" placeholder="Ex.: troca o exemplo por um de RH">${esc(p._rascunho||"")}</textarea>
+        <p class="dica">A rotina lê isto antes de montar. Deixe em branco para produzir como está.</p>`;
+      barra=`<button class="icb icb-clara" data-descartar="${p.id}" aria-label="Descartar">✕</button>
+        ${p.status==="sugerida"?`<button class="btn btn-fantasma" data-guardar="${p.id}">Guardar</button>`:""}
+        <button class="btn btn-ganho" id="bProduzir">Produzir</button>`;
+    }
+    if(p.status==="aprovada_producao") barra=`<button class="btn btn-fantasma" data-guardar="${p.id}">Voltar para o banco</button>`;
+    if(p.status==="descartado") barra=`<button class="btn btn-fantasma" data-restaurar="${p.id}">Restaurar para o banco</button>`;
+  }
+  $("#view").innerHTML=`<div class="wrap">${h}</div>`;
+  $("#barra").innerHTML=barra?`<div class="barra"><div class="in">${barra}</div></div>`:"";
+  const tira=$("#tira");
+  if(tira) tira.onscroll=()=>{ const sl=tira.querySelector(".sl"); const w=sl.getBoundingClientRect().width+12; const i=Math.min(DECK.slides.length-1,Math.round(tira.scrollLeft/w));
+    $("#tiraN").textContent=`${i+1} de ${DECK.slides.length}${i?"":" · deslize"}`; $("#pontos").querySelectorAll("i").forEach((e,k)=>e.classList.toggle("on",k===i)) };
+  const bp=$("#bProduzir"); if(bp) bp.onclick=()=>{ const t=($("#ajPre")||{}).value||""; produzir(p.id,t.trim()) };
+  const ap=$("#ajPre"); if(ap) ap.oninput=e=>{ p._rascunho=e.target.value };
+  const ba=$("#bAjustar"); if(ba) ba.onclick=()=>{ S.ajuste=true; renderFicha(id); setTimeout(()=>{ const t=$("#ajTx"); if(t){ t.focus(); t.scrollIntoView({block:"center"}) } },30) };
+  const tx=$("#ajTx");
+  if(tx){ const env=$("#ajEnvia"); tx.oninput=()=>env.disabled=!tx.value.trim();
+    document.querySelectorAll("[data-rapido]").forEach(b=>b.onclick=()=>{ tx.value=(tx.value.trim()?tx.value.trim()+". ":"")+b.dataset.rapido; env.disabled=false; tx.focus() });
+    $("#ajCancela").onclick=()=>{ S.ajuste=false; renderFicha(id) };
+    env.onclick=()=>pedirAjuste(id,tx.value.trim()) }
+}
+
+/* destinos fora do protótipo */
+function renderFora(nome){
+  hdSub(nome==="#metricas"?"Métricas":"Canais",nome==="#metricas"?"já existe no app (#/metricas)":"diretório atual, vai para #/canais","#hoje"); $("#barra").innerHTML="";
+  $("#view").innerHTML=`<div class="wrap"><div class="vazio"><h4>${nome==="#metricas"?"métricas":"canais"}</h4>
+   <p>${nome==="#metricas"?"No app, este atalho abre a tela de Métricas que já existe. Volta para o Hoje pelo ←.":"No app, o diretório de canais (Ideias de referência e Produção) sai da home e passa a morar em #/canais, igual a hoje."}</p>
+   <button class="btn btn-fantasma" data-ir="#hoje">Voltar para o Hoje</button></div></div>`;
+}
+
+/* ===================== ROTEAMENTO ===================== */
+function render(){
+  const h=location.hash||"#hoje";
+  if(h==="#banco") renderBanco();
+  else if(h.startsWith("#pauta-")) renderFicha(h.slice(7));
+  else if(h==="#metricas"||h==="#canais") renderFora(h);
+  else renderHoje();
+}
+let ultimaRota="";
+window.addEventListener("hashchange",()=>{ S.ajuste=false; render(); if(location.hash!==ultimaRota) window.scrollTo(0,0); ultimaRota=location.hash });
+
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button,[data-abrir]"); if(!t) return;
+  const d=t.dataset;
+  if(d.produzir){ e.stopPropagation(); produzir(d.produzir); return }
+  if(d.guardar){ guardar(d.guardar); if(location.hash.startsWith("#pauta-")) location.hash="#hoje"; return }
+  if(d.descartar){ const p=get(d.descartar); descartar(d.descartar); if(location.hash.startsWith("#pauta-")) location.hash=p&&p.data?"#hoje":"#banco"; return }
+  if(d.restaurar){ mudar(d.restaurar,"ideia",{},"De volta ao banco"); return }
+  if(d.legado){ const i=S.legado.findIndex(n=>n.id===d.legado); const antes=S.legado[i]; S.legado.splice(i,1); render(); toast("Descartada",()=>{ S.legado.splice(i,0,antes); render() }); return }
+  if(d.aprovar){ aprovar(d.aprovar); return }
+  if(d.postado){ postado(d.postado); return }
+  if(d.copiar){ copiar(LEGENDA_DECK,"legTx"); return }
+  if(d.copiarReels){ copiar(REELS_EX,"reelsTx"); return }
+  if(d.entregar){ simularEntrega(d.entregar); return }
+  if(d.abrir){ location.hash="#pauta-"+d.abrir; return }
+  if(d.ir){ location.hash=d.ir; return }
+  if(d.estado){ S._simAberto=true; montar(d.estado); S.velho=0; render(); toast("Estado: "+ESTADOS.find(x=>x[0]===d.estado)[1]); return }
+  if(d.tema!==undefined){ S._simAberto=true; if(d.tema) document.documentElement.setAttribute("data-theme",d.tema); else document.documentElement.removeAttribute("data-theme"); return }
+  if(d.velho!==undefined){ S.velho=Number(d.velho); renderBanco(); return }
+  if(d.ordem){ S.filtro.ordem=d.ordem; renderBanco(); return }
+});
+
+montar("manha");
+if(!location.hash) history.replaceState(null,"","#hoje");
+render();
+</script>
