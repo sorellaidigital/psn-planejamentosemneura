@@ -12,6 +12,20 @@ em sessão interativa, com regra de leitura apenas, nunca numa rotina.
 
 ## 1. O que a Meta oferece (fontes oficiais)
 
+Fonte principal: a página oficial dos MCPs da Meta, https://developers.facebook.com/documentation/mcp (e o índice
+`/documentation/mcp/llms.txt`). Ela se apresenta como "servidores MCP remotos oficiais para integrar recursos de
+Facebook, Instagram, WhatsApp e Meta Ads", mas lista só **três servidores**: Meta Ads MCP, Meta Social Technologies
+MCP e WhatsApp Business Tools MCP. **Nenhum é de Instagram** (nem de Páginas ou Threads): o Instagram aparece só na
+frase de abertura. Regras comuns descritas na página:
+- OAuth com escopo **Read** ou **Manage** por app, ajustável e revogável em Configurações do Facebook → Business
+  Integrations;
+- clientes validados: Claude Desktop, Claude Code, ChatGPT (web), Codex (app e CLI), Cursor (app e CLI); outros
+  "em breve" e por enquanto sem suporte;
+- segurança: o agente pode fazer qualquer chamada que o escopo permite, inclusive sob instruções escondidas em
+  conteúdo não confiável (payloads, documentos, páginas, saídas de ferramentas). A Meta recomenda **não dar escopo
+  de escrita/Manage a agente que processa conteúdo não confiável**, manter Read por padrão, separar apps de
+  desenvolvimento e produção e revisar os servidores conectados a cada poucos meses.
+
 | Servidor | Endereço | O que expõe | Autenticação | Situação |
 |---|---|---|---|---|
 | **Ads MCP** | `https://mcp.facebook.com/ads` (hospedado pela Meta, HTTP) | Relatórios de anúncios (`ads_get_ad_entities` com filtros, quebras e período; tendência, anomalia, benchmarks de leilão e de setor, nota de oportunidade); criar, editar e apagar campanhas, conjuntos e anúncios; públicos personalizados; catálogos; sinais/datasets; testes A/B e de lift; log de atividade; busca na Central de Ajuda | OAuth do Facebook Login for Business (o cliente MCP abre a tela) ou token de usuário como Bearer. Escopos: `ads_mcp_management`, `ads_read`, `ads_management`, `catalog_management`, `business_management`, `pages_show_list`, `instagram_basic`. App próprio da Meta opcional | Beta aberto desde 29/04/2026; desde 16/07 qualquer app conecta; liberação de ferramentas gradual |
@@ -75,7 +89,8 @@ cobre métrica rejeitada.
     o painel de regras veio com tudo liberado;
   - **rotina que lê texto de terceiros** (Pauta do Dia lê referências, legendas e comentários): um texto injetado
     pode levar o agente a criar ou alterar anúncio e gastar dinheiro. Mesma razão pela qual as rotinas não têm o
-    conector do Supabase. Não dar este conector a rotina nenhuma;
+    conector do Supabase, e é exatamente o caso que a página oficial dos MCPs manda evitar. Não dar este conector a
+    rotina nenhuma;
   - o token fica no cliente MCP (fora do nosso controle de saúde) e é de usuário, não de página;
   - há relatos de terceiros de timeout de 30 s no Claude Code CLI (funcionando no claude.ai web).
 - **O que muda no app:** nada.
@@ -122,13 +137,13 @@ cobre métrica rejeitada.
 
 ## Fontes
 
+- **Página oficial dos MCPs da Meta (fonte principal):** https://developers.facebook.com/documentation/mcp ; índice: https://developers.facebook.com/documentation/mcp/llms.txt ; Ads MCP no índice: https://developers.facebook.com/documentation/mcp/ads-mcp-server.md
 - Ads MCP, visão geral: https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-mcp-server/ads-mcp-server-overview
 - Ads MCP, primeiros passos (escopos, OAuth, token): https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-mcp-server/ads-mcp-server-get-started.md
 - Ads MCP, ferramentas de relatório: https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-mcp-server/ads-mcp-server-tools-comprehensive-reporting.md
 - Anúncio do Ads MCP para desenvolvedores (16/07, atualizado em 22/09): https://developers.facebook.com/blog/post/2026/07/16/meta-ads-mcp-server/
 - Meta Ads AI Connectors (29/04, beta aberto): https://www.facebook.com/business/news/meta-ads-ai-connectors
 - IAB Global Creator Week (15/09, Partnership Ads no MCP): https://www.facebook.com/business/news/iab-global-creator-week-making-it-easier-for-businesses-to-partner-with-creators
-- Índice dos MCPs da Meta: https://developers.facebook.com/documentation/mcp
 - Meta Social Technologies MCP: https://developers.facebook.com/documentation/mcp/devtools-mcp
 - WhatsApp Business Tools MCP (15/09): https://developers.facebook.com/blog/post/2026/09/15/whatsapp-business-messaging-mcp-ai-agent/
 - Graph API e Marketing API v26.0 (29/07): https://developers.facebook.com/blog/post/2026/07/29/introducing-graph-api-v26-and-marketing-api-v26/
