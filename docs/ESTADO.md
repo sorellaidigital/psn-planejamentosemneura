@@ -49,10 +49,34 @@ Plano completo aprovado: arquitetura, camadas e verificação estão nesta seç�
 
 ## Próximos módulos (ideia da Duda: centralizar tudo no PSN)
 
-- Métricas: abas Posts/Reels, Stories e Público (fora da v1).
+- Métricas: abas Posts/Reels, Stories e Público (fora da v1). **Fonte decidida: o `psn-ig-sync` estendido**, não MCP
+  (avaliação em `docs/AVALIACAO-MCP-META.md`, PR #6). Plano para quando o C6 terminar:
+  - migração `psn_ig_story` (+ insights por coleta) e `psn_ig_publico` (data, tipo, breakdown, chave, valor), mesmas
+    políticas das `psn_ig_*`;
+  - coletor: stories ativos a cada execução (os insights só existem enquanto o story está no ar, 24h; por isso
+    coleta agendada, não consulta avulsa), `follower_demographics`/`engaged_audience_demographics` 1x por dia e
+    `profile_views` na conta (pendência 5);
+  - antes, conferir numa execução manual se a v25 aceita esses nomes de métrica;
+  - abas Stories e Público no app.
+
 - Ponte ideias → produção, página de série, banco de ganchos (a partir de `aprendizado.pontos`).
 - Login, quando a plataforma estiver completa.
 - Partes do IG Analytics, se ela usar: hub/kanban, agentes, radar, relatório semanal, CRM.
+
+## MCP da Meta (avaliado em 08/10/2026)
+
+- A Meta não tem MCP oficial de Instagram orgânico. A página oficial (`developers.facebook.com/documentation/mcp`)
+  lista só Ads MCP (`mcp.facebook.com/ads`, beta), Social Technologies MCP (`/devtools`, gestão do app, não lê dados)
+  e WhatsApp Business Tools MCP. Detalhes, fontes e riscos em `docs/AVALIACAO-MCP-META.md`.
+- Decisões:
+  - orgânico (conta, posts, stories, público): não usar MCP; tudo pelo coletor;
+  - Ads MCP só se a Duda anunciar ou impulsionar, em sessão interativa, com regra de leitura apenas
+    (Business Settings → Integrations → Ads MCP Server); **nunca em rotina** (a Pauta do Dia lê texto de terceiros e
+    a própria Meta manda não dar escopo de escrita a agente que processa conteúdo não confiável);
+  - anúncios dentro do PSN, se ela quiser: Marketing API no coletor (`ads_read`), não MCP;
+  - opcional: Social Technologies MCP com escopo Read, em sessão interativa, para acompanhar depreciações da Graph API;
+  - reavaliar se a Meta lançar MCP de Instagram orgânico.
+- Nenhum conector da Meta está instalado na conta; os endpoints respondem 401 sem login.
 
 ## Fontes e acessos úteis
 
