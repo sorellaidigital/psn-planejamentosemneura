@@ -519,6 +519,259 @@ main.territorio{background:transparent;color:var(--texto-invertido);border-radiu
 .manalise p{margin:0 0 var(--e2);font-size:var(--t-mini);color:var(--texto-medio);white-space:pre-wrap;line-height:1.5}
 .manalise .dt{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-fraco);margin-bottom:var(--e2)}
 @media(min-width:700px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* ===== HOJE · CALENDÁRIO · BANCO · LIXEIRA · FICHA (escopo .hj) ======================== */
+
+/* tokens do módulo (derivados do protótipo; só tema claro) */
+:root{--chip-bg:rgba(74,22,168,.09);--chip-tx:#4A16A8;--chip-neutro-bg:rgba(28,18,37,.07);--chip-selo-bg:rgba(110,38,57,.11);
+  --chip-erro-bg:rgba(196,16,47,.10);--sutil:rgba(28,18,37,.06);--aviso-bg:rgba(110,38,57,.08);--aviso-borda:rgba(110,38,57,.28);
+  --ganho-suave:rgba(215,255,62,.22);--ganho-borda:rgba(215,255,62,.55);--foco:#4A16A8}
+/* ajustes sobre as primitivas do app, só dentro do módulo */
+.hj .card{display:block;align-items:normal;gap:0;width:auto;cursor:auto}
+.hj .card:hover{border-color:var(--linha);box-shadow:none}
+.hj .card .metas{margin-top:0}
+.hj .dica{margin:var(--e1) 0 var(--e2)}
+.hj .btn-mini{min-height:36px;padding:0 var(--e3);font-size:var(--t-micro);border-radius:var(--r-pill);font-weight:700;background:var(--sutil);color:var(--texto-forte);display:inline-flex;align-items:center;gap:6px}
+.hj .btn-lix{flex:0 0 auto;width:var(--alvo);height:var(--alvo);display:inline-flex;align-items:center;justify-content:center;background:transparent;border:0;border-radius:50%;color:var(--alerta-texto);cursor:pointer}
+.hj .btn-lix:hover{background:rgba(196,16,47,.08)}
+.hj .btn-lix:focus-visible{outline:2px solid var(--alerta-texto);outline-offset:2px}
+.hj .hrow2{display:flex;align-items:center;gap:var(--e2);padding:6px 0;border-top:1px solid var(--linha);font-size:var(--t-mini)}
+.hj .hrow2:first-of-type{border-top:none}
+.hj .hrow2 b{width:34px;flex:none;text-transform:uppercase;font-size:var(--t-nano);letter-spacing:var(--tr-rotulo);color:var(--texto-medio)}
+.hj .hrow2.hj b{color:var(--texto-forte)}
+.hj .sl{position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--sutil)}
+.hj .sl img{display:block;width:100%;height:100%;object-fit:cover}
+.hj .sl-falhou{position:absolute;inset:0;display:grid;place-items:center;padding:var(--e2);text-align:center;font-size:var(--t-micro);color:var(--texto-fraco)}
+.hj .thumbs .sl-falhou{font-size:var(--t-nano)}
+.hj .semdesc{margin-top:var(--e3)}
+.hj .pill,.hj .hoje-linha,.hj .placar .it{font-family:var(--f-ui)}
+.hj{overflow-x:clip}
+/* barra fixa de ação da ficha (vive no #fabslot, fora do #view) */
+.hjbarra{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--superficie-trabalho);border-top:1.5px solid var(--linha);
+  padding:var(--e3) var(--e4) calc(env(safe-area-inset-bottom) + 12px)}
+.hjbarra .in{max-width:720px;margin:0 auto;display:flex;gap:var(--e2)}
+.hjbarra .btn{flex:1;min-height:52px;font-size:var(--t-md)}
+.hjbarra .btn-ganho{flex:1.5}
+.hjbarra .btn[disabled]{opacity:.45;pointer-events:none}
+/* toast com Desfazer */
+.toast.comdes{padding:var(--e2) var(--e2) var(--e2) var(--e4);pointer-events:auto}
+.toast #toastBtn{min-height:36px;padding:0 var(--e3);border-radius:var(--r-pill);background:rgba(242,239,250,.14);color:var(--acao-ganho);font-weight:700;font-size:var(--t-micro);flex:none}
+.toast .tx,.toast #toastTxt{padding:4px 0}
+.hj .btn[disabled]{opacity:.45;pointer-events:none}
+.hj select.campo{min-height:40px;padding:0 var(--e3);font-size:var(--t-mini);font-weight:600}
+.hj .placar{display:flex;gap:var(--e5);padding:var(--e4) 0 var(--e4);align-items:flex-end;flex-wrap:wrap}
+.hj .placar .it{display:flex;flex-direction:column;gap:2px;text-align:left;color:inherit}
+.hj .placar .v{font-size:var(--t-2xl)}
+.hj .placar .v small{font-size:var(--t-md);color:var(--texto-invertido-fraco);letter-spacing:0}
+.hj .placar .k{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-invertido-medio);line-height:1.3}
+.hj .hdia{font-family:var(--f-ui);font-weight:600;font-size:var(--t-md);color:var(--texto-invertido);line-height:1.2;margin-top:var(--e3)}
+.hj .hdia i{color:var(--acao-ganho);font-style:normal}
+.hj .secao-tit{display:flex;align-items:baseline;gap:var(--e3);margin:var(--e6) 0 var(--e1)}
+.hj .secao-tit:first-child{margin-top:0}
+.hj .secao-tit h2{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);font-size:var(--t-xl);margin:0;text-transform:lowercase;line-height:1.05}
+.hj .secao-tit .qt{font-size:var(--t-lg);color:var(--texto-fraco)}
+.hj .chip{font-size:var(--t-nano);font-weight:600;padding:4px 9px;border-radius:var(--r-pill);background:var(--chip-bg);color:var(--chip-tx);
+  white-space:nowrap;max-width:24ch;overflow:hidden;text-overflow:ellipsis;display:inline-block}
+.hj .chip-neutro{background:var(--chip-neutro-bg);color:var(--texto-medio)}
+.hj .chip-selo{background:var(--chip-selo-bg);color:var(--selo-valor)}
+.hj .chip-erro{background:var(--chip-erro-bg);color:var(--alerta-texto)}
+.hj .chip-ganho{background:var(--acao-ganho);color:var(--sobre-ganho);font-weight:700}
+.hj .chip-ex{background:transparent;border:1px dashed var(--linha-forte);color:var(--texto-fraco);font-weight:600}
+.hj .metas{display:flex;flex-wrap:wrap;gap:var(--e2);align-items:center}
+.hj .card{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e4);margin-bottom:var(--e3);
+  color:var(--texto-forte);position:relative}
+.hj .card h3{margin:0;font-family:var(--f-display);font-weight:600;letter-spacing:-.02em;font-size:var(--t-md);line-height:1.22;text-wrap:pretty}
+.hj .clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hj .abre{display:block;width:100%;text-align:left;color:inherit;padding:0}
+.hj .acoes{display:flex;gap:var(--e2);margin-top:var(--e4);align-items:center}
+.hj .acoes .btn{flex:1}
+.hj .acoes .btn-ganho{flex:1.4}
+.hj .sug .topo{display:flex;align-items:center;gap:var(--e2);margin-bottom:var(--e3);flex-wrap:wrap}
+.hj .sug .ordem{font-family:var(--f-ui);font-weight:700;font-size:var(--t-base);line-height:1;color:var(--selo-valor);width:26px;height:26px;border-radius:50%;background:var(--chip-selo-bg);display:grid;place-items:center;margin-right:2px}
+.hj .sug .gancho{font-family:var(--f-ui);font-weight:600;font-size:var(--t-base);line-height:1.35;margin:var(--e2) 0 var(--e3);color:var(--texto-forte);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.hj .sug .gancho::before{content:attr(data-rot) " · ";font-family:var(--f-ui);font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);
+  text-transform:uppercase;color:var(--texto-fraco);vertical-align:middle}
+.hj .porque{font-size:var(--t-mini);color:var(--texto-medio);margin:var(--e3) 0 0;line-height:1.45}
+.hj .porque b{color:var(--texto-forte)}
+.hj .precisa{margin-top:var(--e3);font-size:var(--t-micro);color:var(--selo-valor);font-weight:600;display:flex;gap:6px;align-items:flex-start}
+.hj .decidida{display:flex;gap:var(--e3);align-items:center;font-size:var(--t-mini);color:var(--texto-medio);padding:var(--e3) var(--e4);
+  border:1.5px dashed var(--linha-forte);border-radius:var(--r-md);margin-bottom:var(--e2)}
+.hj .decidida b{color:var(--texto-forte);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.hj .trilha{display:flex;gap:var(--e1);margin:var(--e3) 0 var(--e2)}
+.hj .trilha span{flex:1;height:6px;border-radius:var(--r-pill);background:var(--sutil)}
+.hj .trilha span.feito{background:var(--chip-tx);opacity:.55}
+.hj .trilha span.on{background:var(--acao-ganho);opacity:1;box-shadow:0 0 0 1px rgba(28,18,37,.15)}
+.hj .trilha-leg{display:flex;justify-content:space-between;font-size:var(--t-nano);color:var(--texto-fraco);font-weight:600}
+.hj .prev{font-size:var(--t-mini);color:var(--texto-medio);margin-top:var(--e2)}
+.hj .prev b{color:var(--texto-forte)}
+.hj .thumbs{display:flex;gap:6px;margin:var(--e3) 0 0}
+.hj .thumbs .sl{flex:0 0 64px;border-radius:6px}
+.hj .maviso{background:var(--aviso-bg);border:1.5px solid var(--aviso-borda);color:var(--texto-forte);border-radius:var(--r-md);
+  padding:var(--e4);margin:0 0 var(--e4);font-size:var(--t-mini);line-height:1.5}
+.hj .maviso b{color:var(--selo-valor)}
+.hj .maviso .btn{margin-top:var(--e3)}
+.hj .destaque{background:var(--ganho-suave);border:1.5px solid var(--ganho-borda);border-radius:var(--r-md);padding:var(--e4);margin:var(--e3) 0}
+.hj .destaque .t{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--selo-valor);margin-bottom:var(--e1)}
+.hj .vazio{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e6) var(--e5);
+  display:flex;flex-direction:column;gap:var(--e3);align-items:flex-start;margin-bottom:var(--e3)}
+.hj .vazio .n{font-size:var(--t-2xl);color:var(--acao-ganho);-webkit-text-stroke:1px var(--sobre-ganho)}
+.hj .vazio h4{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);font-size:var(--t-lg);margin:0;text-transform:lowercase}
+.hj .vazio p{margin:0;color:var(--texto-medio);font-size:var(--t-mini);max-width:46ch;text-wrap:pretty}
+.hj .vazio ul{margin:0;padding-left:1.1em;color:var(--texto-medio);font-size:var(--t-mini)}
+.hj .mini{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e4);margin-bottom:var(--e3)}
+.hj .mini .nums{display:flex;gap:var(--e5);margin:var(--e3) 0;flex-wrap:wrap}
+.hj .mini .nums div{display:flex;flex-direction:column;gap:2px}
+.hj .mini .nums .v{font-size:var(--t-xl)}
+.hj .mini .nums .k{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-fraco)}
+.hj .mini p{margin:0;font-size:var(--t-mini);color:var(--texto-medio);line-height:1.5}
+.hj .mini p b{color:var(--texto-forte)}
+.hj .linkb{display:inline-flex;align-items:center;gap:6px;margin-top:var(--e3);font-size:var(--t-micro);font-weight:700;color:var(--chip-tx);min-height:36px}
+.hj .atalhos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--e2);margin-top:var(--e6)}
+.hj .atalho{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-md);padding:var(--e3);text-align:left;
+  display:flex;flex-direction:column;gap:2px;min-height:76px;color:var(--texto-forte)}
+.hj .atalho .em{font-size:20px;line-height:1}
+.hj .atalho .nm{font-weight:700;font-size:var(--t-mini);margin-top:auto;line-height:1.2}
+.hj .atalho .hd{font-size:var(--t-nano);color:var(--texto-fraco)}
+.hj .simular{margin-top:var(--e7);border:1.5px dashed var(--linha-forte);border-radius:var(--r-md);padding:var(--e3) var(--e4)}
+.hj .simular summary{cursor:pointer;font-size:var(--t-micro);font-weight:700;color:var(--texto-fraco);min-height:32px;display:flex;align-items:center}
+.hj .filtros{display:flex;gap:var(--e2);flex-wrap:wrap;margin:var(--e2) 0}
+.hj .filtro{min-height:36px;padding:0 var(--e3);border-radius:var(--r-pill);font-size:var(--t-micro);font-weight:600;background:var(--sutil);color:var(--texto-medio);border:1.5px solid transparent}
+.hj .filtro.on{background:var(--superficie-territorio);color:var(--texto-invertido);font-weight:700}
+.hj .bfiltros{display:grid;grid-template-columns:1fr 1fr;gap:var(--e2);margin-bottom:var(--e3)}
+.hj .seg{display:flex;background:var(--sutil);border-radius:var(--r-pill);padding:3px;gap:2px;margin-bottom:var(--e4)}
+.hj .seg button{flex:1;min-height:36px;border-radius:var(--r-pill);font-size:var(--t-micro);font-weight:700;color:var(--texto-medio)}
+.hj .seg button.on{background:var(--superficie-territorio);color:var(--texto-invertido)}
+.hj .ideia .lin{display:flex;gap:var(--e3);align-items:flex-start}
+.hj .ideia .lin .abre{flex:1;min-width:0}
+.hj .ideia .ang{font-size:var(--t-mini);color:var(--texto-medio);margin:var(--e2) 0 0;line-height:1.45}
+.hj .ideia .metas{margin-top:var(--e3)}
+.hj .ideia.velha{border-style:dashed}
+.hj .ideia .lado{display:flex;flex-direction:column;gap:var(--e2);flex:none}
+.hj .ideia .lado .btn{min-height:40px;padding:0 var(--e3);font-size:var(--t-mini)}
+.hj details.grupo{margin-top:var(--e5)}
+.hj details.grupo>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:var(--e3);min-height:var(--alvo);
+  font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-medio)}
+.hj details.grupo>summary::-webkit-details-marker{display:none}
+.hj details.grupo>summary::after{content:"";flex:1;height:1.5px;background:var(--linha)}
+.hj details.grupo>summary .seta{transition:transform .15s}
+.hj details.grupo[open]>summary .seta{transform:rotate(90deg)}
+.hj .semres{padding:var(--e5) 0;color:var(--texto-fraco);font-size:var(--t-mini)}
+.hj .fstatus{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e3) var(--e4);margin-bottom:var(--e4)}
+.hj .fstatus .linha1{display:flex;align-items:center;gap:var(--e2);flex-wrap:wrap;font-size:var(--t-mini);color:var(--texto-medio)}
+.hj .ftema{font-family:var(--f-display);font-weight:700;letter-spacing:-.03em;font-size:var(--t-xl);line-height:1.08;margin:var(--e3) 0 var(--e2);text-wrap:balance}
+.hj .fbloco{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e4);margin-top:var(--e3)}
+.hj .fbloco h3{margin:0 0 var(--e2);font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-medio);
+  display:flex;align-items:center;gap:var(--e2)}
+.hj .fbloco h3 .chip{letter-spacing:0;text-transform:none}
+.hj .fbloco ol,.hj .fbloco ul{margin:0;padding-left:1.3em;font-size:var(--t-mini);line-height:1.5}
+.hj .fbloco li{margin-bottom:6px}
+.hj .fbloco p{margin:0;font-size:var(--t-mini);line-height:1.55;color:var(--texto-medio)}
+.hj .gancho-g{font-family:var(--f-ui);font-weight:700;font-size:var(--t-lg);line-height:1.25;letter-spacing:-.01em;color:var(--texto-forte);margin:0}
+.hj .txtlongo{white-space:pre-wrap;font-size:var(--t-mini);line-height:1.55;color:var(--texto-forte);max-height:220px;overflow:auto;
+  background:var(--sutil);border-radius:var(--r-sm);padding:var(--e3);margin:0;font-family:var(--f-ui);user-select:text;-webkit-user-select:text}
+.hj .txtlongo.aberto{max-height:none}
+.hj .blocohead{display:flex;align-items:center;justify-content:space-between;gap:var(--e2);margin-bottom:var(--e2)}
+.hj .blocohead h3{margin:0}
+.hj .ajuste{background:var(--superficie-cartao);border:1.5px solid var(--foco);border-radius:var(--r-lg);padding:var(--e4);margin-top:var(--e3)}
+.hj .ajuste .rapidos{display:flex;gap:var(--e2);flex-wrap:wrap;margin:var(--e2) 0 var(--e3)}
+.hj .ajuste .acoes{margin-top:var(--e3)}
+.hj .coment{font-size:var(--t-mini);color:var(--texto-medio);border-left:3px solid var(--selo-valor);padding:2px 0 2px var(--e3);margin-top:var(--e2)}
+.hj .semdesc{font-size:var(--t-micro);color:var(--texto-fraco);margin-top:var(--e3)}
+.hjbarra{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--superficie-trabalho);border-top:1.5px solid var(--linha);
+  padding:var(--e3) var(--e4) calc(env(safe-area-inset-bottom) + 12px)}
+.hjbarra .in{max-width:720px;margin:0 auto;display:flex;gap:var(--e2)}
+.hjbarra .btn{flex:1;min-height:52px;font-size:var(--t-md)}
+.hjbarra .btn-ganho{flex:1.5}
+.hjbarra .icb{width:52px;height:52px}
+.hj .tira{display:flex;gap:var(--e3);overflow-x:auto;scroll-snap-type:x mandatory;padding:var(--e2) 0 var(--e3);
+  margin:0 calc(var(--e4) * -1);padding-left:var(--e4);padding-right:var(--e4);scroll-padding-left:var(--e4);scrollbar-width:none}
+.hj .tira::-webkit-scrollbar{display:none}
+.hj .tira .sl{flex:0 0 82%;max-width:360px;scroll-snap-align:start;border-radius:var(--r-sm);box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.hj .tirainfo{display:flex;justify-content:space-between;align-items:center;font-size:var(--t-micro);color:var(--texto-fraco);font-weight:600}
+.hj .pontos{display:flex;gap:4px}
+.hj .pontos i{width:6px;height:6px;border-radius:50%;background:var(--linha-forte)}
+.hj .pontos i.on{background:var(--chip-tx);width:16px;border-radius:3px}
+header.solta{position:relative}
+.hj .clamp3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hj .hoje-linha{display:flex;align-items:center;gap:var(--e2);flex-wrap:wrap;margin-top:var(--e3);min-height:var(--alvo);color:inherit;text-align:left;width:100%}
+.hj .hoje-linha .k{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-invertido-medio)}
+.hj .pill{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 var(--e3);border-radius:var(--r-pill);font-weight:700;font-size:var(--t-mini);
+  border:1.5px solid var(--linha-territorio);background:var(--superficie-cartao-territorio);color:var(--texto-invertido)}
+.hj .pill.on{background:var(--acao-ganho);color:var(--sobre-ganho);border-color:var(--acao-ganho)}
+.hj .hmeta{font-size:var(--t-micro);color:var(--texto-invertido-fraco);padding-bottom:var(--e4)}
+.hj .placar{padding:var(--e3) 0 var(--e3)}
+.hj .rail{display:flex;gap:var(--e3);overflow-x:auto;scroll-snap-type:x mandatory;margin:0 calc(var(--e4) * -1);padding:var(--e1) var(--e4) var(--e2);
+  scroll-padding-left:var(--e4);scrollbar-width:none;align-items:stretch;-webkit-overflow-scrolling:touch}
+.hj .rail::-webkit-scrollbar{display:none}
+.hj .rail .card{flex:0 0 86%;max-width:340px;scroll-snap-align:start;margin-bottom:0;display:flex;flex-direction:column;min-width:0}
+.hj .rail .card .abre{flex:1;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch}
+.hj .acoes3 .par{display:flex;flex:1;min-width:0;border-radius:var(--r-pill);overflow:hidden;border:1.5px solid var(--linha-forte)}
+.hj .acoes3 .par .btn{flex:1;min-width:0;border:0;border-radius:0;padding:0 var(--e2);font-size:var(--t-base)}
+.hj .acoes3 .par .btn-ganho{flex:1.3}
+.hj .acoes3 .par .btn-fantasma{border-left:1.5px solid var(--linha-forte)}
+.hj .rail-pontos{display:flex;gap:4px;justify-content:center;margin:var(--e1) 0 var(--e3)}
+.hj .rail-pontos i{width:6px;height:6px;border-radius:50%;background:var(--linha-forte)}
+.hj .rail-pontos i.on{background:var(--chip-tx);width:16px;border-radius:3px}
+.hj .cenas-n{font-size:var(--t-micro);color:var(--texto-fraco);font-weight:600}
+.hj .cena{display:flex;gap:var(--e3);padding:var(--e3) 0;border-top:1.5px solid var(--linha)}
+.hj .cena:first-of-type{border-top:none;padding-top:0}
+.hj .cena-n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--chip-selo-bg);color:var(--selo-valor);font-weight:700;font-size:var(--t-mini);display:grid;place-items:center}
+.hj .cena-c{font-size:var(--t-micro);font-weight:700;color:var(--chip-tx)}
+.hj .cena-f{font-size:var(--t-base);line-height:1.45;color:var(--texto-forte);margin-top:2px;font-weight:500}
+.hj .cena-t{font-size:var(--t-nano);color:var(--texto-fraco);font-weight:600;margin-left:6px}
+.hj .cena.gancho-cena .cena-f{font-weight:700}
+.hj .hora-atual{display:flex;align-items:baseline;gap:var(--e3);flex-wrap:wrap}
+.hj .hora-atual .num{font-size:var(--t-2xl)}
+.hj .hora-atual span:nth-child(2){font-weight:600;color:var(--texto-medio)}
+.hj .hora-ops{display:flex;gap:var(--e2);flex-wrap:wrap;margin:var(--e3) 0}
+.hj .hmanual{display:flex;gap:var(--e2);align-items:center}
+.hj .hmanual .campo{width:auto;flex:1;min-height:var(--alvo)}
+.hj .hmanual .btn{flex:none}
+.hj .hor .metas{margin-bottom:var(--e2)}
+.hj .hor h3{font-family:var(--f-display);font-weight:600;letter-spacing:-.02em;font-size:var(--t-md);margin:0}
+.hj .faixa{flex:1;min-width:0;text-align:center;padding:6px 4px;border-radius:var(--r-pill);background:var(--sutil);color:var(--texto-medio);font-weight:600;font-size:var(--t-micro);white-space:nowrap}
+.hj .faixa.top{background:var(--acao-ganho);color:var(--sobre-ganho);font-weight:700}
+.hj .cnav{display:flex;align-items:center;gap:var(--e2);margin:var(--e4) 0 var(--e3)}
+.hj .cnav .t{flex:1;text-align:center;font-family:var(--f-display);font-weight:700;letter-spacing:-.03em;font-size:var(--t-lg);text-transform:lowercase;line-height:1.1}
+.hj .cnav .icb{background:var(--sutil);color:var(--texto-forte)}
+.hj .cdia{margin-bottom:var(--e4)}
+.hj .cdia h3{margin:0 0 var(--e2);font-family:var(--f-display);font-weight:700;letter-spacing:-.03em;font-size:var(--t-md);text-transform:lowercase;display:flex;gap:var(--e2);align-items:center}
+.hj .cdia.hoje h3 .chip{background:var(--acao-ganho);color:var(--sobre-ganho)}
+.hj .vagas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--e2)}
+.hj .vaga{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-md);padding:var(--e3);display:flex;flex-direction:column;gap:var(--e2);min-width:0}
+.hj .vaga .vaga-b{display:flex;flex-direction:column;gap:6px;align-items:flex-start;flex:1;min-width:0;color:var(--texto-forte)}
+.hj .vaga .vf{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-medio)}
+.hj .vaga .vtema{font-size:var(--t-mini);font-weight:600;line-height:1.3;color:var(--texto-forte);text-wrap:pretty}
+.hj .vaga .vhora{font-size:var(--t-micro);color:var(--texto-fraco);font-weight:600}
+.hj .vaga.v-postado{border-color:var(--ganho-borda);background:var(--ganho-suave)}
+.hj .vaga.v-vazio{border-style:dashed}
+.hj .vaga .linkb{margin-top:0;min-height:32px}
+.hj .vaga .semlink{font-size:var(--t-micro);color:var(--chip-tx);font-weight:700}
+.hj .seg2{margin:var(--e4) 0 0}
+.hj .mes{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.hj .mes .dh{font-size:var(--t-nano);font-weight:700;text-align:center;color:var(--texto-fraco);text-transform:uppercase;padding-bottom:2px}
+.hj .mes .dia{min-height:56px;border-radius:var(--r-sm);background:var(--superficie-cartao);border:1.5px solid var(--linha);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  padding:4px 0;font-weight:700;font-size:var(--t-mini);color:var(--texto-forte)}
+.hj .mes .dia.hoje{border-color:var(--foco);border-width:2px}
+.hj .mes .dia.sel{background:var(--superficie-territorio);color:var(--texto-invertido);border-color:var(--superficie-territorio)}
+.hj .dots{display:flex;gap:4px}
+.hj .dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--linha-forte);background:transparent;display:inline-block}
+.hj .dia.sel .dot{border-color:rgba(242,239,250,.6)}
+.hj .d-postado{background:var(--ok-texto);border-color:var(--ok-texto)}
+.hj .d-aprovado{background:var(--chip-tx);border-color:var(--chip-tx)}
+.hj .d-revisar{background:var(--selo-valor);border-color:var(--selo-valor)}
+.hj .d-producao{border-color:var(--chip-tx);border-width:2.5px}
+.hj .d-sugerida{border-style:dashed;border-color:var(--selo-valor)}
+.hj .legenda-cal{display:flex;gap:var(--e3);flex-wrap:wrap;font-size:var(--t-micro);color:var(--texto-medio);margin:var(--e3) 0 var(--e4)}
+.hj .legenda-cal span{display:inline-flex;gap:6px;align-items:center}
+.hj .painel-dia{margin-top:var(--e2)}
+.hj .lix .lin{display:flex;gap:var(--e3);align-items:flex-start}
+.hj .lix .lin .abre{flex:1;min-width:0}
+.hj .lix .lado{flex:none}
+.hj .lix .lado .btn{min-height:44px}
+.hj .atalhos{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:520px){.hj .atalhos{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.hj .rodape-lix{display:flex;justify-content:center;margin-top:var(--e3)}
+
 @media(prefers-reduced-motion:reduce){*{transition:none !important}}
 </style>
 </head>
@@ -610,7 +863,7 @@ main.territorio{background:transparent;color:var(--texto-invertido);border-radiu
 
 <datalist id="dlSeries"></datalist>
 
-<div class="toast" id="toast" role="status" aria-live="polite"><span class="pt"></span><span id="toastTxt"></span></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><span class="pt"></span><span id="toastTxt"></span><button type="button" id="toastBtn" class="hide">Desfazer</button></div>
 
 <script>
 /* ============ SUPABASE (projeto financeiro.sorellai · tabelas psn_*) ============ */
@@ -715,6 +968,7 @@ function md(s){return esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")}
 function nrm(s){return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
 let tt; function toast(m,err){
   $("#toastTxt").textContent=m;
+  const bd=$("#toastBtn"); if(bd){ bd.classList.add("hide"); bd.onclick=null }
   const e=$("#toast"); e.className="toast on"+(err?" err":"");
   clearTimeout(tt); tt=setTimeout(()=>e.classList.remove("on"),2400);
 }
@@ -778,6 +1032,9 @@ function extrairUrl(s){
 /* ============ ROTAS ============ */
 function rota(){
   const hash=location.hash;
+  hjLimpar();
+  /* Hoje (#/), #/calendario, #/banco, #/lixeira, #/pauta/<id>: módulo Pauta (ver bloco HOJE mais abaixo) */
+  if(hjEhRota(hash)){ atual=null; busca=""; hjEntrar(); window.scrollTo(0,0); return }
   if(hash==="#/metricas"){ atual=null; busca=""; renderMetricas(); window.scrollTo(0,0); return }
   const capMatch = hash.match(/^#\/capturar(?:\?(.*))?$/);
   if(capMatch){
@@ -791,7 +1048,7 @@ function rota(){
   }
   const m=hash.match(/^#\/c\/(.+)$/);
   atual = m ? criadores.find(c=>c.id===m[1]) : null;
-  if(m && !atual){ location.hash="#/"; return }
+  if(m && !atual){ location.hash="#/canais"; return }
   busca=""; focoFiltro=serieFiltro=temaFiltro=null;
   if(atual) delete temasTentado[atual.id];
   filtro = (atual && atual.finalidade==="ideias") ? "pendentes" : "todas";
@@ -801,7 +1058,12 @@ window.addEventListener("hashchange",rota);
 let rz; window.addEventListener("resize",()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(atual) render(); else if(location.hash==="#/metricas"&&MET.dados&&MET._graf) MET._graf() },160) });
 
 /* ============ RENDER ============ */
-function render(){ if(location.hash==="#/metricas") return renderMetricas(); atual ? renderBoard() : renderHome() }
+function render(){
+  hjLimpar();
+  if(hjEhRota(location.hash)) return hjRender();
+  if(location.hash==="#/metricas") return renderMetricas();
+  atual ? renderBoard() : renderHome()
+}
 
 /* pasta de canal — muda de cara conforme finalidade */
 function pastaHTML(c){
@@ -850,12 +1112,13 @@ function renderHome(){
   }).length;
   $("#hd").innerHTML = `
     <div class="hrow marca">
+      <button class="icb" id="bHoje" aria-label="Voltar ao Hoje">←</button>
       <div class="selo"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="15"
         stroke="#4A16A8" stroke-width="6" stroke-dasharray="70 100" stroke-linecap="round"
         transform="rotate(-90 24 24)"/></svg></div>
       <div class="tt">
-        <div class="disp" style="font-size:var(--t-lg)">planejamento sem neura</div>
-        <div class="rotulo" style="color:var(--texto-invertido-fraco);margin-top:2px">GlowUp Express · PSN 3.0</div>
+        <div class="disp" style="font-size:var(--t-lg)">canais</div>
+        <div class="rotulo" style="color:var(--texto-invertido-fraco);margin-top:2px">referências e funil</div>
       </div>
     </div>
     <div class="placar">
@@ -867,6 +1130,7 @@ function renderHome(){
       <input class="campo campo-inv" id="hBusca" type="text" placeholder="Buscar canal"
       value="${esc(busca)}" autocomplete="off"></div>`:""}`;
   $("#abas").classList.add("hide");
+  $("#bHoje").onclick=()=>location.hash="#/";
 
   const lista = busca ? criadores.filter(c=>nrm(c.nome+" "+(c.handle||"")).includes(nrm(busca))) : criadores;
   const view=$("#view"); view.className="territorio"; view.classList.remove("clara");
@@ -944,7 +1208,7 @@ function renderPainelIdeias(){
       <input class="campo campo-inv" id="bBusca" type="text" placeholder="Buscar por título ou motivo"
         value="${esc(busca)}" autocomplete="off"></div>`;
   $("#abas").classList.add("hide");
-  $("#bVoltar").onclick=()=>location.hash="#/";
+  $("#bVoltar").onclick=()=>location.hash="#/canais";
   $("#bMenu").onclick=menuCanal;
   const bb=$("#bBusca");
   bb.oninput=e=>{ busca=e.target.value; const p=e.target.selectionStart;
@@ -1014,7 +1278,7 @@ function renderPainelIdeias(){
   $("#fabslot").innerHTML = `<div class="fabs">
     <button class="btn btn-sec" id="fCanais">← Canais</button>
     <button class="btn btn-ganho" id="fNovaIdeia">⚡ Nova ideia</button></div>`;
-  $("#fCanais").onclick=()=>location.hash="#/";
+  $("#fCanais").onclick=()=>location.hash="#/canais";
   $("#fNovaIdeia").onclick=()=>abrirQC(c.id);
 }
 
@@ -1093,7 +1357,7 @@ function renderBoard(){
     <div class="buscabox" style="margin-top:var(--e4)"><span class="lupa">⌕</span>
       <input class="campo campo-inv" id="bBusca" type="text" placeholder="Buscar ideia, bolha ou trecho do roteiro"
         value="${esc(busca)}" autocomplete="off"></div>`;
-  $("#bVoltar").onclick=()=>location.hash="#/";
+  $("#bVoltar").onclick=()=>location.hash="#/canais";
   $("#bIntencao").onclick=abrirIntencao;
   $("#bMenu").onclick=menuCanal;
   const bb=$("#bBusca");
@@ -1153,7 +1417,7 @@ function renderBoard(){
   $("#fabslot").innerHTML = `<div class="fabs">
     <button class="btn btn-sec" id="fCanais">← Canais</button>
     <button class="btn btn-ganho" id="fNovaIdeia">⚡ Nova ideia</button></div>`;
-  $("#fCanais").onclick=()=>location.hash="#/";
+  $("#fCanais").onclick=()=>location.hash="#/canais";
   $("#fNovaIdeia").onclick=()=>abrirQC(c.id, isDesk()?"tempestade":stage);
 }
 
@@ -1368,7 +1632,7 @@ async function excluirCanal(){
     await db("psn_criadores?id=eq."+atual.id,{method:"DELETE"});
     criadores=criadores.filter(c=>c.id!==atual.id);
     ideias=ideias.filter(i=>i.criador_id!==atual.id);
-    location.hash="#/"; toast("Canal excluído");
+    location.hash="#/canais"; toast("Canal excluído");
   }catch(e){ toast("Falhou ao excluir",1) }
 }
 
@@ -1442,8 +1706,8 @@ function abrirQCExterno(url){
 }
 function fecharQC(){ $("#qc").classList.add("hide"); document.body.style.overflow=""; qcExterno=false }
 $("#qcCanalSel").onchange=e=>pintarQCCanal(e.target.value);
-$("#qcCancel").onclick=()=>{ const ext=qcExterno; fecharQC(); if(ext) location.hash="#/" };
-$("#qc").onclick=e=>{ if(e.target.id==="qc"){ const ext=qcExterno; fecharQC(); if(ext) location.hash="#/" } };
+$("#qcCancel").onclick=()=>{ const ext=qcExterno; fecharQC(); if(ext) location.hash="#/canais" };
+$("#qc").onclick=e=>{ if(e.target.id==="qc"){ const ext=qcExterno; fecharQC(); if(ext) location.hash="#/canais" } };
 $("#qcTxt").addEventListener("keydown",e=>{ if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)) $("#qcSave").click() });
 $("#qcColar").onclick=async()=>{
   try{
@@ -1475,11 +1739,11 @@ $("#qcSave").onclick=async()=>{
   try{
     const [novo]=await db("psn_ideias",{method:"POST",body:JSON.stringify(payload)});
     ideias.unshift(novo);
-    if(voltarHome) location.hash="#/"; else render();
+    if(voltarHome) location.hash="#/canais"; else render();
     toast("Ideia salva");
   }catch(e){
     filaAdd(payload);
-    if(voltarHome) location.hash="#/";
+    if(voltarHome) location.hash="#/canais";
     toast("Sem internet — guardei no aparelho ⚡");
   }
 };
@@ -1928,7 +2192,7 @@ $("#s2Done").onclick=async()=>{ await salvarIntencao(atual); toast("Salvo"); fec
 /* Esc fecha a camada mais alta */
 document.addEventListener("keydown",e=>{
   if(e.key!=="Escape") return;
-  if(!$("#qc").classList.contains("hide")){ const ext=qcExterno; fecharQC(); if(ext) location.hash="#/"; return }
+  if(!$("#qc").classList.contains("hide")){ const ext=qcExterno; fecharQC(); if(ext) location.hash="#/canais"; return }
   if(!$("#menu").classList.contains("hide")) return fecharMenu();
   if(!$("#sheet3").classList.contains("hide")) return fechar3();
   if(!$("#sheet2").classList.contains("hide")) return fechar2();
@@ -2142,7 +2406,7 @@ function metAnaliseHTML(a){
 function renderMetricas(){
   atual=null;
   $("#hd").innerHTML=`<div class="hrow">
-    <button class="icb" id="bVoltar" aria-label="Voltar aos canais">←</button>
+    <button class="icb" id="bVoltar" aria-label="Voltar ao Hoje">←</button>
     <div class="tt"><div class="n1">📊 Métricas</div><div class="n2">Instagram · visão geral</div></div></div>`;
   $("#bVoltar").onclick=()=>location.hash="#/";
   $("#abas").classList.add("hide"); $("#fabslot").innerHTML="";
@@ -2206,6 +2470,812 @@ function renderMetricas(){
   if($("#mDe")){ $("#mDe").onchange=aplicar; $("#mAte").onchange=aplicar }
   if(D&&MET._graf) MET._graf();
 }
+
+/* ============ HOJE · CALENDÁRIO · BANCO · LIXEIRA · FICHA (módulo Pauta em 2 portões) ============
+   Spec: docs/UX-HOJE.md · protótipo aprovado: docs/prototipo-hoje.html · banco: supabase/migrations/20261010_psn_pauta_v1.sql
+   Rotas: #/ (Hoje) · #/calendario · #/banco · #/lixeira · #/pauta/<id>. O app (anon) só faz PATCH nas colunas liberadas
+   e nas transições permitidas pelo trigger; erro 42501 ou de rede reverte a tela e avisa. Toda ação tem Desfazer de 5 s
+   e só grava depois dele (ou na hora, se a página for escondida).
+
+   MODO DE TESTE (só local): abra index.html?demo=1#/ (o ?demo=1 vem ANTES do #). O módulo usa dados em memória
+   (copiados do protótipo), NÃO lê e NÃO grava no Supabase, fixa o relógio em 08/10/2026 e mostra a faixa "modo de teste".
+   Estados da manhã: &estado=manha (padrão) | producao | revisar | feito | falhou. Serve só para conferência visual. */
+const HJ_DEMO=(()=>{ try{ return new URLSearchParams(location.search).get("demo")==="1" }catch(e){ return false } })();
+const HJ_EST_DEMO=(()=>{ try{ return new URLSearchParams(location.search).get("estado")||"manha" }catch(e){ return "manha" } })();
+const HJ_TZ="America/Sao_Paulo";
+const HJ_FMT=new Intl.DateTimeFormat("en-GB",{timeZone:HJ_TZ,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"});
+const HJ_DIAS=["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+const HJ_DIAS3=["dom","seg","ter","qua","qui","sex","sáb"];
+const HJ_MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const HJ_URG={U01:"Não confia em quem ensina",U02:"Falta o básico",U03:"Ficar para trás",U04:"Hype x valor",U05:"Perder o emprego",
+  U06:"Pode usar no trabalho?",U07:"Empresa não dá nem treina",U08:"Vazar dado",U09:"IA erra e vira retrabalho",U10:"Só teoria"};
+const HJ_LIN={L1:"IA no trabalho sem medo",L2:"Do zero de verdade 2026",L3:"IA com segurança",L4:"O COMO no trabalho real",L5:"Radar sem hype"};
+const HJ_DEG={D0:"Isca grátis",D1:"Low ticket",D2:"Turma ao vivo",D3:"Clube",D4:"Empresas"};
+const HJ_FORM={estatico:{nome:"Estático",ic:"▦"},reels:{nome:"Reels",ic:"▶"}};
+const HJ_STATUS_TX={ideia:"no banco",sugerida:"sugestão de hoje",aprovada_producao:"na fila de produção",em_producao:"em produção",
+  para_revisar:"pronto para revisar",ajustar:"ajuste pedido",aprovado:"aprovado · falta postar",postado:"postado",descartado:"na lixeira"};
+const HJ_COLS="id,data,formato,ordem,status,slug,tema,gancho,angulo,estrutura,roteiro_resumo,urgencia,linha,degrau,por_que,fontes,confirmar,valida_ate,legenda,reels,cenas,dur,slides,avisos,comentario,comentario_em,ajuste_pre,agendado_para,horario_sugerido,ig_midia_id,postado_em,postado_origem,decidido_em,aprovado_producao_em,em_producao_em,produzido_em,revisado_em,descartado_em,notion_url,origem,criado_em";
+const HJ_ERRO_GRAVAR="Não deu para salvar. Confira a internet e tente de novo.";
+const HJ_LIXEIRA_SVG=`<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>`;
+
+function hjSP(d){
+  d=d instanceof Date?d:new Date(d); const o={}; HJ_FMT.formatToParts(d).forEach(x=>{ o[x.type]=x.value });
+  return {dia:o.year+"-"+o.month+"-"+o.day,H:+o.hour,M:+o.minute,hm:o.hour+":"+o.minute};
+}
+const HJ_DEMO_AGORA=new Date({manha:"2026-10-08T07:12:00-03:00",producao:"2026-10-08T08:10:00-03:00",revisar:"2026-10-08T08:41:00-03:00",
+  feito:"2026-10-08T20:10:00-03:00",falhou:"2026-10-08T07:12:00-03:00"}[HJ_EST_DEMO]||"2026-10-08T07:12:00-03:00");
+const hjAgora=()=>HJ_DEMO?HJ_DEMO_AGORA:new Date();
+const hjHoje=()=>hjSP(hjAgora()).dia;
+const hjDia=v=>v?hjSP(v).dia:"";
+const hjHM=v=>v?hjSP(v).hm:"";
+const hjPad=n=>String(n).padStart(2,"0");
+const hjDow=iso=>new Date(iso+"T12:00:00Z").getUTCDay();
+const hjSegunda=iso=>addDias(iso,-((hjDow(iso)+6)%7));
+const hjAt=(dia,hm)=>new Date(dia+"T"+hm+":00-03:00");   // Brasil sem horário de verão desde 2019
+const hjDM=iso=>(+iso.slice(8,10))+"/"+(+iso.slice(5,7));
+const hjE=v=>esc(v==null?"":String(v));
+function hjDiaTxt(iso){
+  const h=hjHoje(); if(iso===h) return "hoje"; if(iso===addDias(h,1)) return "amanhã"; if(iso===addDias(h,-1)) return "ontem";
+  return HJ_DIAS3[hjDow(iso)]+" "+hjDM(iso);
+}
+
+/* ---------- estado ---------- */
+const HJ={pautas:[],dia:null,analise:null,horarios:[],midias:[],ontem:null,pronto:false,carregando:false,erro:false,seq:0,mut:0,
+  carregadoEm:0,de:"#/",filtro:{u:"",l:"",f:"",ordem:"recentes"},alvo:null,ajuste:false,ajusteTxt:"",hora:false,cal:null,
+  pend:new Set(),cadeia:{},rascunho:{},vistoOk:false,horCache:null};
+const hjGet=id=>HJ.pautas.find(p=>p.id===id);
+/* pauta produzida na rotina antiga (Notion), nunca revisada: fica só no grupo recolhido do Banco */
+const hjLegado=p=>p.origem==="notion"&&["para_revisar","ajustar","aprovado","postado"].includes(p.status)&&!p.aprovado_producao_em&&!p.decidido_em;
+const hjAtivas=()=>HJ.pautas.filter(p=>!hjLegado(p));
+const hjNoBanco=()=>HJ.pautas.filter(p=>p.status==="ideia");
+const hjNaLixeira=()=>HJ.pautas.filter(p=>p.status==="descartado");
+const hjEhSugHoje=p=>p.origem==="rotina"&&p.ordem!=null&&p.data===hjHoje();
+function hjDiaDaPauta(p){
+  if(p.status==="postado"&&p.postado_em) return hjDia(p.postado_em);
+  return p.data||(p.agendado_para?hjDia(p.agendado_para):"")||(p.aprovado_producao_em?hjDia(p.aprovado_producao_em):"");
+}
+function hjLista(v){
+  if(!v) return [];
+  if(typeof v==="string") return v.split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  if(Array.isArray(v)) return v.map(x=>typeof x==="string"?x:(x&&(x.texto||x.titulo||x.resumo||x.t||x.c||""))||"").filter(Boolean);
+  return [];
+}
+function hjCenas(p){
+  if(Array.isArray(p.cenas)&&p.cenas.length) return p.cenas;
+  if(Array.isArray(p.reels)&&p.reels.length) return p.reels.map(x=>({t:x.t||x.tempo||"",c:x.c||x.cena||x.visual||"",f:x.f||x.fala||""}));
+  return [];
+}
+const hjPorQue=p=>Array.isArray(p.por_que)?p.por_que.map(x=>Array.isArray(x)?{tipo:x[0],texto:x[1]}:x).filter(x=>x&&x.texto):[];
+function hjSlideUrl(s){
+  const path=typeof s==="string"?s:(s&&(s.path||s.url))||""; if(!path) return "";
+  if(/^(https?:|data:)/i.test(path)) return path;
+  return SB_URL+"/storage/v1/object/public/psn-pautas/"+path.replace(/^\/+/,"");
+}
+const hjSlides=p=>Array.isArray(p.slides)?[...p.slides].sort((a,b)=>(a&&a.n||0)-(b&&b.n||0)).map(hjSlideUrl).filter(Boolean):[];
+const hjPermalink=p=>{ const m=p.ig_midia_id&&HJ.midias.find(x=>x.id===p.ig_midia_id); return m&&/^https:\/\//i.test(m.permalink||"")?m.permalink:"" };
+
+/* ---------- horários do público (psn_ig_horarios) ---------- */
+/* devolve {fonte, dias:[7 × [{h,ini,fim,pico,v}] em ordem cronológica, top = índice da mais forte]} ou null sem dados */
+function hjHorarios(){
+  if(HJ.horCache&&HJ.horCache.src===HJ.horarios) return HJ.horCache.val;
+  let val=null; const rows=(HJ.horarios||[]).filter(r=>r.valor!=null&&+r.valor>0);
+  if(rows.length){
+    const fonte=rows.some(r=>r.fonte==="online_followers")?"online_followers":"historico";
+    const dias=[0,1,2,3,4,5,6].map(d=>{
+      const rs=rows.filter(r=>r.fonte===fonte&&+r.dia_semana===d).sort((a,b)=>b.valor-a.valor); if(!rs.length) return null;
+      const a=rs[0], b=rs.find(r=>Math.abs(r.hora-a.hora)>=2), sel=[a,b].filter(Boolean);
+      const fs=sel.map(r=>({h:+r.hora,ini:hjPad(r.hora)+":00",fim:hjPad((+r.hora+1)%24)+":00",pico:hjPad(r.hora)+":00",v:+r.valor}));
+      const topH=fs[0].h; fs.sort((x,y)=>x.h-y.h); return {fs,top:fs.findIndex(f=>f.h===topH)};
+    });
+    if(dias.some(Boolean)) val={fonte,dias};
+  }
+  HJ.horCache={src:HJ.horarios,val}; return val;
+}
+function hjHorDia(iso){ const H=hjHorarios(); return H?H.dias[hjDow(iso)]:null }
+/* estático = pico da faixa mais forte; Reels = pico da outra faixa (os dois não colidem) */
+function hjSugHora(iso,f){
+  const d=hjHorDia(iso); if(!d) return null; const top=d.fs[d.top], outra=d.fs.find((_,i)=>i!==d.top);
+  return (f==="estatico"?top:(outra||top)).pico;
+}
+function hjHoraDe(p){   // {hm, editado} — agendado_para (se editado) → horario_sugerido → melhor horário do dia
+  const dia=hjDiaDaPauta(p)||(HJ.alvo&&HJ.alvo.dia)||hjHoje();
+  if(p.agendado_para){ const hm=hjHM(p.agendado_para), sug=p.horario_sugerido?hjHM(p.horario_sugerido):"";
+    return {hm,editado:!sug||sug!==hm}; }
+  if(p.horario_sugerido) return {hm:hjHM(p.horario_sugerido),editado:false};
+  const s=hjSugHora(dia,p.formato); return {hm:s,editado:false};
+}
+
+/* ---------- previsão de produção: rodada de hora em hora, 07–20h BRT, ~30 min por pauta ---------- */
+function hjPrev(base){
+  const s=hjSP(base||hjAgora()); let slot=s.H+1, amanha=false;
+  if(slot<7) slot=7; if(slot>20){ slot=7; amanha=true }
+  const pronto=hjPad(slot)+":30";
+  return {rodada:hjPad(slot)+":00",pronto,amanha,txt:amanha?"amanhã ~"+pronto:"até ~"+pronto};
+}
+function hjProxColeta(){   // pg_cron '5 */4 * * *' (UTC) = 21:05, 01:05, 05:05, 09:05, 13:05, 17:05 em Brasília
+  const s=hjSP(hjAgora()), min=s.H*60+s.M, slots=[65,305,545,785,1025,1265];
+  const n=slots.find(x=>x>min)??slots[0]; return hjPad(Math.floor(n/60))+":"+hjPad(n%60);
+}
+
+/* ---------- MODO DE TESTE: dados em memória (copiados do protótipo; nada vai ao Supabase) ---------- */
+function hjMontarDemo(){
+  const hoje="2026-10-08", T=(d,hm)=>d+"T"+hm+":00-03:00";
+  const quebra=(s,n)=>{ const l=[]; let c=""; s.split(" ").forEach(w=>{ if((c+" "+w).trim().length>n){ l.push(c); c=w } else c=(c+" "+w).trim() }); if(c) l.push(c); return l };
+  const svg=(i,tit,bg,fg)=>"data:image/svg+xml;utf8,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 500'><rect width='400' height='500' fill='${bg}'/><text x='32' y='56' font-family='sans-serif' font-size='15' fill='${fg}' opacity='.7'>A IA concorda com você</text>${quebra(tit,17).map((l,k)=>`<text x='32' y='${230+k*40}' font-family='sans-serif' font-weight='700' font-size='34' fill='${fg}'>${l.replace(/&/g,"&amp;")}</text>`).join("")}<text x='32' y='470' font-family='sans-serif' font-size='13' fill='${fg}' opacity='.7'>@dudafonte.s</text><text x='340' y='470' font-family='sans-serif' font-size='13' fill='${fg}' opacity='.7'>${i}/11</text></svg>`);
+  const TIT=["49% mais do que um humano concordaria","Ou seja, toda vez que você pede um conselho","49% mais concordância do que um humano daria","A boa notícia:","A solução é criar um conselho de IAs.","Em vez de pedir uma única resposta,","Peça para a IA responder como 5 especialistas:","Depois, peça que eles revisem as respostas dos outros.","Por último, entra o presidente do conselho","A IA para de ser espelho e vira conselho","O prompt completo está na legenda"];
+  const TEMAS=[["#1F1E1D","#F4F1EC"],["#1F1E1D","#F4F1EC"],["#F1ECE4","#1F1E1D"],["#5E0B1A","#F4EDE6"]];
+  const slidesE1=TIT.map((t,i)=>({n:i+1,path:svg(i+1,t,...TEMAS[i%4])}));
+  const LEG_E1="A IA concorda com você 49% mais do que um humano concordaria. Quem mediu foi Stanford, num estudo publicado na Science em março de 2026.\n\nEles testaram 11 modelos (ChatGPT, Claude, Gemini e outros) com dilemas reais. Mesmo quando a pessoa estava errada, a IA deu razão a ela em cerca de metade das vezes.\n\nOu seja: se você usa IA pra pensar uma decisão, pode estar só ouvindo a sua própria opinião de volta.\n\nO jeito que eu uso pra fugir disso vem do LLM Council do Andrej Karpathy: em vez de uma resposta, um conselho que discorda entre si.\n\nSalva pra usar na próxima decisão difícil e me conta o que o seu conselho disse.\n\nFonte: Cheng et al., Science, 2026 (Stanford).\n\n#inteligenciaartificial #IA #chatgpt #claude #gemini #prompt #produtividade";
+  const P=[]; let n=0;
+  const add=o=>{ P.push({id:"p"+(++n),data:null,ordem:null,slug:null,gancho:null,angulo:null,estrutura:null,roteiro_resumo:null,urgencia:null,linha:null,degrau:"D0",por_que:null,fontes:null,confirmar:null,
+    valida_ate:null,legenda:null,reels:null,cenas:null,dur:null,slides:null,avisos:null,comentario:null,comentario_em:null,ajuste_pre:null,agendado_para:null,horario_sugerido:null,
+    ig_midia_id:null,postado_em:null,postado_origem:null,decidido_em:null,aprovado_producao_em:null,em_producao_em:null,produzido_em:null,revisado_em:null,descartado_em:null,
+    notion_url:null,origem:"rotina",criado_em:T(hoje,"05:49"),...o}); return P[P.length-1] };
+  const sug=(id,o)=>{ const p=add({status:"sugerida",data:hoje,...o}); p.id=id; return p };
+  const e1=sug("e1",{formato:"estatico",ordem:1,tema:"A IA concorda com você 49% mais do que um humano",gancho:"A IA concorda com você 49% mais do que um humano concordaria",estrutura:"notícia comentada",urgencia:"U09",linha:"L5",
+    roteiro_resumo:["Capa: 49% mais concordância que um humano (logos das 3 ferramentas)","Ou seja: quando pede conselho, você recebe a sua opinião de volta","O número: Stanford testou 11 IAs; deu razão até a quem estava errado","A boa notícia: dá para resolver com um prompt","A solução: um conselho de 5 especialistas (LLM Council, Karpathy)","Eles revisam as respostas uns dos outros sem saber quem escreveu","Um presidente junta tudo e dá a recomendação final","CTA: o prompt completo está na legenda, salva"],
+    por_que:[{tipo:"sinal",texto:"Carrossel ainda salva pouco (0,75 de média): tutorial com prompt pronto para copiar puxa salvo."},{tipo:"radar",texto:"Estudo de Stanford na Science (mar/2026) ainda pouco explicado em português."},{tipo:"rodízio",texto:"ChatGPT, Claude e Gemini juntos: tema comum vira IA com os logos."}],
+    fontes:"Cheng et al., Sycophantic AI decreases prosocial intentions and promotes dependence, Science, 2026 (Stanford).",legenda:LEG_E1});
+  const e2=sug("e2",{formato:"estatico",ordem:2,tema:"O que nunca colar no ChatGPT (nem no Gemini) do trabalho",gancho:"5 coisas que você nunca deve colar na IA do trabalho",estrutura:"lista",urgencia:"U08",linha:"L3",
+    roteiro_resumo:["Capa: 5 coisas que você nunca cola na IA do trabalho","1. Dado de cliente: nome, CPF, contrato","2. Salário e dado de RH","3. Senha, chave e acesso","4. Documento marcado como confidencial","Como anonimizar antes: o truque do apelido","CTA: comenta GUIA que eu mando o checklist"],
+    por_que:[{tipo:"público",texto:"U08 (vazar dado) não aparece nas pautas novas desde 05/10."},{tipo:"sinal",texto:"Carrossel salva pouco: lista curta com checklist para guardar puxa salvo."},{tipo:"banco",texto:"Ideia guardada em 05/10, reproposta hoje."}],
+    fontes:"Sem dado externo; a política de IA da empresa de quem assiste prevalece.",legenda:"Antes de colar qualquer coisa na IA do trabalho, pergunta: isso identifica alguém ou revela um segredo da empresa?\n\n#ia #chatgpt #seguranca #trabalho"});
+  const e3=sug("e3",{formato:"estatico",ordem:3,tema:"\"A IA vai te substituir\": mito ou verdade, tarefa por tarefa",gancho:"A IA não vai tirar o seu emprego. Mas vai mudar essas 4 tarefas",estrutura:"mito×verdade",urgencia:"U05",linha:"L1",
+    roteiro_resumo:["Capa: o medo dito em voz alta","Mito: a IA faz o seu trabalho inteiro","Verdade: ela faz partes (rascunho, resumo, primeira versão)","Mito: quem não usa vai ser demitida amanhã","Verdade: quem confere e decide continua valendo mais","O que muda na sua semana, com 1 exemplo real","CTA: manda para a colega que tem esse medo"],
+    por_que:[{tipo:"público",texto:"U05 não aparece há mais de 30 dias (só em teste)."},{tipo:"sinal",texto:"Tema de identificação: bom para compartilhamento."},{tipo:"degrau",texto:"D0, sem promessa de renda nem de emprego garantido."}],
+    fontes:"Sem dado externo; se usar número de mercado, a produção cita a fonte.",confirmar:"Um exemplo seu de tarefa que a IA mudou no BI.",legenda:"A IA não vai tirar o seu emprego amanhã. Mas ela já está mudando 4 tarefas do seu dia.\n\n#ia #carreira #trabalho"});
+  const r1=sug("r1",{formato:"reels",ordem:1,tema:"Copilot no Outlook: 40 e-mails resumidos em 1 minuto, sem colar nada fora",gancho:"Você ainda lê os 40 e-mails da segunda-feira um por um?",estrutura:"tutorial",urgencia:"U07",linha:"L4",dur:"~36 s",
+    cenas:[{t:"0–3 s",c:"Duda, close, olhando para a câmera",f:"Você ainda lê os 40 e-mails da segunda-feira um por um?"},{t:"3–10 s",c:"Tela do Outlook com a caixa cheia",f:"Abre o Outlook e clica no Copilot. Ele já vem na sua empresa."},{t:"10–18 s",c:"Tela: pedido digitado",f:"Pede: resume essa conversa em 3 linhas."},{t:"18–26 s",c:"Tela: lista de pedidos e prazos",f:"Depois: o que estão pedindo pra mim, e até quando?"},{t:"26–32 s",c:"Duda, plano médio",f:"Confere antes de mandar. Ele erra nome e data."},{t:"32–36 s",c:"Duda, câmera",f:"Salva e manda para quem vive afogada em e-mail."}],
+    por_que:[{tipo:"sinal",texto:"Reels de identificação puxam compartilhamento (59 nos últimos 10 posts)."},{tipo:"rodízio",texto:"Copilot não aparece desde 25/09; ontem foi Claude."},{tipo:"público",texto:"U07: quem tem Copilot pela empresa e ninguém ensinou."}],
+    fontes:"Experiência própria; sem afirmação nova sobre o produto.",confirmar:"Se a sua conta do trabalho tem o Copilot no Outlook para gravar a tela.",legenda:"Segunda-feira, 40 e-mails. Em vez de ler um por um, peça ao Copilot do Outlook: resuma a conversa em 3 linhas.\n\nSalva e manda para quem vive afogada em e-mail.\n\n#copilot #outlook #ia #produtividade"});
+  sug("r2",{formato:"reels",ordem:2,tema:"Seu chefe perguntou se você usa IA? Como responder sem mentir",gancho:"Seu chefe perguntou se você usa IA e você disse que não?",estrutura:"identificação",urgencia:"U06",linha:"L1",dur:"~30 s",
+    cenas:[{t:"0–3 s",c:"Duda, close, sobrancelha levantada",f:"Seu chefe perguntou se você usa IA e você disse que não?"},{t:"3–8 s",c:"Duda, plano médio, mesa de trabalho",f:"Calma. Quase todo mundo já passou por isso."},{t:"8–15 s",c:"Texto na tela: resposta 1",f:"Eu uso para rascunho e resumo. Depois eu confiro tudo."},{t:"15–22 s",c:"Texto na tela: resposta 2",f:"Eu nunca colo dado de cliente. Anonimizo antes."},{t:"22–27 s",c:"Texto na tela: resposta 3",f:"Se a empresa tem regra, eu sigo. Se não tem, posso ajudar a criar."},{t:"27–30 s",c:"Duda, câmera",f:"Salva para a próxima conversa com o seu chefe."}],
+    por_que:[{tipo:"sinal",texto:"Reels de identificação puxam compartilhamento (59 nos últimos 10 posts)."},{tipo:"público",texto:"U06: quem esconde que usa IA no trabalho."}],fontes:"Sem dado externo.",legenda:"Se o seu chefe perguntar se você usa IA, não precisa esconder.\n\n#ia #trabalho #carreira"});
+  sug("r3",{formato:"reels",ordem:3,tema:"Errei 3 vezes com o ChatGPT no trabalho para você não errar",gancho:"Eu errei 3 vezes com o ChatGPT no trabalho. Você não precisa.",estrutura:"erro comum",urgencia:"U09",linha:"L2",dur:"~34 s",
+    cenas:[{t:"0–3 s",c:"Duda, close, riso sem graça",f:"Eu errei 3 vezes com o ChatGPT no trabalho. Você não precisa."},{t:"3–12 s",c:"Tela: o pedido que deu errado",f:"Erro 1: [Duda: erro real 1]. Agora eu faço assim: [correção]."},{t:"30–34 s",c:"Duda, câmera",f:"Qual foi o seu? Conta aqui embaixo."}],
+    por_que:[{tipo:"sinal",texto:"Vídeo de erro real tende a gerar comentário; comentário alimenta o alcance."}],fontes:"Experiência própria da Duda.",confirmar:"Escolher os 3 erros reais.",legenda:"3 erros reais que eu cometi com o ChatGPT no trabalho.\n\n#chatgpt #ia #trabalho #erros"});
+  const BANCO=[
+   ["reels","Quanto tempo a IA te poupa de verdade? Cronometra uma tarefa","U10","L4","D0","2026-10-08","Medir uma tarefa antes e depois de usar IA (cronômetro, 3 passos) em vez de confiar na sensação. Prova da Duda: ela mede o ganho no BI.",null,"Seu tempo antes e depois numa tarefa do BI."],
+   ["estatico","O botão novo do Copilot no Word, Excel e PowerPoint (o que a empresa já paga)","U07","L2","D0","2026-10-07","Microsoft 365 Copilot ganha campo de pedido direto no botão do Copilot (rollout set–dez/2026). Tutorial de 3 pedidos prontos.",null,null],
+   ["reels","Claude para quem não é de tecnologia: o primeiro pedido em 10 minutos","U02","L2","D0","2026-10-07","Passo a passo do zero no Claude (criar conta, 1º pedido, pedir revisão) com prompts reais da Duda.",null,null],
+   ["estatico","Gems do Gemini somem em 20/10: como não perder o que você criou","U04","L5","D0","2026-10-07","Google avisa que os Gems saem em 20/10 e viram Skills; passo a passo para salvar as instruções antes.","2026-10-20","Confirmação oficial do Google antes de produzir."],
+   ["estatico","IA para RH: 10 usos para amanhã sem expor dado de ninguém","U07","L4","D4","2026-10-05","Lista prática por área (RH) com o truque do apelido; CTA suave para levar ao time.",null,null],
+   ["reels","Antes/depois: a rotina de 2 horas que virou 15 minutos","U10","L4","D0","2026-10-05","Caso real de BI/dados da Duda com números. Sem números inventados.",null,"Qual rotina, tempo antes e depois."],
+   ["estatico","Gemini grátis muda dia 9: o que você perde e o que fazer","U07","L5","D0","2026-10-05","Quem usa a IA grátis no trabalho perde o 3.6 Flash e o 3.1 Pro em 09/10 e fica só no 3.5 Flash-Lite. O que muda e quando vale pagar.","2026-10-10",null],
+   ["estatico","Prompt de planilha que ninguém te ensinou: fórmula a partir de texto","U02","L2","D0","2026-08-20","Pedir a fórmula em português e conferir com 3 linhas de teste antes de aplicar na base inteira.",null,null]];
+  BANCO.forEach(([formato,tema,u,l,d,cr,ang,va,conf])=>add({formato,status:"ideia",tema,urgencia:u,linha:l,degrau:d,criado_em:T(cr,"10:00"),angulo:ang,valida_ate:va,confirmar:conf,origem:"notion"}));
+  [["Seu primeiro pedido ao Claude em 10 minutos","2026-10-08","U02"],["IA no RH: 5 usos para amanhã sem expor ninguém","2026-10-07","U07"],["O Gemini agora guarda a tarefa que você repete","2026-10-06","U10"],["O que nunca colar na IA do trabalho","2026-10-05","U08"]]
+   .forEach(([tema,d,u],i)=>add({formato:"estatico",status:"para_revisar",tema,data:d,urgencia:u,origem:"notion",criado_em:T(d,"09:00"),produzido_em:T(d,"09:00"),notion_url:"https://www.notion.so/exemplo-"+i}));
+  const lx=add({formato:"estatico",status:"descartado",tema:"Pode usar IA no trabalho? 3 perguntas para fazer ao seu gestor",urgencia:"U06",linha:"L1",degrau:"D4",origem:"notion",criado_em:T("2026-10-05","10:00"),
+    angulo:"Tirar o uso de IA do escondido com 3 perguntas objetivas (o que pode, com que dado, com qual ferramenta).",descartado_em:T("2026-10-07","18:20"),decidido_em:T("2026-10-07","18:20")});
+  const HD={"2026-09-21":"ER","2026-09-22":"E","2026-09-23":"R","2026-09-24":"ER","2026-09-25":"E","2026-09-26":"","2026-09-27":"R","2026-09-28":"E","2026-09-29":"ER","2026-09-30":"","2026-10-01":"E","2026-10-02":"ER","2026-10-03":"R","2026-10-04":"","2026-10-05":"ER","2026-10-06":"R","2026-10-07":"E"};
+  const TE=["IA no RH: 5 usos sem expor ninguém","Seu primeiro pedido ao Claude","O que nunca colar na IA do trabalho","O Gemini guarda a tarefa que você repete","3 prompts para resumir reunião","ChatGPT ou Claude: qual para cada tarefa","Como conferir o que a IA escreveu","Planilha com IA: 3 fórmulas prontas"];
+  const TR=["Resumir um PDF em 1 minuto","IA erra e você nem percebe","Prompt para e-mail difícil","Copilot no Teams: ata automática","Peça para a IA te contradizer","Gemini no Drive: achar arquivo","3 sinais de resposta inventada","Dia 1 com IA, sem medo"];
+  let i=0; Object.entries(HD).forEach(([d,k])=>{ i++;
+    if(k.includes("E")) add({formato:"estatico",status:"postado",data:d,tema:TE[i%TE.length],postado_em:T(d,"19:"+hjPad(4+(i*7)%46)),postado_origem:"auto",criado_em:T(d,"06:00"),aprovado_producao_em:T(d,"07:00"),decidido_em:T(d,"07:00")});
+    if(k.includes("R")) add({formato:"reels",status:"postado",data:d,tema:TR[i%TR.length],postado_em:T(d,"12:"+hjPad(8+(i*11)%44)),postado_origem:"auto",criado_em:T(d,"06:00"),aprovado_producao_em:T(d,"07:00"),decidido_em:T(d,"07:00")}) });
+  const est=HJ_EST_DEMO, g=id=>P.find(p=>p.id===id);
+  const to=(p,st,ex)=>Object.assign(p,{status:st},ex||{});
+  if(est==="producao"){ to(e1,"em_producao",{aprovado_producao_em:T(hoje,"07:15"),decidido_em:T(hoje,"07:15"),em_producao_em:T(hoje,"08:02")}); to(r1,"aprovada_producao",{aprovado_producao_em:T(hoje,"07:16"),decidido_em:T(hoje,"07:16")});
+    to(g("e2"),"ideia",{decidido_em:T(hoje,"07:16")}); to(g("e3"),"ideia",{decidido_em:T(hoje,"07:16")}); to(g("r2"),"ideia",{decidido_em:T(hoje,"07:16")}); to(g("r3"),"descartado",{decidido_em:T(hoje,"07:16"),descartado_em:T(hoje,"07:16")}) }
+  if(est==="revisar"){ const pr=(p,hm)=>to(p,"para_revisar",{aprovado_producao_em:T(hoje,"07:15"),decidido_em:T(hoje,"07:15"),produzido_em:T(hoje,hm)}); pr(e1,"08:24"); e1.slides=slidesE1; pr(r1,"08:31");
+    ["e2","e3","r2","r3"].forEach(id=>to(g(id),"ideia",{decidido_em:T(hoje,"07:16")})) }
+  if(est==="feito"){ to(e1,"postado",{aprovado_producao_em:T(hoje,"07:15"),decidido_em:T(hoje,"07:15"),produzido_em:T(hoje,"08:24"),postado_em:T(hoje,"19:42"),postado_origem:"auto",slides:slidesE1});
+    to(r1,"postado",{aprovado_producao_em:T(hoje,"07:16"),decidido_em:T(hoje,"07:16"),produzido_em:T(hoje,"08:31"),postado_em:T(hoje,"12:48"),postado_origem:"manual"});
+    to(g("e2"),"ideia",{decidido_em:T(hoje,"07:20")}); to(g("e3"),"descartado",{decidido_em:T(hoje,"07:20"),descartado_em:T(hoje,"07:20")}); to(g("r2"),"ideia",{decidido_em:T(hoje,"07:20")}); to(g("r3"),"ideia",{decidido_em:T(hoje,"07:20")}) }
+  if(est==="falhou"){ HJ.pautas=P.filter(p=>!(p.status==="sugerida")); HJ.dia=null }
+  else { HJ.pautas=P; HJ.dia={data:hoje,rotina_status:"ok",gerado_em:T(hoje,"05:49"),visto_em:null,sinal:"Reels de identificação puxam compartilhamento. Carrossel ainda salva pouco: prefira tutorial com prompt pronto e CTA de salvar."} }
+  HJ.analise=null; HJ.midias=[];
+  HJ.ontem={data:addDias(hoje,-1),reach:2696,saves:32,shares:59};
+  const HOR=[[[10,70],[20,95]],[[12,68],[19,100]],[[12,72],[19,96]],[[7,60],[19,98]],[[12,70],[19,100]],[[11,66],[18,88]],[[9,72],[20,90]]];
+  HJ.horarios=[]; HOR.forEach((fs,d)=>fs.forEach(([h,v])=>HJ.horarios.push({dia_semana:d,hora:h,valor:v,fonte:"online_followers"})));
+}
+
+/* ---------- carga ---------- */
+async function hjCarregar(forcar){
+  if(HJ.carregando) return;
+  if(HJ_DEMO){ HJ.mut++; hjMontarDemo(); HJ.pronto=true; HJ.erro=false; HJ.carregadoEm=Date.now(); return hjAtualizarTela() }
+  const seq=++HJ.seq, mut0=HJ.mut; HJ.carregando=true; if(!HJ.pronto) HJ.erro=false;
+  const hoje=hjHoje(), ok=p=>p.catch(e=>{ console.error(e); return null });
+  try{
+    const [pautas,dia]=await Promise.all([
+      dbTodas("psn_pauta?select="+HJ_COLS+"&order=criado_em.desc,id.asc"),
+      db("psn_pauta_dia?select=*&data=eq."+hoje)
+    ]);
+    const [analise,horarios,diaria,midias]=await Promise.all([
+      ok(db("psn_ig_analise?select=data,analise,sinal_pauta&data=lte."+hoje+"&order=data.desc&limit=2")),
+      ok(db("psn_ig_horarios?select=dia_semana,hora,valor,fonte")),
+      ok(db("psn_ig_conta_diaria?select=data,metrica,valor&data=gte."+addDias(hoje,-5)+"&data=lte."+hoje+"&order=data.desc")),
+      ok(db("psn_ig_midia?select=id,tipo,tipo_produto,legenda,permalink,publicado_em&order=publicado_em.desc&limit=500"))
+    ]);
+    if(seq!==HJ.seq) return;
+    /* ação do usuário durante a carga: mantém o estado local (a próxima carga acerta) */
+    if(HJ.mut===mut0&&!HJ.pend.size) HJ.pautas=pautas||[];
+    HJ.dia=(dia&&dia[0])||null; HJ.analise=analise||[]; HJ.horarios=horarios||[]; HJ.midias=midias||[];
+    HJ.ontem=hjOntem(diaria,hoje);
+    HJ.pronto=true; HJ.erro=false; HJ.carregadoEm=Date.now();
+    hjCarimbarVisto();
+  }catch(e){ console.error(e); if(seq===HJ.seq&&!HJ.pronto) HJ.erro=true }
+  if(seq===HJ.seq) HJ.carregando=false;
+  hjAtualizarTela();
+}
+/* números de ontem: mesmas funções do módulo Métricas (somaMet/fmtInt); usa o último dia com alcance até ontem */
+function hjOntem(rows,hoje){
+  if(!rows||!rows.length) return null;
+  const mapa={}; rows.forEach(r=>{ (mapa[r.data]??={})[r.metrica]=r.valor==null?null:Number(r.valor) });
+  const ds=Object.keys(mapa).filter(d=>d<hoje&&mapa[d].reach!=null).sort(); if(!ds.length) return null;
+  const d=ds[ds.length-1];
+  return {data:d,reach:somaMet(mapa,["reach"],d,d),saves:somaMet(mapa,["saves"],d,d),shares:somaMet(mapa,["shares"],d,d)};
+}
+/* primeira abertura do dia: psn_pauta_dia.visto_em (o trigger ignora se já houver valor) */
+function hjCarimbarVisto(){
+  if(HJ_DEMO||HJ.vistoOk||!HJ.dia||HJ.dia.visto_em) return;
+  HJ.vistoOk=true; const agora=new Date().toISOString();
+  hjPatch("psn_pauta_dia?data=eq."+HJ.dia.data+"&visto_em=is.null&select=data,visto_em",{visto_em:agora}).then(r=>{ if(r&&r[0]&&HJ.dia) HJ.dia.visto_em=r[0].visto_em }).catch(e=>console.error(e));
+}
+async function hjPatch(path,body,keep){
+  const res=await fetch(SB_URL+"/rest/v1/"+path,{method:"PATCH",keepalive:!!keep,
+    headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify(body)});
+  if(!res.ok){ const t=await res.text(); const er=new Error(t); er.status=res.status; throw er }
+  const t=await res.text(); return t?JSON.parse(t):[];
+}
+
+/* ---------- gravação adiada (Desfazer de 5 s) ---------- */
+function hjToast(msg,desfazer,err){
+  const t=$("#toast"), b=$("#toastBtn");
+  $("#toastTxt").textContent=msg; t.className="toast on"+(err?" err":"")+(desfazer?" comdes":"");
+  if(desfazer){ b.classList.remove("hide"); b.onclick=()=>{ t.classList.remove("on"); clearTimeout(tt); desfazer() } }
+  else { b.classList.add("hide"); b.onclick=null }
+  clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("on"),desfazer?5000:err?4500:2600);
+}
+/* aplica já na tela, mostra o toast com Desfazer e só manda o PATCH depois de 5 s */
+function hjAcao(id,patch,msg,depois){
+  const p=hjGet(id); if(!p) return null;
+  HJ.pend.forEach(it=>{ if(it.id===id) hjCommit(it) });   // grava antes o que já estava pendente nesta pauta
+  const antes={}; Object.keys(patch).forEach(k=>{ antes[k]=p[k] });
+  Object.assign(p,patch); HJ.mut++;
+  const item={id,patch,antes,feito:false,t:null}; item.t=setTimeout(()=>hjCommit(item),5000); HJ.pend.add(item);
+  hjAtualizarTela();
+  hjToast(msg,()=>{ if(item.feito) return; clearTimeout(item.t); HJ.pend.delete(item);
+    const q=hjGet(id); if(q) Object.assign(q,antes); HJ.mut++; hjAtualizarTela() });
+  if(depois) depois();
+  return item;
+}
+function hjCommit(item,keep){
+  if(item.feito) return Promise.resolve(); item.feito=true; clearTimeout(item.t); HJ.pend.delete(item);
+  const prev=HJ.cadeia[item.id]||Promise.resolve();
+  const run=prev.then(async()=>{
+    try{
+      if(HJ_DEMO) return;   // modo de teste: nunca grava
+      const rows=await hjPatch("psn_pauta?id=eq."+item.id+"&select="+HJ_COLS,item.patch,keep);
+      if(!rows||!rows.length) throw new Error("nenhuma linha atualizada");
+      const q=hjGet(item.id); if(q&&![...HJ.pend].some(x=>x.id===item.id)) Object.assign(q,rows[0]);
+    }catch(e){
+      console.error(e); const q=hjGet(item.id); if(q) Object.assign(q,item.antes); HJ.mut++;
+      hjToast(HJ_ERRO_GRAVAR,null,true); hjAtualizarTela();
+    }
+  });
+  HJ.cadeia[item.id]=run; return run;
+}
+function hjGravarTudo(){   // página escondida: grava na hora (keepalive) e tira o Desfazer
+  if(!HJ.pend.size) return;
+  [...HJ.pend].forEach(it=>hjCommit(it,true)); $("#toast").classList.remove("on");
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden) hjGravarTudo();
+  else if(hjEhRota(location.hash)&&HJ.pronto&&!HJ.pend.size&&Date.now()-HJ.carregadoEm>60000) hjCarregar();
+});
+window.addEventListener("pagehide",hjGravarTudo);
+
+/* ---------- ações (UX-HOJE 9.1) ---------- */
+function hjProduzir(id,ajuste){
+  const p=hjGet(id); if(!p) return;
+  const alvo=HJ.alvo, agora=new Date().toISOString();
+  const ja=HJ.pautas.filter(x=>x.id!==id&&["aprovada_producao","em_producao"].includes(x.status)).length, pv=hjPrev();
+  const patch={status:"aprovada_producao",aprovado_producao_em:agora,decidido_em:agora};
+  if(alvo) patch.data=alvo.dia;
+  if(ajuste) patch.ajuste_pre=ajuste;
+  const fim=alvo?` · para ${hjDiaTxt(alvo.dia)}`:"";
+  HJ.alvo=null; if(alvo) HJ.filtro.f="";
+  hjAcao(id,patch,(ja?`Na fila (${ja+1} em produção). `:"Na fila. ")+(p.formato==="reels"?"Roteiro pronto ":"Pronto ")+pv.txt+fim,
+    ()=>{ if(alvo) location.hash="#/calendario" });
+}
+const hjParaBanco=id=>hjAcao(id,{status:"ideia",decidido_em:new Date().toISOString()},"Guardada no banco de ideias");
+function hjParaLixeira(id){
+  const p=hjGet(id); if(!p) return; const agora=new Date().toISOString();
+  const patch=["para_revisar","aprovado"].includes(p.status)?{status:"descartado",revisado_em:agora,descartado_em:agora}:{status:"descartado",decidido_em:agora,descartado_em:agora};
+  hjAcao(id,patch,"Foi para a Lixeira");
+}
+const hjRestaurar=id=>hjAcao(id,{status:"ideia"},"De volta ao banco");
+const hjVoltarBanco=id=>hjAcao(id,{status:"ideia"},"Guardada no banco de ideias");
+const hjAprovar=id=>hjAcao(id,{status:"aprovado",revisado_em:new Date().toISOString()},"Aprovado. Agora é postar.");
+const hjPostado=id=>hjAcao(id,{status:"postado",postado_em:new Date().toISOString(),postado_origem:"manual"},"Marcado como postado. Conta no dia de hoje.");
+function hjPedirAjuste(id,txt){
+  const agora=new Date().toISOString(), pv=hjPrev(); HJ.ajuste=false; HJ.ajusteTxt="";
+  hjAcao(id,{status:"ajustar",comentario:txt,comentario_em:agora,revisado_em:agora},`Ajuste enviado. Volta ${pv.txt}`);
+}
+function hjSetHora(id,hm){
+  const p=hjGet(id); if(!p||["postado","descartado"].includes(p.status)) return;
+  const dia=hjDiaDaPauta(p)||hjHoje(); HJ.hora=false;
+  hjAcao(id,{agendado_para:hjAt(dia,hm).toISOString()},"Agendado para "+hjDiaTxt(dia)+" "+hm);
+}
+function hjCopiar(txt,preId){
+  const ok=()=>hjToast("Copiado");
+  const falha=()=>{ const el=preId&&document.getElementById(preId);
+    if(el){ const dt=el.closest("details"); if(dt) dt.open=true; el.classList.add("aberto"); const r=document.createRange(); r.selectNodeContents(el); const s=getSelection(); s.removeAllRanges(); s.addRange(r) }
+    hjToast("Não deu para copiar sozinho. Texto selecionado: toque em Copiar",null,true) };
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok).catch(falha); else falha() }catch(e){ falha() }
+}
+const hjRoteiroTxt=p=>hjCenas(p).map((c,i)=>`CENA ${i+1} (${c.t||""}) [${c.c||""}]\n"${c.f||""}"`).join("\n\n");
+
+/* ---------- componentes ---------- */
+const hjChipU=c=>c?`<span class="chip" title="${hjE(c+" "+(HJ_URG[c]||""))}">${hjE(c)}${HJ_URG[c]?" "+hjE(HJ_URG[c]):""}</span>`:"";
+const hjChipL=c=>c?`<span class="chip chip-neutro" title="${hjE(c+" "+(HJ_LIN[c]||""))}">${hjE(c)}${HJ_LIN[c]?" "+hjE(HJ_LIN[c]):""}</span>`:"";
+const hjChipD=c=>c&&c!=="D0"?`<span class="chip chip-selo">${hjE(c)}${HJ_DEG[c]?" "+hjE(HJ_DEG[c]):""}</span>`:"";
+const hjChipF=f=>HJ_FORM[f]?`<span class="chip chip-neutro">${HJ_FORM[f].ic} ${HJ_FORM[f].nome}</span>`:"";
+const hjImg=(u,i,n)=>`<div class="sl"><img src="${hjE(u)}" alt="Slide ${i+1}${n?" de "+n:""}" data-n="${i+1}" loading="lazy"></div>`;
+function hjTrilha(st){
+  const et=["escolhida","produzindo","revisar","aprovado","postado"];
+  const idx={aprovada_producao:0,em_producao:1,ajustar:1,para_revisar:2,aprovado:3,postado:4}[st]??-1;
+  return `<div class="trilha" aria-hidden="true">${et.map((_,i)=>`<span class="${i<idx?"feito":i===idx?"on":""}"></span>`).join("")}</div>
+   <div class="trilha-leg">${et.map(e=>`<span>${e}</span>`).join("")}</div>`;
+}
+function hjPrevia(p){   // produzida: miniaturas (estático) ou gancho falado + nº de cenas (Reels)
+  if(p.formato==="reels"){ const c=hjCenas(p);
+    return `<p class="porque"><b>Gancho falado:</b> “${hjE((c[0]&&c[0].f)||p.gancho||"")}”</p><p class="cenas-n">${c.length} cena${c.length===1?"":"s"}${p.dur?" · "+hjE(p.dur):""} · roteiro + legenda</p>` }
+  const s=hjSlides(p).slice(0,4); return s.length?`<div class="thumbs">${s.map((u,i)=>hjImg(u,i)).join("")}</div>`:"";
+}
+function hjSugCard(p,i){
+  const reels=p.formato==="reels", cn=hjCenas(p).length, pq=hjPorQue(p)[0];
+  return `<article class="card sug" aria-label="${HJ_FORM[p.formato].nome}: sugestão ${i}">
+    <div class="topo"><span class="ordem">${i}</span>${p.estrutura?`<span class="chip chip-neutro">${hjE(p.estrutura)}</span>`:""}${reels&&cn?`<span class="chip chip-neutro">${cn} cenas${p.dur?" · "+hjE(p.dur):""}</span>`:""}</div>
+    <button class="abre" data-hj="abrir" data-id="${p.id}">
+      <h3 class="clamp3">${hjE(p.tema)}</h3>
+      ${p.gancho?`<p class="gancho" data-rot="${reels?"gancho falado":"capa"}">“${hjE(p.gancho)}”</p>`:""}
+      <div class="metas">${hjChipU(p.urgencia)}${hjChipL(p.linha)}${hjChipD(p.degrau)}</div>
+      ${pq?`<p class="porque clamp2"><b>Por quê:</b> ${hjE(pq.texto)}</p>`:""}
+      ${p.confirmar?`<div class="precisa"><span>✋</span><span>Precisa de você: ${hjE(p.confirmar)}</span></div>`:""}
+    </button>
+    <div class="acoes acoes3">
+      <div class="par"><button class="btn btn-ganho" data-hj="produzir" data-id="${p.id}" aria-label="Produzir: ${hjE(p.tema)}">Produzir</button><button class="btn btn-fantasma" data-hj="banco" data-id="${p.id}" aria-label="Guardar no banco: ${hjE(p.tema)}">Banco</button></div>
+      <button class="btn-lix" data-hj="lixeira" data-id="${p.id}" aria-label="Mandar para a lixeira: ${hjE(p.tema)}" title="Lixeira">${HJ_LIXEIRA_SVG}</button>
+    </div></article>`;
+}
+function hjMeta(p){ return `<div class="metas" style="margin-bottom:var(--e2)">${hjChipF(p.formato)}</div>` }
+function hjTxtProducao(p){
+  const agora=hjAgora(), rot=p.formato==="reels"?"Roteiro pronto":"Pronto";
+  if(p.status==="em_producao"){
+    const t=p.em_producao_em?new Date(p.em_producao_em):null;
+    if(t&&agora-t>2*3600e3){ const pv=hjPrev(); return `Está demorando mais que o normal. Se não chegar até <b>${pv.pronto}</b>, a rotina tenta de novo.` }
+    if(t){ const s=hjSP(t), a=hjSP(agora), passou=a.dia===s.dia&&a.H*60+a.M>s.H*60+30;
+      return `A rotina das ${hjPad(s.H)}:00 está montando. <b>${passou?rot+" em breve":rot+" até ~"+hjPad(s.H)+":30"}</b>` }
+    const pv=hjPrev(); return `A rotina está montando. <b>${rot} ${pv.txt}</b>`;
+  }
+  const pv=hjPrev();
+  if(p.status==="ajustar") return `Refazendo com o seu comentário. <b>Volta ${pv.txt}</b>`;
+  return `Na fila da rodada das ${pv.rodada}${pv.amanha?" de amanhã":""}. <b>${rot} ${pv.txt}</b>`;
+}
+
+/* ---------- placar ---------- */
+const hjPostadoHoje=f=>hjAtivas().some(p=>p.status==="postado"&&p.formato===f&&hjDia(p.postado_em)===hjHoje());
+function hjDiasComPost(){
+  const ini=hjSegunda(hjHoje()); let n=0;
+  for(let i=0;i<7;i++){ const d=addDias(ini,i); if(hjAtivas().some(p=>p.status==="postado"&&p.postado_em&&hjDia(p.postado_em)===d)) n++ }
+  return n;
+}
+
+/* ---------- cabeçalhos ---------- */
+function hjHdSub(tit,sub,volta){
+  document.querySelector("header").classList.remove("solta");
+  $("#hd").innerHTML=`<div class="hrow" style="padding-bottom:var(--e3)"><button class="icb" data-hj="ir" data-v="${volta||"#/"}" aria-label="Voltar">←</button>
+    <div class="tt"><div class="n1">${hjE(tit)}</div><div class="n2">${hjE(sub)}</div></div></div>`;
+}
+function hjHdHoje(){
+  document.querySelector("header").classList.add("solta");
+  const hoje=hjHoje(), s=hjSP(hjAgora()), [,m,d]=hoje.split("-").map(Number);
+  const sem=hjDiasComPost(), eOk=hjPostadoHoje("estatico"), rOk=hjPostadoHoje("reels");
+  const rev=hjAtivas().filter(p=>p.status==="para_revisar").length, banco=hjNoBanco().length;
+  $("#hd").innerHTML=`<div class="hrow marca">
+     <div class="selo"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="15" stroke="#4A16A8" stroke-width="6" stroke-dasharray="70 100" stroke-linecap="round" transform="rotate(-90 24 24)"/></svg></div>
+     <div class="tt"><div class="disp" style="font-size:var(--t-lg)">hoje</div>
+       <div class="rotulo" style="color:var(--texto-invertido-fraco);margin-top:2px">PSN${HJ_DEMO?" · modo de teste":""}</div></div>
+   </div>
+   <div class="hdia">${HJ_DIAS[hjDow(hoje)]}, ${d} de ${HJ_MESES[m-1]} <i>·</i> ${s.hm}</div>
+   <button class="hoje-linha" data-hj="ir" data-v="#/calendario" aria-label="Hoje: Estático ${eOk?"postado":"pendente"}, Reels ${rOk?"postado":"pendente"}. Abrir o calendário"><span class="k">Hoje:</span>
+     <span class="pill ${eOk?"on":""}">Estático ${eOk?"✓":"—"}</span><span class="pill ${rOk?"on":""}">Reels ${rOk?"✓":"—"}</span></button>
+   <div class="placar">
+     <button class="it ganho" data-hj="ir" data-v="#/calendario" aria-label="Semana: ${sem} de 7 dias com post. Abrir o calendário"><span class="v num">${sem}<small> de 7</small></span><span class="k">Semana:<br>dias com post</span></button>
+     <button class="it" data-hj="ir" data-v="#/"><span class="v num">${rev}</span><span class="k">para<br>revisar</span></button>
+     <button class="it" data-hj="ir" data-v="#/banco"><span class="v num">${banco}</span><span class="k">no banco<br>de ideias</span></button>
+   </div>
+   <div class="hmeta">Mínimo: 1 post por dia · Ideal: 1 estático + 1 Reels</div>`;
+}
+
+/* ---------- HOJE ---------- */
+function hjFaixa(f,sugs){
+  const todas=sugs.filter(p=>p.formato===f).sort((a,b)=>(a.ordem||9)-(b.ordem||9));
+  if(!todas.length) return "";
+  const pend=todas.filter(p=>p.status==="sugerida"), feitas=todas.filter(p=>p.status!=="sugerida"), H=hjSP(hjAgora()).H;
+  let h=`<div class="secao-tit"><h2>${f==="estatico"?"estático de hoje":"reels de hoje"}</h2><span class="qt num">${pend.length?pend.length+"/"+todas.length:"✓"}</span></div>`;
+  if(pend.length){
+    h+=`<p class="secao-sub">${f==="estatico"?"Ideias de carrossel.":"Ideias de Reels, com gancho falado e cenas curtas."} Escolha 1 ou mais; o resto vai para o banco ou para a lixeira.${H<10?" Escolhendo até 10h, fica pronto para postar hoje.":""}</p>
+      <div class="rail" id="rail-${f}" tabindex="0" aria-label="Sugestões de ${HJ_FORM[f].nome}, deslize para o lado">${pend.map(p=>hjSugCard(p,p.ordem||todas.indexOf(p)+1)).join("")}</div>
+      <div class="rail-pontos" id="pt-${f}" aria-hidden="true">${pend.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`;
+  } else h+=`<p class="secao-sub">Escolha feita. Toque para abrir.</p>`;
+  feitas.forEach(p=>{ h+=`<button class="decidida abre" data-hj="abrir" data-id="${p.id}" style="display:flex"><span class="chip ${p.status==="descartado"?"chip-neutro":p.status==="ideia"?"chip-selo":""}">${hjE(HJ_STATUS_TX[p.status]||p.status)}</span><b>${hjE(p.tema)}</b><span>›</span></button>` });
+  return h;
+}
+function hjOntemHTML(){
+  const o=HJ.ontem, hoje=hjHoje(), dia=HJ.dia, an=(HJ.analise||[])[0];
+  const sinal=(dia&&dia.sinal)||(an&&an.sinal_pauta)||"";
+  const fonteTxt=dia&&dia.sinal?"":(an&&an.sinal_pauta?`análise de ${hjDM(String(an.data).slice(0,10))}`:"");
+  let h=`<div class="secao-tit"><h2>ontem no instagram</h2></div><div class="mini">`;
+  if(!o&&!sinal) return h+`<p>Os números e o sinal para a pauta aparecem depois da primeira coleta.</p><button class="linkb" data-hj="ir" data-v="#/metricas">Ver métricas →</button></div>`;
+  const tags=[o&&o.data!==addDias(hoje,-1)?`<span class="chip chip-neutro">dados de ${hjDM(o.data)}</span>`:"",fonteTxt?`<span class="chip chip-neutro">${hjE(fonteTxt)}</span>`:""].filter(Boolean).join("");
+  if(tags) h+=`<div class="metas">${tags}</div>`;
+  if(o) h+=`<div class="nums"><div><span class="v num">${hjE(fmtInt(o.reach))}</span><span class="k">alcance</span></div><div><span class="v num">${hjE(fmtInt(o.saves))}</span><span class="k">salvos</span></div><div><span class="v num">${hjE(fmtInt(o.shares))}</span><span class="k">compart.</span></div></div>`;
+  if(sinal) h+=`<p><b>Sinal para a pauta:</b> ${hjE(sinal)}</p>`;
+  return h+`<button class="linkb" data-hj="ir" data-v="#/metricas">Ver métricas →</button></div>`;
+}
+function hjRenderHoje(){
+  hjHdHoje();
+  const P=hjAtivas(), s=hjSP(hjAgora()), min=s.H*60+s.M;
+  const postar=P.filter(p=>p.status==="aprovado");
+  const revisar=P.filter(p=>p.status==="para_revisar");
+  const fila=P.filter(p=>["aprovada_producao","em_producao","ajustar"].includes(p.status));
+  const sugs=P.filter(hjEhSugHoje), pend=sugs.filter(p=>p.status==="sugerida"), banco=hjNoBanco().length, dia=HJ.dia;
+  const falhou=min>=390&&!sugs.length&&(!dia||["falhou","erro"].includes(dia.rotina_status));
+  const chegando=!falhou&&!sugs.length&&!dia;
+  let h="";
+  if(falhou) h+=`<div class="maviso" role="status"><b>As sugestões de hoje não chegaram.</b><br>A rotina das 05:47 não terminou. Não é nada com você: já ficou registrado e ela tenta de novo amanhã. Quer postar algo hoje? Escolha uma do banco, de estático ou de Reels.<br><button class="btn btn-ganho" data-hj="ir" data-v="#/banco">Abrir banco de ideias (${banco})</button></div>`;
+  else if(chegando) h+=`<p class="secao-sub" role="status">As sugestões de hoje estão chegando.</p>`;
+  else if(dia&&dia.rotina_status==="parcial"&&pend.length) h+=`<p class="secao-sub" role="status">A rotina trouxe só parte das sugestões hoje.</p>`;
+
+  if(postar.length){ h+=`<div class="secao-tit"><h2>falta postar</h2><span class="qt num">${postar.length}</span></div>
+    <p class="secao-sub">Aprovado. Copie a legenda, poste no Instagram. Se o app não detectar sozinho, marque aqui.</p>`;
+    postar.forEach(p=>{ const H=hjHoraDe(p);
+      h+=`<article class="card"><button class="abre" data-hj="abrir" data-id="${p.id}"><div class="metas" style="margin-bottom:var(--e2)">${hjChipF(p.formato)}${H.hm?`<span class="chip chip-neutro">${hjDiaTxt(hjDiaDaPauta(p)||hjHoje())} ${H.hm}</span>`:""}</div><h3>${hjE(p.tema)}</h3>${hjPrevia(p)}</button>
+      <div class="acoes"><button class="btn btn-fantasma" data-hj="copiar-leg" data-id="${p.id}">Copiar legenda</button><button class="btn btn-ganho" data-hj="postado" data-id="${p.id}">Marquei como postado</button></div></article>` }) }
+
+  if(revisar.length){ h+=`<div class="secao-tit"><h2>pronto para revisar</h2><span class="qt num">${revisar.length}</span></div>
+    <p class="secao-sub">O que você escolheu chegou. ${s.H<10?"Revise até as 10h para postar hoje.":"Revise para postar hoje."}</p>`;
+    revisar.forEach(p=>{ const H=hjSlides(p).length, c=hjCenas(p).length, hr=hjHoraDe(p);
+      h+=`<article class="card"><button class="abre" data-hj="abrir" data-id="${p.id}"><div class="metas" style="margin-bottom:var(--e2)">${hjChipF(p.formato)}<span class="chip chip-neutro">${p.formato==="reels"?c+" cenas":H+" slides"}</span>${hr.hm?`<span class="chip chip-neutro">${hjDiaTxt(hjDiaDaPauta(p)||hjHoje())} ${hr.hm}</span>`:""}</div><h3>${hjE(p.tema)}</h3>${hjPrevia(p)}
+      <p class="porque">${p.produzido_em?"Chegou às "+hjHM(p.produzido_em):"Chegou"}${p.formato==="reels"?" · roteiro + legenda, você grava":(p.avisos?" · conferência automática com avisos":" · conferência automática sem avisos")}</p></button>
+      <div class="acoes"><button class="btn btn-ganho" data-hj="abrir" data-id="${p.id}">Revisar →</button></div></article>` }) }
+
+  if(sugs.length) h+=hjFaixa("estatico",sugs)+hjFaixa("reels",sugs);
+
+  if(fila.length){ h+=`<div class="secao-tit"><h2>em produção</h2><span class="qt num">${fila.length}</span></div>
+    <p class="secao-sub">Não precisa fazer nada. Avisamos no celular quando chegar.</p>`;
+    fila.forEach(p=>{ const hr=hjHoraDe(p);
+      h+=`<article class="card"><button class="abre" data-hj="abrir" data-id="${p.id}"><div class="metas" style="margin-bottom:var(--e2)">${hjChipF(p.formato)}${hr.hm?`<span class="chip chip-neutro">${hjDiaTxt(hjDiaDaPauta(p)||hjHoje())} ${hr.hm}</span>`:""}</div><h3>${hjE(p.tema)}</h3>${hjTrilha(p.status)}
+       <p class="prev">${hjTxtProducao(p)}</p>${p.status==="ajustar"&&p.comentario?`<div class="coment">“${hjE(p.comentario)}”</div>`:""}</button></article>` }) }
+
+  if(!postar.length&&!revisar.length&&!pend.length&&!fila.length&&!falhou&&!chegando){
+    const e=hjPostadoHoje("estatico"), r=hjPostadoHoje("reels"), n=(e?1:0)+(r?1:0);
+    h+=`<div class="vazio" style="margin-top:var(--e2)"><span class="n num">✓</span><h4>nada esperando você</h4>
+      <p>${n===2?"Estático e Reels de hoje estão postados: o ideal do dia foi cumprido. ":n===1?`O ${e?"estático":"Reels"} de hoje está postado: o mínimo do dia foi cumprido. Falta o ${e?"Reels":"estático"} para o ideal (1 estático + 1 Reels). `:""}Amanhã às 05:47 chegam as sugestões de estático e de Reels, já pensadas a partir das métricas.</p>
+      <ul><li>${banco} ${banco===1?"ideia guardada":"ideias guardadas"} no banco</li><li>${hjDiasComPost()} de 7 dias com post nesta semana</li></ul>
+      <button class="btn btn-fantasma" data-hj="ir" data-v="#/banco">Ver banco de ideias</button></div>`;
+  }
+  h+=hjOntemHTML();
+  h+=`<div class="atalhos">
+     <button class="atalho" data-hj="ir" data-v="#/calendario"><span class="em">📅</span><span class="nm">Calendário</span><span class="hd">${hjDiasComPost()} de 7 dias com post</span></button>
+     <button class="atalho" data-hj="ir" data-v="#/banco"><span class="em">🗂️</span><span class="nm">Banco de ideias</span><span class="hd">${banco} ${banco===1?"guardada":"guardadas"}</span></button>
+     <button class="atalho" data-hj="ir" data-v="#/metricas"><span class="em">📊</span><span class="nm">Métricas</span><span class="hd">Instagram</span></button>
+     <button class="atalho" data-hj="ir" data-v="#/canais"><span class="em">📁</span><span class="nm">Canais</span><span class="hd">referências e funil</span></button></div>
+     <div class="rodape-lix"><button class="linkb" data-hj="ir" data-v="#/lixeira">Lixeira (${hjNaLixeira().length}) →</button></div>`;
+  return {corpo:h};
+}
+
+/* ---------- BANCO ---------- */
+function hjCardIdeia(p){
+  const hoje=hjHoje(), idade=difDias(hjDia(p.criado_em)||hoje,hoje); let prazo="";
+  if(p.valida_ate){ const falta=difDias(hoje,p.valida_ate);
+    prazo=falta<0?`<span class="chip chip-erro">passou do prazo (${hjDM(p.valida_ate)})</span>`:falta<=3?`<span class="chip chip-erro">vale até ${hjDM(p.valida_ate)}</span>`:`<span class="chip chip-neutro">vale até ${hjDM(p.valida_ate)}</span>` }
+  return `<article class="card ideia ${idade>30?"velha":""}"><div class="lin"><button class="abre" data-hj="abrir" data-id="${p.id}">
+    <h3>${hjE(p.tema)}</h3>${p.angulo||p.gancho?`<p class="ang clamp2">${hjE(p.angulo||p.gancho)}</p>`:""}
+    <div class="metas">${hjChipF(p.formato)}${prazo}${idade>30?`<span class="chip chip-selo">há ${idade} dias · ainda vale?</span>`:`<span class="chip chip-neutro">${idade<=0?"hoje":idade===1?"ontem":"há "+idade+" dias"}</span>`}${hjChipU(p.urgencia)}${hjChipL(p.linha)}${hjChipD(p.degrau)}</div></button>
+    <div class="lado"><button class="btn btn-ganho" data-hj="produzir" data-id="${p.id}">Produzir</button><button class="btn-lix" data-hj="lixeira" data-id="${p.id}" aria-label="Mandar para a lixeira: ${hjE(p.tema)}" title="Lixeira">${HJ_LIXEIRA_SVG}</button></div></div></article>`;
+}
+function hjRenderBanco(){
+  const todas=hjNoBanco(), F=HJ.filtro, A=HJ.alvo; if(A) F.f=A.formato;
+  hjHdSub("Banco de ideias",A?`escolhendo para ${hjDiaTxt(A.dia)} · ${HJ_FORM[A.formato].nome}`:`${todas.length} ${todas.length===1?"guardada":"guardadas"} · produzir a qualquer dia`,A?"#/calendario":"#/");
+  let L=todas.filter(p=>(!F.u||p.urgencia===F.u)&&(!F.l||p.linha===F.l)&&(!F.f||p.formato===F.f));
+  const cr=p=>p.criado_em||"";
+  if(F.ordem==="recentes") L.sort((a,b)=>cr(b).localeCompare(cr(a)));
+  if(F.ordem==="antigas") L.sort((a,b)=>cr(a).localeCompare(cr(b)));
+  if(F.ordem==="prazo") L.sort((a,b)=>(a.valida_ate||"9999").localeCompare(b.valida_ate||"9999")||cr(b).localeCompare(cr(a)));
+  const hoje=hjHoje(), idade=p=>difDias(hjDia(p.criado_em)||hoje,hoje);
+  const novas=L.filter(p=>idade(p)<=30), velhas=L.filter(p=>idade(p)>30), legado=HJ.pautas.filter(hjLegado);
+  const opt=(o,v,ph)=>`<option value="">${ph}</option>`+Object.entries(o).map(([k,n])=>`<option value="${k}" ${v===k?"selected":""}>${k} ${n}</option>`).join("");
+  const corpo=`
+    ${A?`<div class="destaque"><div class="t">Escolhendo para ${hjDiaTxt(A.dia)} · ${HJ_FORM[A.formato].nome}</div><p style="margin:0;font-size:var(--t-mini)">Toque em Produzir na ideia que quer nessa vaga. <button class="linkb" data-hj="ir" data-v="#/calendario" style="margin:0">Cancelar</button></p></div>`:""}
+    <div class="bfiltros"><select class="campo" id="fU" aria-label="Filtrar por urgência">${opt(HJ_URG,F.u,"Todas as urgências")}</select>
+      <select class="campo" id="fL" aria-label="Filtrar por linha">${opt(HJ_LIN,F.l,"Todas as linhas")}</select></div>
+    ${A?"":`<div class="seg" role="group" aria-label="Filtrar por formato">${[["","todos"],["estatico","estático"],["reels","Reels"]].map(([k,n])=>`<button class="${F.f===k?"on":""}" data-hj="ffmt" data-v="${k}">${n}</button>`).join("")}</div>`}
+    <div class="seg" role="group" aria-label="Ordenar">${[["recentes","recentes"],["prazo","com prazo"],["antigas","antigas"]].map(([k,n])=>`<button class="${F.ordem===k?"on":""}" data-hj="ordem" data-v="${k}">${n}</button>`).join("")}</div>
+    ${!todas.length?`<div class="vazio"><h4>banco vazio</h4><p>As sugestões que você guardar aparecem aqui.</p></div>`
+      :!L.length?`<p class="semres">Nenhuma ideia com esse filtro. <button class="linkb" data-hj="limpar">Limpar filtros</button></p>`:""}
+    ${novas.map(hjCardIdeia).join("")}
+    ${velhas.length?`<details class="grupo" open><summary><span class="seta">›</span>mais de 30 dias · ${velhas.length}</summary>
+      <p class="dica">Ideia parada há mais de um mês: produza ou mande para a lixeira. A rotina da manhã só repropõe se ainda fizer sentido.</p>${velhas.map(hjCardIdeia).join("")}</details>`:""}
+    ${A||!legado.length?"":`<details class="grupo"><summary><span class="seta">›</span>produzidas no notion, nunca revisadas · ${legado.length}</summary>
+      <p class="dica">Vieram da rotina antiga. Ficam aqui para não lotar o Hoje.</p>
+      ${legado.map(n=>`<article class="card"><h3>${hjE(n.tema)}</h3><div class="metas" style="margin-top:var(--e2)"><span class="chip chip-neutro">${hjE(hjDM(n.data||hjDia(n.criado_em)||hoje))}</span>${hjChipU(n.urgencia)}</div>
+        <div class="acoes">${/^https:\/\//i.test(n.notion_url||"")?`<a class="btn btn-fantasma" href="${hjE(n.notion_url)}" target="_blank" rel="noopener" style="text-decoration:none">Abrir no Notion ↗</a>`:""}<button class="btn-lix" data-hj="lixeira" data-id="${n.id}" aria-label="Mandar para a lixeira: ${hjE(n.tema)}" title="Lixeira">${HJ_LIXEIRA_SVG}</button></div></article>`).join("")}</details>`}
+    <div class="rodape-lix"><button class="linkb" data-hj="ir" data-v="#/lixeira">Lixeira (${hjNaLixeira().length}) →</button></div>`;
+  return {corpo,depois(){
+    $("#fU").onchange=e=>{ F.u=e.target.value; hjAtualizarTela() };
+    $("#fL").onchange=e=>{ F.l=e.target.value; hjAtualizarTela() };
+  }};
+}
+
+/* ---------- LIXEIRA ---------- */
+function hjRenderLixeira(){
+  const L=hjNaLixeira().sort((a,b)=>(b.descartado_em||"").localeCompare(a.descartado_em||""));
+  hjHdSub("Lixeira",`${L.length} ${L.length===1?"descartada":"descartadas"} · nada se apaga sozinho`,"#/banco");
+  const corpo=`<p class="secao-sub">O que você descartou fica aqui. “Restaurar” leva a ideia de volta para o banco de ideias.</p>
+    ${L.length?L.map(p=>`<article class="card lix"><div class="lin"><button class="abre" data-hj="abrir" data-id="${p.id}">
+        <div class="metas" style="margin-bottom:var(--e2)">${hjChipF(p.formato)}<span class="chip chip-neutro">descartada${p.descartado_em?" "+hjDiaTxt(hjDia(p.descartado_em))+" "+hjHM(p.descartado_em):""}</span></div>
+        <h3>${hjE(p.tema)}</h3>${p.angulo||p.gancho?`<p class="ang clamp2" style="font-size:var(--t-mini);color:var(--texto-medio);margin:var(--e2) 0 0">${hjE(p.angulo||p.gancho)}</p>`:""}</button>
+        <div class="lado"><button class="btn btn-ganho" data-hj="restaurar" data-id="${p.id}" aria-label="Restaurar: ${hjE(p.tema)}">Restaurar</button></div></div></article>`).join("")
+     :`<div class="vazio"><span class="n num">✓</span><h4>lixeira vazia</h4><p>Quando você mandar uma sugestão ou ideia para a lixeira, ela aparece aqui e dá para restaurar.</p><button class="btn btn-fantasma" data-hj="ir" data-v="#/banco">Ver banco de ideias</button></div>`}`;
+  return {corpo};
+}
+
+/* ---------- CALENDÁRIO ---------- */
+const HJ_PRI=["postado","aprovado","para_revisar","ajustar","em_producao","aprovada_producao"];
+const HJ_VST={postado:"postado",aprovado:"aprovado",para_revisar:"para revisar",ajustar:"em produção",em_producao:"em produção",aprovada_producao:"em produção"};
+const HJ_VCLS={postado:"postado",aprovado:"aprovado","para revisar":"revisar","em produção":"producao",sugerida:"sugerida",vazio:"vazio"};
+const hjMidiaFormato=m=>(m.tipo_produto==="REELS"||m.tipo==="VIDEO")?"reels":"estatico";
+function hjVaga(dia,f){
+  const c=hjAtivas().filter(p=>p.formato===f&&HJ_PRI.includes(p.status)&&hjDiaDaPauta(p)===dia).sort((a,b)=>HJ_PRI.indexOf(a.status)-HJ_PRI.indexOf(b.status));
+  if(c.length) return {p:c[0],n:c.length,estado:HJ_VST[c[0].status]};
+  const pend=HJ.pautas.filter(p=>p.status==="sugerida"&&p.data===dia&&p.formato===f).length;
+  if(pend) return {estado:"sugerida",pend};
+  if(dia<hjHoje()){   // histórico: post real do Instagram sem pauta casada
+    const usados=new Set(HJ.pautas.map(p=>p.ig_midia_id).filter(Boolean));
+    const m=HJ.midias.find(x=>!usados.has(x.id)&&hjDia(x.publicado_em)===dia&&hjMidiaFormato(x)===f);
+    if(m) return {estado:"postado",midia:m,n:1};
+  }
+  return {estado:"vazio"};
+}
+function hjVagaHTML(dia,f){
+  const v=hjVaga(dia,f), fm=HJ_FORM[f], futuro=dia>=hjHoje();
+  const cls={postado:"chip-ganho","para revisar":"chip-selo",vazio:"chip-neutro",sugerida:"chip-selo"}[v.estado]||"";
+  let tema, hora="", ig="", dentro="", abre="", div=false;
+  if(v.p){ const p=v.p, H=hjHoraDe(p); tema=hjE(p.tema); abre=`data-hj="abrir" data-id="${p.id}"`;
+    if(p.status==="postado"){ hora=`postado ${hjHM(p.postado_em)}`; const l=hjPermalink(p); if(l) ig=`<a class="linkb" href="${hjE(l)}" target="_blank" rel="noopener">ver no Instagram ↗</a>` }
+    else hora=H.hm?`${H.editado?"agendado":"sugerido"} ${H.hm}`:"" }
+  else if(v.midia){ const m=v.midia; tema=hjE((m.legenda||"Post no Instagram").replace(/\s+/g," ").slice(0,70)); hora=`postado ${hjHM(m.publicado_em)}`; div=true;
+    if(/^https:\/\//i.test(m.permalink||"")) ig=`<a class="linkb" href="${hjE(m.permalink)}" target="_blank" rel="noopener">ver no Instagram ↗</a>` }
+  else if(v.estado==="sugerida"){ tema=`${v.pend} ${v.pend===1?"sugestão":"sugestões"} para escolher`; const s=hjSugHora(dia,f); hora=s?`sugerido ${s}`:""; abre=`data-hj="ir" data-v="#/"`; dentro=`<span class="semlink">ver no Hoje →</span>` }
+  else if(futuro){ tema="Vaga livre"; const s=hjSugHora(dia,f); hora=s?`sugerido ${s}`:""; abre=`data-hj="escolher" data-v="${dia}|${f}"`; dentro=`<span class="semlink">escolher do banco →</span>` }
+  else { tema="Sem post"; hora="sem registro"; div=true }
+  const corpo=`<span class="vf">${fm.ic} ${fm.nome}</span><span class="chip ${cls}">${v.estado}${v.n>1?" +"+(v.n-1):""}</span><span class="vtema clamp2">${tema}</span>${hora?`<span class="vhora">${hora}</span>`:""}${dentro}`;
+  const rot=`${fm.nome} em ${hjDiaTxt(dia)}: ${v.estado}. ${v.p?v.p.tema:""}${dentro?" "+dentro.replace(/<[^>]+>/g,""):""}`;
+  return `<div class="vaga v-${HJ_VCLS[v.estado]}">${div?`<div class="vaga-b">${corpo}</div>`:`<button class="abre vaga-b" ${abre} aria-label="${hjE(rot)}">${corpo}</button>`}${ig}</div>`;
+}
+function hjRenderCalendario(){
+  hjHdSub("Calendário","2 vagas por dia · estático e Reels","#/");
+  const hoje=hjHoje(); if(!HJ.cal) HJ.cal={vista:"semana",ini:hjSegunda(hoje),mes:hoje.slice(0,7),sel:hoje};
+  const C=HJ.cal, HH=hjHorarios(), dow=hjDow(hoje);
+  const hor=`<div class="card hor"><div class="metas"><h3>Melhores horários do seu público</h3></div>
+    ${HH?`<p class="dica" style="margin-top:0">Fonte: ${HH.fonte==="online_followers"?"pelos seguidores online por hora (Instagram)":"pelo alcance dos seus posts nas primeiras horas"}. 2 faixas por dia; a mais forte em verde.</p>
+      ${[1,2,3,4,5,6,0].map(d=>{ const x=HH.dias[d]; return `<div class="hrow2 ${d===dow?"hj":""}"><b>${HJ_DIAS3[d]}</b>${x?x.fs.map((f,i)=>`<span class="faixa ${i===x.top?"top":""}">${f.ini}–${f.fim}</span>`).join(""):`<span class="faixa">sem dados</span>`}</div>` }).join("")}`
+      :`<p class="dica" style="margin-top:0">Os horários aparecem quando houver dados suficientes.</p>`}</div>
+    <div class="destaque" style="margin-top:0"><div class="t">Postado é automático</div><p style="margin:0;font-size:var(--t-mini);line-height:1.45">Quando o post aparece no Instagram (o app olha a cada 4 h), a vaga vira “postado” sozinha, com o horário real. Se demorar, abra a pauta e toque em “Marquei como postado”.</p></div>`;
+  const seg=`<div class="seg seg2" role="group" aria-label="Visão do calendário"><button class="${C.vista==="semana"?"on":""}" data-hj="vista" data-v="semana">Semana</button><button class="${C.vista==="mes"?"on":""}" data-hj="vista" data-v="mes">Mês</button></div>`;
+  let corpo="";
+  if(C.vista==="semana"){
+    const ini=C.ini, fim=addDias(ini,6), a=+ini.slice(5,7), b=+fim.slice(5,7);
+    const tit=a===b?`${+ini.slice(8,10)} a ${+fim.slice(8,10)} de ${HJ_MESES[b-1]}`:`${hjDM(ini)} a ${hjDM(fim)}`;
+    corpo=`<div class="cnav"><button class="icb" data-hj="nav" data-v="-1" aria-label="Semana anterior">‹</button><div class="t">${tit}</div><button class="icb" data-hj="nav" data-v="1" aria-label="Próxima semana">›</button></div>
+      ${ini!==hjSegunda(hoje)?`<div style="text-align:center;margin-bottom:var(--e3)"><button class="btn-mini" data-hj="hoje-cal">Voltar para hoje</button></div>`:""}
+      ${[0,1,2,3,4,5,6].map(i=>{ const d=addDias(ini,i); return `<section class="cdia ${d===hoje?"hoje":""}"><h3>${HJ_DIAS[hjDow(d)]} ${+d.slice(8,10)}${d===hoje?` <span class="chip">hoje</span>`:""}</h3><div class="vagas">${hjVagaHTML(d,"estatico")}${hjVagaHTML(d,"reels")}</div></section>` }).join("")}`;
+  } else {
+    const [y,m]=C.mes.split("-").map(Number), ult=new Date(Date.UTC(y,m,0)).getUTCDate(), lead=(hjDow(C.mes+"-01")+6)%7;
+    if(!C.sel.startsWith(C.mes)) C.sel=C.mes===hoje.slice(0,7)?hoje:C.mes+"-01";
+    let cel=""; for(let i=0;i<lead;i++) cel+=`<span></span>`;
+    for(let n=1;n<=ult;n++){ const d=C.mes+"-"+hjPad(n), e=hjVaga(d,"estatico"), r=hjVaga(d,"reels");
+      cel+=`<button class="dia ${d===hoje?"hoje":""} ${d===C.sel?"sel":""}" data-hj="dia" data-v="${d}" aria-label="${n} de ${HJ_MESES[m-1]}: Estático ${e.estado}, Reels ${r.estado}" ${d===C.sel?'aria-pressed="true"':""}><span>${n}</span><span class="dots"><i class="dot d-${HJ_VCLS[e.estado]}"></i><i class="dot d-${HJ_VCLS[r.estado]}"></i></span></button>` }
+    corpo=`<div class="cnav"><button class="icb" data-hj="nav" data-v="-1" aria-label="Mês anterior">‹</button><div class="t">${HJ_MESES[m-1]} de ${y}</div><button class="icb" data-hj="nav" data-v="1" aria-label="Próximo mês">›</button></div>
+      <div class="mes" role="group" aria-label="Dias do mês">${["seg","ter","qua","qui","sex","sáb","dom"].map(x=>`<span class="dh">${x}</span>`).join("")}${cel}</div>
+      <div class="legenda-cal" aria-hidden="true"><span><i class="dot d-postado"></i>postado</span><span><i class="dot d-aprovado"></i>aprovado</span><span><i class="dot d-revisar"></i>para revisar</span><span><i class="dot d-producao"></i>em produção</span><span><i class="dot d-sugerida"></i>sugerida</span><span><i class="dot"></i>vazio</span></div>
+      <p class="dica">Em cada dia: primeiro ponto = estático, segundo = Reels.</p>
+      <section class="cdia painel-dia ${C.sel===hoje?"hoje":""}"><h3>${HJ_DIAS[hjDow(C.sel)]}, ${+C.sel.slice(8,10)} de ${HJ_MESES[+C.sel.slice(5,7)-1]}${C.sel===hoje?` <span class="chip">hoje</span>`:""}</h3><div class="vagas">${hjVagaHTML(C.sel,"estatico")}${hjVagaHTML(C.sel,"reels")}</div></section>`;
+  }
+  return {corpo:hor+seg+corpo};
+}
+
+/* ---------- FICHA ---------- */
+function hjEmUmaHora(){
+  const s=hjSP(hjAgora()); let min=Math.ceil((s.H*60+s.M+60)/5)*5;
+  if(min>=22*60) return "21:30"; return hjPad(Math.floor(min/60))+":"+hjPad(min%60);
+}
+function hjHoraBloco(p){
+  const hoje=hjHoje(), dia=hjDiaDaPauta(p)||(HJ.alvo&&HJ.alvo.dia)||hoje, H=hjHoraDe(p), hd=hjHorDia(dia);
+  const terc=dia===hoje?[hjEmUmaHora(),"em ~1 h"]:["08:00","cedo"];
+  let ops=hd?[[hd.fs[hd.top].pico,"melhor horário"],...(hd.fs.length>1?[[hd.fs.find((_,i)=>i!==hd.top).pico,"2ª faixa"]]:[]),terc]:[["08:00","cedo"],["12:00","meio-dia"],["19:00","noite"]];
+  ops=ops.filter((o,i)=>ops.findIndex(x=>x[0]===o[0])===i);
+  return `<div class="fbloco"><div class="blocohead"><h3>Agendado para</h3><button class="btn-mini" data-hj="mudar-hora" aria-expanded="${HJ.hora}">${HJ.hora?"Fechar":"Mudar horário"}</button></div>
+    <div class="hora-atual"><span class="num">${H.hm||"—"}</span><span>${hjDiaTxt(dia)}</span>${H.hm?`<span class="chip ${H.editado?"":"chip-neutro"}">${H.editado?"escolhido por você":"sugerido"}</span>`:""}</div>
+    <p class="dica">${hd?`Faixas fortes de ${HJ_DIAS[hjDow(dia)]}: ${hd.fs.map(x=>x.ini+"–"+x.fim).join(" e ")}.`:"Os horários aparecem quando houver dados suficientes."}</p>
+    ${HJ.hora?`<div class="hora-ops" role="group" aria-label="Opções rápidas de horário">${ops.map(([x,n])=>`<button class="filtro ${x===H.hm?"on":""}" data-hj="hora" data-v="${x}">${x} · ${n}</button>`).join("")}</div>
+      <label class="lbl" for="horaIn" style="margin-top:var(--e2)">Outro horário</label><div class="hmanual"><input type="time" class="campo" id="horaIn" value="${hjE(H.hm||"")}"><button class="btn btn-ganho" data-hj="salvar-hora">Usar</button></div>`:""}</div>`;
+}
+function hjCenasHTML(p){ return hjCenas(p).map((c,i)=>`<div class="cena ${i===0?"gancho-cena":""}"><span class="cena-n">${i+1}</span><div><div class="cena-c">[${hjE(c.c)}]<span class="cena-t">${hjE(c.t)}</span></div><div class="cena-f">${i===0?"Gancho falado: ":""}“${hjE(c.f)}”</div></div></div>`).join("") }
+function hjRenderFicha(id){
+  const p=hjGet(id); if(!p){ location.replace("#/"); return null }
+  const conhecidas=["#/","#/banco","#/calendario","#/lixeira"];
+  const volta=conhecidas.includes(HJ.de)?HJ.de:(p.status==="descartado"?"#/lixeira":p.status==="ideia"?"#/banco":"#/");
+  const produzida=["para_revisar","ajustar","aprovado","postado"].includes(p.status), reels=p.formato==="reels";
+  hjHdSub(produzida?(reels?"Reels":"Carrossel"):(p.status==="sugerida"?"Sugestão":"Pauta"),`${HJ_FORM[p.formato].nome} · ${HJ_STATUS_TX[p.status]||p.status}${p.data&&p.status!=="postado"?" · "+hjDM(p.data):""}`,volta);
+  const tags=`<div class="metas">${hjChipF(p.formato)}${p.estrutura?`<span class="chip chip-neutro">${hjE(p.estrutura)}</span>`:""}${hjChipU(p.urgencia)}${hjChipL(p.linha)}${hjChipD(p.degrau)}</div>`;
+  const cenas=hjCenas(p), slides=hjSlides(p), rs=hjLista(p.roteiro_resumo), pq=hjPorQue(p);
+  let h="", barra="";
+  if(produzida){
+    h+=`<div class="fstatus"><div class="linha1"><span class="chip ${p.status==="postado"?"chip-ganho":""}">${hjE(HJ_STATUS_TX[p.status])}</span>
+        ${p.produzido_em?`<span>chegou ${hjHM(p.produzido_em)}</span>`:""}${p.postado_em?`<span>· postado ${hjHM(p.postado_em)} · ${p.postado_origem==="auto"?"detectado no Instagram":"marcado por você"}</span>`:""}</div>${hjTrilha(p.status)}</div>
+      <div class="ftema">${hjE(p.tema)}</div>${tags}`;
+    if(p.status==="postado"){ const l=hjPermalink(p); if(l) h+=`<p style="margin:var(--e3) 0"><a class="linkb" href="${hjE(l)}" target="_blank" rel="noopener">ver no Instagram ↗</a></p>` }
+    if(!reels){
+      if(slides.length){
+        h+=`<div class="tira" id="tira" tabindex="0" aria-label="Slides do carrossel, deslize para o lado">${slides.map((u,i)=>hjImg(u,i,slides.length)).join("")}</div>
+          <div class="tirainfo"><span id="tiraN">1 de ${slides.length} · deslize</span><span class="pontos" id="pontos">${slides.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</span></div>`;
+      } else h+=`<div class="maviso" style="margin-top:var(--e3)">Os slides desta pauta ainda não chegaram.</div>`;
+      h+=p.avisos?`<div class="maviso" style="margin-top:var(--e3)"><b>Conferência automática:</b> ${hjE(p.avisos)}</div>`:(slides.length?`<p class="semdesc">Conferência automática sem avisos.</p>`:"");
+    } else h+=`<div class="fbloco"><div class="blocohead"><h3>Roteiro para gravar <span class="chip chip-neutro">${cenas.length} cenas${p.dur?" · "+hjE(p.dur):""}</span></h3><button class="btn-mini" data-hj="copiar-rot" data-id="${p.id}">⧉ Copiar roteiro</button></div>
+        <p class="dica" style="margin-top:0">Reels produzido é só texto: você grava. Não há vídeo para baixar.</p>${hjCenasHTML(p)}
+        <details style="margin-top:var(--e3)"><summary style="cursor:pointer;font-size:var(--t-micro);font-weight:700;color:var(--texto-fraco);min-height:32px;display:flex;align-items:center">Texto corrido para copiar</summary><pre class="txtlongo" id="reelsTx">${hjE(hjRoteiroTxt(p))}</pre></details></div>${p.avisos?`<div class="maviso" style="margin-top:var(--e3)"><b>Aviso da produção:</b> ${hjE(p.avisos)}</div>`:""}`;
+    if(p.status==="ajustar") h+=`<div class="maviso"><b>Ajuste pedido.</b> A rotina refaz e avisa quando voltar.${p.comentario?`<div class="coment">“${hjE(p.comentario)}”</div>`:""}</div>`;
+    if(HJ.ajuste&&p.status==="para_revisar") h+=`<div class="ajuste" id="ajBox"><label class="lbl" for="ajTx" style="margin-top:0">O que mudar?</label>
+       <div class="rapidos">${(reels?["Troca o gancho falado","Cenas mais curtas","Mais curto","Tom mais leve"]:["Troca o gancho da capa","Outra foto na capa","Mais curto","Tom mais leve"]).map(t=>`<button class="filtro" data-rapido="${hjE(t)}">${t}</button>`).join("")}</div>
+       <textarea class="campo" id="ajTx" rows="3" maxlength="2000" placeholder="${reels?"Ex.: a cena 3 está longa; corta a explicação":"Ex.: o slide 5 está longo; corta um pedaço"}">${hjE(HJ.ajusteTxt)}</textarea>
+       <p class="dica">A rotina lê isto e refaz só o que você pediu.</p>
+       <div class="acoes"><button class="btn btn-fantasma" id="ajCancela">Cancelar</button><button class="btn btn-ganho" id="ajEnvia" ${HJ.ajusteTxt.trim()?"":"disabled"}>Enviar ajuste</button></div></div>`;
+    if(p.legenda) h+=`<div class="fbloco"><div class="blocohead"><h3>Legenda</h3><button class="btn-mini" data-hj="copiar-leg" data-id="${p.id}">⧉ Copiar legenda</button></div><pre class="txtlongo" id="legTx">${hjE(p.legenda)}</pre></div>`;
+    if(p.status!=="postado") h+=hjHoraBloco(p);
+    if(p.status==="aprovado") h+=`<div class="destaque"><div class="t">Postado é automático</div><p style="margin:0;font-size:var(--t-mini);line-height:1.45">Quando o post aparecer no Instagram (coleta a cada 4 h, próxima ~${hjProxColeta()}), esta pauta vira “postado” sozinha. Se você já postou e ainda não apareceu, use “Marquei como postado”.</p></div>`;
+    if(p.gancho||p.fontes||p.ajuste_pre) h+=`<details class="fbloco"><summary style="cursor:pointer;font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-medio);min-height:28px">Proposta original e fontes</summary>
+        ${p.gancho?`<p style="margin-top:var(--e2)"><b>${reels?"Gancho falado":"Gancho"}:</b> ${hjE(p.gancho)}</p>`:""}${p.fontes?`<p style="margin-top:var(--e2)"><b>Fontes:</b> ${hjE(p.fontes)}</p>`:""}${p.ajuste_pre?`<div class="coment">Seu pedido antes de produzir: “${hjE(p.ajuste_pre)}”</div>`:""}</details>`;
+    if(["para_revisar","aprovado"].includes(p.status)) h+=`<div style="margin-top:var(--e6)"><button class="btn btn-risco" data-hj="lixeira" data-id="${p.id}" style="width:100%">Não vou postar este</button></div>`;
+    if(p.status==="para_revisar"&&!HJ.ajuste) barra=`<button class="btn btn-fantasma" id="bAjustar">Ajustar</button><button class="btn btn-ganho" data-hj="aprovar" data-id="${p.id}">Aprovar</button>`;
+    if(p.status==="aprovado") barra=`<button class="btn btn-fantasma" data-hj="copiar-leg" data-id="${p.id}">Copiar legenda</button><button class="btn btn-ganho" data-hj="postado" data-id="${p.id}" style="font-size:var(--t-base)">Marquei como postado</button>`;
+  } else {
+    if(["aprovada_producao","em_producao"].includes(p.status))
+      h+=`<div class="fstatus"><div class="linha1"><span class="chip">${hjE(HJ_STATUS_TX[p.status])}</span></div>${hjTrilha(p.status)}<p class="prev">${hjTxtProducao(p)}</p></div>`;
+    h+=`${tags}<div class="ftema">${hjE(p.tema)}</div>`;
+    if(p.gancho) h+=`<div class="fbloco"><h3>${reels?"Gancho falado":"Gancho da capa"}</h3><p class="gancho-g">“${hjE(p.gancho)}”</p></div>`;
+    if(p.angulo) h+=`<div class="fbloco"><h3>Ângulo</h3><p>${hjE(p.angulo)}</p>${!rs.length&&!cenas.length?`<p class="dica" style="margin-top:var(--e2)">Ideia guardada sem roteiro: a produção monta ${reels?"gancho falado e cenas":"gancho e slides"} a partir do ângulo.</p>`:""}</div>`;
+    if(rs.length&&!reels) h+=`<div class="fbloco"><h3>O que cada slide diz <span class="chip chip-neutro">${rs.length} slides</span></h3><ol>${rs.map(r=>`<li>${hjE(r)}</li>`).join("")}</ol></div>`;
+    if(cenas.length) h+=`<div class="fbloco"><h3>Cenas <span class="chip chip-neutro">${cenas.length} cenas${p.dur?" · "+hjE(p.dur):""}</span></h3>${hjCenasHTML(p)}</div>`;
+    if(pq.length) h+=`<div class="fbloco"><h3>Por quê</h3><ul>${pq.map(x=>`<li><b>${hjE(x.tipo||"")}:</b> ${hjE(x.texto)}</li>`).join("")}</ul></div>`;
+    if(p.fontes) h+=`<div class="fbloco"><h3>Fontes</h3><p>${hjE(p.fontes)}</p></div>`;
+    if(p.confirmar) h+=`<div class="maviso" style="margin-top:var(--e3)"><b>Precisa de você:</b> ${hjE(p.confirmar)}</div>`;
+    if(p.valida_ate) h+=`<div class="maviso"><b>Prazo:</b> só faz sentido até ${hjDM(p.valida_ate)}.</div>`;
+    if(p.avisos&&p.status==="aprovada_producao") h+=`<div class="maviso"><b>Aviso da produção:</b> ${hjE(p.avisos)}</div>`;
+    if(p.status!=="descartado") h+=hjHoraBloco(p);
+    if(["sugerida","ideia"].includes(p.status)){
+      h+=`<label class="lbl" for="ajPre">Ajuste antes de produzir <span style="text-transform:none;letter-spacing:0;font-weight:500">(opcional)</span></label>
+        <textarea class="campo" id="ajPre" rows="2" maxlength="1000" placeholder="Ex.: troca o exemplo por um de RH">${hjE(HJ.rascunho[p.id]||p.ajuste_pre||"")}</textarea>
+        <p class="dica">A rotina lê isto antes de montar. Deixe em branco para produzir como está.</p>`;
+      barra=`<button class="btn btn-fantasma" data-hj="lixeira" data-id="${p.id}">Lixeira</button>${p.status==="sugerida"?`<button class="btn btn-fantasma" data-hj="banco" data-id="${p.id}">Banco</button>`:""}<button class="btn btn-ganho" data-hj="produzir-ficha" data-id="${p.id}">Produzir</button>`;
+    }
+    if(p.status==="aprovada_producao") barra=`<button class="btn btn-fantasma" data-hj="voltar-banco" data-id="${p.id}">Voltar para o banco</button>`;
+    if(p.status==="descartado") barra=`<button class="btn btn-ganho" data-hj="restaurar" data-id="${p.id}">Restaurar para o banco</button>`;
+  }
+  return {corpo:h,barra,depois(){
+    const tira=$("#tira");
+    if(tira) tira.onscroll=()=>{ const sl=tira.querySelector(".sl"); if(!sl) return; const w=sl.getBoundingClientRect().width+12, n=slides.length, i=Math.min(n-1,Math.round(tira.scrollLeft/w));
+      $("#tiraN").textContent=`${i+1} de ${n}${i?"":" · deslize"}`; $("#pontos").querySelectorAll("i").forEach((e,k)=>e.classList.toggle("on",k===i)) };
+    const ap=$("#ajPre"); if(ap) ap.oninput=e=>{ HJ.rascunho[p.id]=e.target.value };
+    const ba=$("#bAjustar"); if(ba) ba.onclick=()=>{ HJ.ajuste=true; hjAtualizarTela(); setTimeout(()=>{ const t=$("#ajTx"); if(t){ t.focus(); t.scrollIntoView({block:"center"}) } },30) };
+    const tx=$("#ajTx");
+    if(tx){ const env=$("#ajEnvia");
+      tx.oninput=()=>{ HJ.ajusteTxt=tx.value; env.disabled=!tx.value.trim() };
+      document.querySelectorAll("[data-rapido]").forEach(b=>b.onclick=()=>{ tx.value=(tx.value.trim()?tx.value.trim()+". ":"")+b.dataset.rapido; HJ.ajusteTxt=tx.value; env.disabled=false; tx.focus() });
+      $("#ajCancela").onclick=()=>{ HJ.ajuste=false; hjAtualizarTela() };
+      env.onclick=()=>{ if(tx.value.trim()) hjPedirAjuste(p.id,tx.value.trim()) };
+    }
+  }};
+}
+
+/* ---------- render e rotas ---------- */
+/* tudo que não é Canais, Métricas, Captura ou quadro de canal é do módulo (Hoje é o padrão) */
+function hjEhRota(h){ return !/^#\/(metricas|capturar|c\/|canais)/.test(h) }
+function hjLimpar(){ $("#hd").className=""; document.querySelector("header").classList.remove("solta") }
+function hjRender(){
+  const h0=location.hash, h=(h0===""||h0==="#")?"#/":h0;
+  const view=$("#view"); view.className="clara hj"; $("#hd").className="hj"; $("#abas").classList.add("hide");
+  const aviso=HJ_DEMO?`<div class="maviso" role="status"><b>Modo de teste.</b> Dados de exemplo em memória; nada é lido nem gravado no Supabase.</div>`:"";
+  if(!HJ.pronto){
+    hjHdSub(h==="#/"?"Hoje":"PSN","",h==="#/"?"#/canais":"#/"); 
+    if(h==="#/"){ document.querySelector("header").classList.add("solta"); $("#hd").innerHTML=`<div class="hrow marca"><div class="selo"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="15" stroke="#4A16A8" stroke-width="6" stroke-dasharray="70 100" stroke-linecap="round" transform="rotate(-90 24 24)"/></svg></div><div class="tt"><div class="disp" style="font-size:var(--t-lg)">hoje</div><div class="rotulo" style="color:var(--texto-invertido-fraco);margin-top:2px">PSN</div></div></div><div style="height:var(--e4)"></div>` }
+    $("#fabslot").innerHTML="";
+    view.innerHTML=`<div class="wrap" style="max-width:720px">${aviso}${HJ.erro
+      ?`<div class="vazio"><h4>não consegui carregar</h4><p>Não consegui carregar o Hoje. Confira a conexão.</p><button class="btn btn-fantasma" data-hj="tentar">Tentar de novo</button></div>`
+      :`<div class="carregando" style="color:var(--texto-medio)">carregando…</div>`}</div>`;
+    if(!HJ.carregando&&!HJ.erro) hjCarregar();
+    return;
+  }
+  let r;
+  if(h==="#/calendario") r=hjRenderCalendario();
+  else if(h==="#/banco") r=hjRenderBanco();
+  else if(h==="#/lixeira") r=hjRenderLixeira();
+  else if(h.startsWith("#/pauta/")) r=hjRenderFicha(decodeURIComponent(h.slice(8)));
+  else r=hjRenderHoje();
+  if(!r) return;
+  view.innerHTML=`<div class="wrap" style="max-width:720px">${aviso}${r.corpo}</div>`;
+  $("#fabslot").innerHTML=r.barra?`<div class="hjbarra"><div class="in">${r.barra}</div></div>`:"";
+  if(r.depois) r.depois();
+  hjLigarRails();
+}
+function hjLigarRails(){
+  ["estatico","reels"].forEach(f=>{ const r=document.getElementById("rail-"+f); if(!r) return;
+    r.onscroll=()=>{ const c=r.querySelector(".card"); if(!c) return; const w=c.getBoundingClientRect().width+12, i=Math.min(r.children.length-1,Math.round(r.scrollLeft/w));
+      document.querySelectorAll("#pt-"+f+" i").forEach((e,k)=>e.classList.toggle("on",k===i)) } });
+}
+/* re-render sem mexer na rolagem (depois de ações e cargas) */
+function hjAtualizarTela(){
+  const h=location.hash; if(!hjEhRota(h)) return;
+  const sc={}; ["estatico","reels"].forEach(f=>{ const r=document.getElementById("rail-"+f); if(r) sc[f]=r.scrollLeft });
+  hjRender();
+  Object.keys(sc).forEach(f=>{ const r=document.getElementById("rail-"+f); if(r){ r.scrollLeft=sc[f]; if(r.onscroll) r.onscroll() } });
+}
+/* chamado por rota(): entra numa tela do módulo */
+function hjEntrar(){
+  const h=location.hash;
+  if(!(h==="#/banco"||h.startsWith("#/pauta/"))&&HJ.alvo){ HJ.alvo=null; HJ.filtro.f="" }
+  HJ.ajuste=false; HJ.hora=false;
+  if(HJ.pronto&&!HJ.carregando&&!HJ.pend.size&&Date.now()-HJ.carregadoEm>30000) hjCarregar();
+  hjRender();
+}
+/* imagem de slide que não carrega */
+document.addEventListener("error",e=>{
+  const im=e.target; if(!im||im.tagName!=="IMG"||!im.closest||!im.closest(".hj .sl")) return;
+  const sl=im.closest(".sl"); sl.innerHTML=`<span class="sl-falhou">slide ${hjE(im.dataset.n||"")} não carregou</span>`;
+},true);
+
+function hjSairDaFicha(){
+  if(!location.hash.startsWith("#/pauta/")) return;
+  location.hash=["#/","#/banco","#/calendario","#/lixeira"].includes(HJ.de)?HJ.de:"#/";
+}
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-hj]"); if(!t) return;
+  const a=t.dataset.hj, id=t.dataset.id, v=t.dataset.v;
+  switch(a){
+    case "produzir": hjProduzir(id); break;
+    case "produzir-ficha": { const ta=$("#ajPre"), tinha=!!HJ.alvo; hjProduzir(id,ta?ta.value.trim():""); if(!tinha) hjSairDaFicha(); break }
+    case "banco": hjParaBanco(id); hjSairDaFicha(); break;
+    case "voltar-banco": hjVoltarBanco(id); hjSairDaFicha(); break;
+    case "lixeira": hjParaLixeira(id); hjSairDaFicha(); break;
+    case "restaurar": { const naFicha=location.hash.startsWith("#/pauta/"); hjRestaurar(id); if(naFicha) location.hash="#/banco"; break }
+    case "aprovar": hjAprovar(id); break;
+    case "postado": hjPostado(id); break;
+    case "copiar-leg": { const p=hjGet(id); if(p) hjCopiar(p.legenda||"","legTx"); break }
+    case "copiar-rot": { const p=hjGet(id); if(p) hjCopiar(hjRoteiroTxt(p),"reelsTx"); break }
+    case "mudar-hora": HJ.hora=!HJ.hora; hjAtualizarTela(); break;
+    case "hora": { const m=location.hash.match(/^#\/pauta\/(.+)$/); if(m) hjSetHora(decodeURIComponent(m[1]),v); break }
+    case "salvar-hora": { const x=($("#horaIn")||{}).value, m=location.hash.match(/^#\/pauta\/(.+)$/); if(x&&m) hjSetHora(decodeURIComponent(m[1]),x); break }
+    case "escolher": { const [dia,f]=v.split("|"); HJ.alvo={dia,formato:f}; HJ.filtro.f=f; location.hash="#/banco"; break }
+    case "vista": HJ.cal.vista=v; hjAtualizarTela(); break;
+    case "nav": { const n=Number(v), C=HJ.cal;
+      if(C.vista==="semana") C.ini=addDias(C.ini,7*n);
+      else { const [y,m]=C.mes.split("-").map(Number), x=new Date(Date.UTC(y,m-1+n,1)); C.mes=x.getUTCFullYear()+"-"+hjPad(x.getUTCMonth()+1) }
+      hjAtualizarTela(); break }
+    case "dia": HJ.cal.sel=v; hjAtualizarTela(); break;
+    case "hoje-cal": HJ.cal=null; hjAtualizarTela(); break;
+    case "ffmt": HJ.filtro.f=v; hjAtualizarTela(); break;
+    case "ordem": HJ.filtro.ordem=v; hjAtualizarTela(); break;
+    case "limpar": HJ.filtro.u=HJ.filtro.l=""; if(!HJ.alvo) HJ.filtro.f=""; hjAtualizarTela(); break;
+    case "abrir": HJ.de=location.hash||"#/"; if(HJ.de==="#") HJ.de="#/"; location.hash="#/pauta/"+encodeURIComponent(id); break;
+    case "ir": location.hash=v; break;
+    case "tentar": HJ.erro=false; hjCarregar(); hjAtualizarTela(); break;
+  }
+});
 
 /* ============ START ============ */
 (async()=>{ await carregar(); await filaFlush(); rota(); })();
