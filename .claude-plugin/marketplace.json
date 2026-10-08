@@ -6,10 +6,10 @@
     {
       "name": "insta-ops",
       "source": "./plugins/insta-ops",
-      "description": "Salva posts do Instagram como notas de referência no Obsidian (v0). Base do mecanismo: referências → padrões → pautas → carrossel.",
-      "version": "0.0.1",
+      "description": "Processa a fila de ideias do app Planejamento sem Neura: captura e analisa posts do Instagram e TikTok, grava no Supabase, com foco por ideia (conteúdo, formato, gancho, série) e aprendizado de utilidades. Base do mecanismo: referências → padrões → pautas → carrossel.",
+      "version": "0.2.0",
       "category": "marketing",
-      "tags": ["instagram", "obsidian", "referencias", "pt-br"]
+      "tags": ["instagram", "tiktok", "supabase", "referencias", "pt-br"]
     }
   ]
 }

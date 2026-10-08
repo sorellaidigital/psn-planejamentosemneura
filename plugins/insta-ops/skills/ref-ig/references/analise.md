@@ -2,10 +2,11 @@
 
 ## Regras que valem aqui (adaptadas da Sofia)
 
-1. **Nunca inventar.** Se um slide não foi transcrito ou uma métrica não apareceu, o campo fica `null` e o item vai para `## Não capturado`. Nunca preencher com suposição.
-2. **Honestidade na análise.** Não elogiar gancho ou estrutura fraca só para preencher a nota. Se o post é fraco em algum ponto, dizer isso em `## Análise`.
+1. **Nunca inventar.** Se um slide não foi transcrito ou uma métrica não apareceu, o campo fica `null` e o item vai para `nao_capturado`. Nunca preencher com suposição.
+2. **Honestidade na análise.** Não elogiar gancho ou estrutura fraca só para preencher a referência. Se o post é fraco em algum ponto, dizer isso em `analise`.
 3. **Princípios acima de técnica.** Um post com tema fraco e técnica perfeita carrega menos que um post com tema forte e técnica simples. Ao descrever "por que funciona", aponte o que está carregando o post: tema, familiaridade, conflito, curiosidade ou aha (nessa ordem de peso).
-4. **Regra 6 — nunca copiar tema.** Copiar princípios, estrutura e gatilhos, nunca o tema literal. O esqueleto é reutilizável, a roupagem deve ser nova. Isso vale para as frases de análise e para os 6 bullets, sobretudo "O que reaproveitar"; as citações `> "..."` são verbatim por definição.
+4. **Regra 6 — nunca copiar tema.** Copiar princípios, estrutura e gatilhos, nunca o tema literal. O esqueleto é reutilizável, a roupagem deve ser nova. Isso vale para as frases de análise e para os campos de `analise`, sobretudo `o_que_reaproveitar`; as citações verbatim de slide/legenda ficam como estão.
+5. **`o_que_reaproveitar` é sempre no contexto do canal.** Use o `handle`, `nicho` e `tipo_conteudo` (`reels` ou `estatico`) do canal da ideia (vindos de `psn_criadores`), mais o `por_que` que a pessoa escreveu ao salvar a ideia, para dizer como AQUELE canal adaptaria o padrão. Nunca uma recomendação genérica "para qualquer nicho".
 
 ## `gancho`
 
@@ -47,52 +48,48 @@ Esqueletos comuns (use um destes nomes quando encaixar, ou nomeie um novo do mes
 
 `palavra_chave`: se `tipo_cta = comente-palavra`, a palavra exata pedida (ex.: `"saves"`); senão `null`.
 
+## `formato`
+
+`carrossel | reel | imagem | video`. TikTok é sempre `video` (não existe carrossel de TikTok neste v0.1). Instagram usa `carrossel`, `reel` ou `imagem`.
+
 ## `tags`
 
-Convenção, sempre nesta ordem:
+Só tags de tema, 1 a 3, palavras minúsculas, sem acento, descrevendo o assunto do post (ex.: `ia`, `produtividade`, `marketing`). Nada de prefixo `formato/...`, `gancho/...` ou `cta/...` — esses agora são as próprias colunas `formato`, `tipo_gancho` e `tipo_cta`. Antes de escolher, consulte `psn_referencias.tags` já gravadas (via GET com `select=tags`) e reutilize uma tag existente quando servir. O campo `estrutura` leva só a sequência; o nome do esqueleto vai no campo `estrutura` de `analise` (bullet **Estrutura**).
 
-```yaml
-tags:
-  - instagram/referencia
-  - formato/<carrossel|reel|imagem>
-  - gancho/<tipo_gancho>
-  - cta/<tipo_cta>
-  - <tema1>
-  - <tema2>   # opcional
-  - <tema3>   # opcional
+## Seção `analise` da referência
+
+### Passo 1 — slide a slide, formato Sofia, vira `analise.por_slide`
+
+Adapte o formato da Sofia de "frase a frase" para "slide a slide": uma frase curta por slide, do que aquele slide faz (não o que ele diz, o que ele faz com quem lê). Cada frase é um item do array `por_slide`, na ordem dos slides — não repita o texto do slide na frase, ele já está em `slides[i].texto`.
+
+Exemplo (2 slides):
+
+```json
+"por_slide": [
+  "Promessa pessoal + resultado concreto: quem lê pensa \"eu também tenho esse problema\".",
+  "Nomeia uma dor que quem lê reconhece na hora."
+]
 ```
 
-As tags de tema (1 a 3) são palavras minúsculas, sem acento, que descrevem o assunto do post (ex.: `ia`, `produtividade`, `marketing`). Antes de escolher, rode Grep por `^  - [a-z]+$` nas notas de `Referências Instagram/` e reutilize uma tag existente quando servir. O campo `estrutura` do frontmatter leva só a sequência; o nome do esqueleto vai no bullet **Estrutura**.
+Regras: um item por slide, nunca agrupar. Máximo 1 frase por slide.
 
-## Seção `## Análise` da nota
+### Passo 2 — os campos de `analise`
 
-### Passo 1 — slide a slide, formato Sofia
+Depois de `por_slide`, preencha os demais campos exigidos por `modelo-referencia.md`:
 
-Adapte o formato da Sofia de "frase a frase" para "slide a slide": um bloco por slide, com o texto do slide entre `> "..."` e uma frase curta do que aquele slide faz (não o que ele diz, o que ele faz com quem lê).
+- **`gancho`:** o que a capa promete e por que segura o scroll (1 a 2 linhas).
+- **`estrutura`:** nome do esqueleto + sequência.
+- **`desenvolvimento`:** como cada bloco relevante entrega (1 linha por bloco).
+- **`cta`:** mecânica e o que a pessoa ganha ao agir.
+- **`por_que_funciona`:** 2 a 3 linhas, apontando o elemento que carrega o post (tema, familiaridade, conflito, curiosidade ou aha), na ordem de peso da hierarquia.
+- **`o_que_reaproveitar`:** 2 a 4 itens, cada um dizendo como o canal da ideia (handle, nicho, tipo_conteudo) adaptaria esse padrão, considerando o `por_que` da ideia (regra 5 acima). Nunca o tema literal do post original.
 
-```markdown
-> "transformei os meus salvos do instagram em memória pro claude"
+## Foco marcado
 
-Promessa pessoal + resultado concreto: quem lê pensa "eu também tenho esse problema".
+Vale para canais que não são `utilidade` (utilidade segue `utilidade.md`). A análise base (todos os campos acima) é sempre preenchida, com ou sem foco. `foco` (array de `conteudo | formato | gancho | serie`) e `serie` vêm da ideia. Cada foco acrescenta profundidade e uma chave em `analise`. Vários focos: preencher todos os aplicáveis. `o_que_reaproveitar` continua sempre preenchido.
 
----
-
-> "a gente salva mil coisas... e nunca mais acha"
-
-Nomeia uma dor que quem lê reconhece na hora.
-
----
-```
-
-Regras: um bloco por slide, nunca agrupar. A citação é a linha de título do slide (o maior texto), não o slide inteiro. Máximo 1 frase de análise por slide. `---` entre blocos.
-
-### Passo 2 — os 6 bullets do modelo
-
-Depois dos blocos slide a slide, feche com os 6 bullets exigidos por `modelo-nota.md`:
-
-- **Gancho:** o que a capa promete e por que segura o scroll (1 a 2 linhas).
-- **Estrutura:** nome do esqueleto + sequência.
-- **Desenvolvimento:** como cada bloco relevante entrega (1 linha por bloco).
-- **CTA:** mecânica e o que a pessoa ganha ao agir.
-- **Por que funciona:** 2 a 3 linhas, apontando o elemento que carrega o post (tema, familiaridade, conflito, curiosidade ou aha), na ordem de peso da hierarquia.
-- **O que reaproveitar:** 2 a 4 itens, cada um como padrão aplicável em qualquer nicho. Nunca o tema literal do post original.
+- **Sem foco (`null` ou vazio):** como acima, sem chave extra.
+- **`conteudo` → `analise.pauta`:** tema do post, ângulo, argumentos que sustentam, e uma pauta adaptada ao nicho e ao @ do canal (um parágrafo curto). Esqueleto e princípio, nunca o tema literal (regra 4).
+- **`formato` → `analise.formato_visual`:** diagramação, capa, hierarquia de texto, paleta, recursos usados (prints, memes, tela dividida, foto real…), ritmo de slides ou de cenas, e um "como replicar" numerado. Nunca copiar o tema. Exige olhar as imagens com atenção: ler (Read) cada imagem de slide, não só o texto transcrito. Sem imagem de um slide, registrar em `nao_capturado` e não descrever o que não viu.
+- **`gancho` → `analise.gancho` e `analise.cta` mais ricos** (mecanismo, por que segura o scroll, o que a pessoa ganha ao agir), mais `analise.variacoes_gancho`: array de 3 variações de gancho para o nicho do canal, mesmo mecanismo, tema novo.
+- **`serie` → `analise.serie`:** como este post se encaixa na série nomeada em `ideia.serie` e o próximo episódio sugerido. Sem nome de série, registrar em `nao_capturado` e pular a chave.
