@@ -31,11 +31,13 @@ function iguais(a: string, b: string): boolean {
 export async function handler(req: Request, deps: Deps): Promise<Response> {
   if (req.method !== "POST") return json({ ok: false, erro: "método não permitido" }, 405);
 
-  const segredoCron = deps.env("PSN_CRON_SECRET");
-  if (!segredoCron) return json({ ok: false, erro: "configuração ausente: PSN_CRON_SECRET" }, 500);
-  if (!iguais(req.headers.get("x-psn-cron") ?? "", segredoCron)) {
-    return json({ ok: false, erro: "não autorizado" }, 401);
-  }
+  // Segredo do cron: env PSN_CRON_SECRET se existir; senão o do Vault (psn_ig_cron), conferido no banco.
+  const recebido = req.headers.get("x-psn-cron") ?? "";
+  const segredoCron = deps.env("PSN_CRON_SECRET") ?? "";
+  const autorizado = segredoCron
+    ? iguais(recebido, segredoCron)
+    : recebido.length >= 16 && await deps.db.cronOk(recebido).catch(() => false);
+  if (!autorizado) return json({ ok: false, erro: "não autorizado" }, 401);
 
   let corpo: { tipo?: unknown; forcar_completo?: unknown } = {};
   try {
@@ -49,13 +51,15 @@ export async function handler(req: Request, deps: Deps): Promise<Response> {
   const forcar = corpo.forcar_completo === true;
 
   const token = deps.env("META_PAGE_TOKEN");
-  const igUserId = deps.env("META_IG_USER_ID");
+  // id da conta: env ou a config 'conta' gravada na importação do IG Analytics
+  const igUserId = deps.env("META_IG_USER_ID") ||
+    (await deps.db.getConfig<{ ig_user_id?: string }>("conta").catch(() => null))?.ig_user_id;
   if (!token || !igUserId) {
     return json({ ok: false, erro: "configuração ausente: META_PAGE_TOKEN / META_IG_USER_ID" }, 500);
   }
   const appId = deps.env("META_APP_ID") || undefined;
   const appSecret = deps.env("META_APP_SECRET") || undefined;
-  const segredos = [token, appSecret ?? "", segredoCron];
+  const segredos = [token, appSecret ?? "", segredoCron || recebido];
 
   const { db } = deps;
   const agora = deps.agora();

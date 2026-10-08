@@ -28,6 +28,8 @@ export interface SyncRow {
 }
 
 export interface Db {
+  /** Confere o segredo do cron contra o Vault (função psn_ig_cron_ok, só service role). */
+  cronOk(segredo: string): Promise<boolean>;
   getConfig<T = unknown>(chave: string): Promise<T | null>;
   setConfig(chave: string, valor: unknown): Promise<void>;
 
@@ -69,6 +71,9 @@ export function criarDb(url: string, chave: string): Db {
   };
 
   return {
+    async cronOk(segredo) {
+      return ok(await sb.rpc("psn_ig_cron_ok", { segredo }), "cron_ok") === true;
+    },
     async getConfig<T>(c: string) {
       const r = await sb.from("psn_ig_config").select("valor").eq("chave", c).maybeSingle();
       return (ok(r, `config ${c}`)?.valor ?? null) as T | null;

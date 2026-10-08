@@ -36,59 +36,45 @@ Uma coleta posterior bem-sucedida volta `valido` para `true`.
 
 ## Segredos
 
-```bash
-supabase secrets set META_PAGE_TOKEN=... META_IG_USER_ID=... PSN_CRON_SECRET=...
-# opcionais (saúde do token via debug_token):
-supabase secrets set META_APP_ID=... META_APP_SECRET=...
-# opcionais (limites): PSN_MAX_CALLS (padrão 400), PSN_MAX_SEGUNDOS (padrão 120)
-```
+Cadastrados no painel do Supabase (Edge Functions → Secrets):
+
+- `META_PAGE_TOKEN` (obrigatório): token de página da Meta.
+- `META_APP_ID` e `META_APP_SECRET` (opcionais): saúde diária do token via `debug_token`.
+- `META_IG_USER_ID` (opcional): se ausente, vem de `psn_ig_config.conta.ig_user_id` (gravado na importação do IG Analytics).
+- `PSN_MAX_CALLS` (padrão 400) e `PSN_MAX_SEGUNDOS` (padrão 120) (opcionais).
 
 `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` são injetados pelo Supabase. Nunca coloque os valores no repositório.
 
-## Deploy (não executado por este código)
+## Autenticação
 
-```bash
-supabase functions deploy psn-ig-sync --no-verify-jwt
-```
+A função roda com `verify_jwt=false`; quem autentica é o header `x-psn-cron`:
 
-A função não usa JWT: a autenticação é o header `x-psn-cron`, que deve ser igual a `PSN_CRON_SECRET` (senão 401).
-Se `PSN_CRON_SECRET` não estiver definido, a função responde 500 e nunca abre.
+- se o segredo `PSN_CRON_SECRET` existir, o header precisa ser igual a ele;
+- se não existir (configuração em produção), o header é conferido contra o segredo `psn_ig_cron` do Vault pela função
+  `public.psn_ig_cron_ok(text)`, que só o service role executa. O valor foi gerado no próprio banco e não circula em lugar nenhum.
 
-## Agendamento (pg_cron + pg_net, a cada 2h)
+Qualquer outro caso responde 401.
 
-Guarde a URL e o segredo no Vault (rodar uma vez, com os valores reais) e agende. Não foi executado.
+## Agendamento (em produção desde 08/10/2026)
+
+`pg_cron` + `pg_net`, a cada 4h no minuto 5 (UTC). Ver `supabase/migrations/20261008_psn_ig_v1_cron.sql`.
 
 ```sql
-select vault.create_secret('https://<PROJECT_REF>.supabase.co/functions/v1/psn-ig-sync', 'psn_ig_sync_url');
-select vault.create_secret('<mesmo valor de PSN_CRON_SECRET>', 'psn_cron_secret');
-
-select cron.schedule(
-  'psn-ig-sync',
-  '5 */2 * * *',   -- minuto 5 de cada 2h (UTC)
-  $$
-  select net.http_post(
-    url     := (select decrypted_secret from vault.decrypted_secrets where name = 'psn_ig_sync_url'),
-    headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'x-psn-cron',   (select decrypted_secret from vault.decrypted_secrets where name = 'psn_cron_secret')
-    ),
-    body    := '{"tipo":"cron"}'::jsonb,
-    timeout_milliseconds := 150000
-  );
-  $$
-);
-
--- para desligar: select cron.unschedule('psn-ig-sync');
+select jobid, jobname, schedule, active from cron.job;          -- conferir
+select cron.alter_job(1, schedule := '5 */4 * * *');             -- mudar frequência
+select cron.unschedule('psn-ig-sync');                           -- desligar
 ```
-
-Requer as extensões `pg_cron`, `pg_net` e `supabase_vault` habilitadas.
 
 ## Rodar manualmente
 
-```bash
-curl -sS -X POST "https://<PROJECT_REF>.supabase.co/functions/v1/psn-ig-sync" \
-  -H "x-psn-cron: $PSN_CRON_SECRET" -H "Content-Type: application/json" \
-  -d '{"tipo":"manual"}'
+Pelo SQL editor do Supabase (usa o segredo do Vault):
+
+```sql
+select net.http_post(
+  url := 'https://hvmmkwafzeqbjpusdmin.supabase.co/functions/v1/psn-ig-sync',
+  headers := jsonb_build_object('Content-Type','application/json',
+    'x-psn-cron',(select decrypted_secret from vault.decrypted_secrets where name='psn_ig_cron')),
+  body := '{"tipo":"manual"}'::jsonb, timeout_milliseconds := 150000);
 ```
 
 Corpo (opcional): `{ "tipo": "cron" | "manual", "forcar_completo": true|false }`. `forcar_completo` refaz todos os dias da janela da conta,

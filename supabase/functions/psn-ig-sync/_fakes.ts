@@ -9,7 +9,11 @@ export class FakeDb implements Db {
   conta = new Map<string, number>(); // "data|metrica"
   midias = new Map<string, Midia & { insights_indisponivel?: boolean; visto_em?: string }>();
   insights: { midia_id: string; capturado_em: string; metrica: string; valor: number }[] = [];
+  segredoVault: string | null = null;
   constructor(public agora: () => Date = () => new Date()) {}
+
+  // deno-lint-ignore require-await
+  async cronOk(segredo: string) { return this.segredoVault !== null && segredo === this.segredoVault; }
 
   // deno-lint-ignore require-await
   async getConfig<T>(c: string) { return (this.config.get(c) ?? null) as T | null; }

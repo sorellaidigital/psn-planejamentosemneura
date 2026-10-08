@@ -13,9 +13,27 @@ Deno.test("auth: sem header, header errado e método errado", async () => {
   assertEquals(deps.db instanceof FakeDb && (deps.db as FakeDb).syncs.length, 0); // nada gravado
 });
 
-Deno.test("auth: sem PSN_CRON_SECRET configurado nunca abre", async () => {
+Deno.test("auth: sem PSN_CRON_SECRET e sem segredo no Vault nunca abre", async () => {
   const { deps } = montarDeps(rotasPadrao(), { PSN_CRON_SECRET: "" });
-  assertEquals((await handler(req({ "x-psn-cron": "" }), deps)).status, 500);
+  assertEquals((await handler(req({ "x-psn-cron": "" }), deps)).status, 401);
+  assertEquals((await handler(req({ "x-psn-cron": "qualquer-coisa-longa-123" }), deps)).status, 401);
+});
+
+Deno.test("auth via Vault: segredo certo coleta, errado ou curto não", async () => {
+  const { deps, db } = montarDeps(rotasPadrao(), { PSN_CRON_SECRET: "" });
+  db.segredoVault = "segredo-do-vault-0123456789";
+  assertEquals((await handler(req({ "x-psn-cron": "segredo-do-vault-errado-99" }), deps)).status, 401);
+  assertEquals((await handler(req({ "x-psn-cron": "curto" }), deps)).status, 401);
+  const r = await handler(req({ "x-psn-cron": "segredo-do-vault-0123456789" }), deps);
+  assertEquals(r.status, 200);
+  assert(!JSON.stringify(db.syncs).includes("segredo-do-vault-0123456789"));
+});
+
+Deno.test("ig_user_id vem da config 'conta' quando o env não tem", async () => {
+  const { deps, db } = montarDeps(rotasPadrao(), { META_IG_USER_ID: "" });
+  assertEquals((await handler(req(), deps)).status, 500);
+  db.config.set("conta", { ig_user_id: IG });
+  assertEquals((await handler(req(), deps)).status, 200);
 });
 
 Deno.test("lock: run 'rodando' recente → 409; órfão antigo vira erro e a coleta segue", async () => {
