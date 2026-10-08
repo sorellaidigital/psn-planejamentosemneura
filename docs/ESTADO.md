@@ -43,18 +43,7 @@ Plano completo aprovado: arquitetura, camadas e verificação estão nesta seç�
    - só então, com o ok da Duda: Notion deixa de receber dados, sai o coletor do `mecanismo-car` e decide-se o IG Analytics. Ela ainda vai conferir se usa hub, agentes, CRM ou radar lá. Se não usar, desligar o cron de coleta do VPS e o agendador antigo do Windows, se existir.
 4. **Saúde do token:** resolvida em 08/10 (secrets `META_APP_ID`/`META_APP_SECRET` regravados). `debug_token` válido: token de página sem vencimento, escopos de insights ok. **O acesso a dados vence em 04/01/2027**: antes disso a Duda precisa reautorizar o app da Meta (o app PSN avisa quando estiver perto).
 5. **"Visitas ao perfil"** aparece "—" porque o coletor não pede essa métrica no nível da conta. Testar se a API v25 entrega `profile_views` para a conta e incluir.
-6. **Limpeza no Supabase** (o conector travou nesses comandos). Rodar no SQL editor do painel:
-   ```sql
-   drop function if exists public.psn_ig_importar_tmp(text,text,jsonb);
-   drop policy if exists psn_transfer_up on storage.objects;
-   drop policy if exists psn_transfer_get on storage.objects;
-   drop policy if exists psn_transfer_teste on storage.objects;
-   drop policy if exists psn_transfer_del on storage.objects;
-   drop policy if exists psn_transfer_sel on storage.objects;
-   delete from storage.buckets where id = 'psn-transfer';
-   delete from public.psn_ig_analise where data between '1900-01-01' and '1900-01-31';  -- linha de teste da C5
-   ```
-   A função já está sem permissão para anon. O bucket `psn-transfer` está vazio.
+6. **Limpeza no Supabase:** feita em 08/10 pela Duda no SQL editor (função `psn_ig_importar_tmp`, 5 políticas `psn_transfer_*` e a linha de teste de 1900 em `psn_ig_analise` removidas; conferido). O bucket `psn-transfer` ficou: o Supabase não deixa apagá-lo por SQL e a tela não apagou. Está vazio, privado e sem políticas (ninguém além do service role acessa); decisão: deixar e não usar.
 7. **PR do branch `claude/psn-metricas` para `main`:** feito (sorellaidigital/mecanismo-inst#2, merge em 08/10).
 
 ## Próximos módulos (ideia da Duda: centralizar tudo no PSN)
