@@ -2197,6 +2197,11 @@ document.addEventListener("keydown",e=>{
   if(!$("#sheet3").classList.contains("hide")) return fechar3();
   if(!$("#sheet2").classList.contains("hide")) return fechar2();
   if(!$("#sheet").classList.contains("hide")) return fecharCard();
+  if(location.hash.startsWith("#/pauta/")){
+    if(HJ.ajuste){ HJ.ajuste=false; return hjAtualizarTela() }
+    if(HJ.hora){ HJ.hora=false; return hjAtualizarTela() }
+    return hjSairDaFicha();
+  }
 });
 
 /* ============ MÉTRICAS (Instagram · leitura anon das tabelas psn_ig_*) ============ */
@@ -2529,7 +2534,8 @@ const hjLegado=p=>p.origem==="notion"&&["para_revisar","ajustar","aprovado","pos
 const hjAtivas=()=>HJ.pautas.filter(p=>!hjLegado(p));
 const hjNoBanco=()=>HJ.pautas.filter(p=>p.status==="ideia");
 const hjNaLixeira=()=>HJ.pautas.filter(p=>p.status==="descartado");
-const hjEhSugHoje=p=>p.origem==="rotina"&&p.ordem!=null&&p.data===hjHoje();
+/* sugestão do dia = tem vaga (ordem) e data de hoje; a ideia do Notion reproposta pela rotina mantém origem="notion" */
+const hjEhSugHoje=p=>p.ordem!=null&&p.data===hjHoje()&&p.origem!=="manual";
 function hjDiaDaPauta(p){
   if(p.status==="postado"&&p.postado_em) return hjDia(p.postado_em);
   return p.data||(p.agendado_para?hjDia(p.agendado_para):"")||(p.aprovado_producao_em?hjDia(p.aprovado_producao_em):"");
@@ -2542,7 +2548,7 @@ function hjLista(v){
 }
 function hjCenas(p){
   if(Array.isArray(p.cenas)&&p.cenas.length) return p.cenas;
-  if(Array.isArray(p.reels)&&p.reels.length) return p.reels.map(x=>({t:x.t||x.tempo||"",c:x.c||x.cena||x.visual||"",f:x.f||x.fala||""}));
+  if(Array.isArray(p.reels)&&p.reels.length) return p.reels.map(x=>({t:x.t||x.tempo||"",c:x.c||x.cena||x.visual||x.bloco||"",f:x.f||x.fala||""}));
   return [];
 }
 const hjPorQue=p=>Array.isArray(p.por_que)?p.por_que.map(x=>Array.isArray(x)?{tipo:x[0],texto:x[1]}:x).filter(x=>x&&x.texto):[];
@@ -2680,7 +2686,7 @@ async function hjCarregar(forcar){
   try{
     const [pautas,dia]=await Promise.all([
       dbTodas("psn_pauta?select="+HJ_COLS+"&order=criado_em.desc,id.asc"),
-      db("psn_pauta_dia?select=*&data=eq."+hoje)
+      db("psn_pauta_dia?select=*&data=lte."+hoje+"&order=data.desc&limit=1")
     ]);
     const [analise,horarios,diaria,midias]=await Promise.all([
       ok(db("psn_ig_analise?select=data,analise,sinal_pauta&data=lte."+hoje+"&order=data.desc&limit=2")),
@@ -2691,7 +2697,7 @@ async function hjCarregar(forcar){
     if(seq!==HJ.seq) return;
     /* ação do usuário durante a carga: mantém o estado local (a próxima carga acerta) */
     if(HJ.mut===mut0&&!HJ.pend.size) HJ.pautas=pautas||[];
-    HJ.dia=(dia&&dia[0])||null; HJ.analise=analise||[]; HJ.horarios=horarios||[]; HJ.midias=midias||[];
+    HJ.dia=(dia&&dia[0]&&dia[0].data===hoje)?dia[0]:null; HJ.diaUlt=(dia&&dia[0])||null; HJ.analise=analise||[]; HJ.horarios=horarios||[]; HJ.midias=midias||[];
     HJ.ontem=hjOntem(diaria,hoje);
     HJ.pronto=true; HJ.erro=false; HJ.carregadoEm=Date.now();
     hjCarimbarVisto();
@@ -2748,11 +2754,13 @@ function hjCommit(item,keep){
     try{
       if(HJ_DEMO) return;   // modo de teste: nunca grava
       const rows=await hjPatch("psn_pauta?id=eq."+item.id+"&select="+HJ_COLS,item.patch,keep);
-      if(!rows||!rows.length) throw new Error("nenhuma linha atualizada");
+      if(!rows||!rows.length){ const er=new Error("nenhuma linha atualizada"); er.vazio=true; throw er }
       const q=hjGet(item.id); if(q&&![...HJ.pend].some(x=>x.id===item.id)) Object.assign(q,rows[0]);
     }catch(e){
       console.error(e); const q=hjGet(item.id); if(q) Object.assign(q,item.antes); HJ.mut++;
-      hjToast(HJ_ERRO_GRAVAR,null,true); hjAtualizarTela();
+      const recusado=e.vazio||(e.status>=400&&e.status<500);   // trigger recusou ou a linha já mudou
+      hjToast(recusado?"Isso já mudou em outro lugar. Atualizei a tela.":HJ_ERRO_GRAVAR,null,true); hjAtualizarTela();
+      if(recusado&&!HJ.pend.size){ HJ.carregadoEm=0; hjCarregar() }
     }
   });
   HJ.cadeia[item.id]=run; return run;
@@ -2924,11 +2932,14 @@ function hjRenderHoje(){
   const revisar=P.filter(p=>p.status==="para_revisar");
   const fila=P.filter(p=>["aprovada_producao","em_producao","ajustar"].includes(p.status));
   const sugs=P.filter(hjEhSugHoje), pend=sugs.filter(p=>p.status==="sugerida"), banco=hjNoBanco().length, dia=HJ.dia;
-  const falhou=min>=390&&!sugs.length&&(!dia||["falhou","erro"].includes(dia.rotina_status));
-  const chegando=!falhou&&!sugs.length&&!dia;
+  /* estreia: a rotina nova nunca gravou um dia (nenhum psn_pauta_dia) → estado neutro, nunca "falhou" */
+  const estreia=!HJ_DEMO&&!sugs.length&&!dia&&!HJ.diaUlt;
+  const falhou=!estreia&&min>=390&&!sugs.length&&(!dia||["falhou","erro"].includes(dia.rotina_status));
+  const chegando=!estreia&&!falhou&&!sugs.length&&!dia;
   let h="";
+  if(estreia) h+=`<div class="destaque" role="status"><div class="t">As sugestões diárias começam na próxima rodada das 05:47</div><p style="margin:0;font-size:var(--t-mini);line-height:1.45">Todo dia chegam 3 sugestões de estático e 3 de Reels. Enquanto isso, dá para produzir uma do banco de ideias.</p><button class="btn btn-fantasma" data-hj="ir" data-v="#/banco" style="margin-top:var(--e3)">Abrir banco de ideias (${banco})</button></div>`;
   if(falhou) h+=`<div class="maviso" role="status"><b>As sugestões de hoje não chegaram.</b><br>A rotina das 05:47 não terminou. Não é nada com você: já ficou registrado e ela tenta de novo amanhã. Quer postar algo hoje? Escolha uma do banco, de estático ou de Reels.<br><button class="btn btn-ganho" data-hj="ir" data-v="#/banco">Abrir banco de ideias (${banco})</button></div>`;
-  else if(chegando) h+=`<p class="secao-sub" role="status">As sugestões de hoje estão chegando.</p>`;
+  else if(chegando) h+=`<p class="secao-sub" role="status">${min<347?"As sugestões de hoje chegam às 05:47.":"As sugestões de hoje estão chegando."}</p>`;
   else if(dia&&dia.rotina_status==="parcial"&&pend.length) h+=`<p class="secao-sub" role="status">A rotina trouxe só parte das sugestões hoje.</p>`;
 
   if(postar.length){ h+=`<div class="secao-tit"><h2>falta postar</h2><span class="qt num">${postar.length}</span></div>
@@ -2952,7 +2963,7 @@ function hjRenderHoje(){
       h+=`<article class="card"><button class="abre" data-hj="abrir" data-id="${p.id}"><div class="metas" style="margin-bottom:var(--e2)">${hjChipF(p.formato)}${hr.hm?`<span class="chip chip-neutro">${hjDiaTxt(hjDiaDaPauta(p)||hjHoje())} ${hr.hm}</span>`:""}</div><h3>${hjE(p.tema)}</h3>${hjTrilha(p.status)}
        <p class="prev">${hjTxtProducao(p)}</p>${p.status==="ajustar"&&p.comentario?`<div class="coment">“${hjE(p.comentario)}”</div>`:""}</button></article>` }) }
 
-  if(!postar.length&&!revisar.length&&!pend.length&&!fila.length&&!falhou&&!chegando){
+  if(!postar.length&&!revisar.length&&!pend.length&&!fila.length&&!falhou&&!chegando&&!estreia){
     const e=hjPostadoHoje("estatico"), r=hjPostadoHoje("reels"), n=(e?1:0)+(r?1:0);
     h+=`<div class="vazio" style="margin-top:var(--e2)"><span class="n num">✓</span><h4>nada esperando você</h4>
       <p>${n===2?"Estático e Reels de hoje estão postados: o ideal do dia foi cumprido. ":n===1?`O ${e?"estático":"Reels"} de hoje está postado: o mínimo do dia foi cumprido. Falta o ${e?"Reels":"estático"} para o ideal (1 estático + 1 Reels). `:""}Amanhã às 05:47 chegam as sugestões de estático e de Reels, já pensadas a partir das métricas.</p>
@@ -3205,7 +3216,7 @@ function hjRender(){
   if(h==="#/calendario") r=hjRenderCalendario();
   else if(h==="#/banco") r=hjRenderBanco();
   else if(h==="#/lixeira") r=hjRenderLixeira();
-  else if(h.startsWith("#/pauta/")) r=hjRenderFicha(decodeURIComponent(h.slice(8)));
+  else if(h.startsWith("#/pauta/")){ let id=""; try{ id=decodeURIComponent(h.slice(8)) }catch(e){} r=hjRenderFicha(id) }
   else r=hjRenderHoje();
   if(!r) return;
   view.innerHTML=`<div class="wrap" style="max-width:720px">${aviso}${r.corpo}</div>`;
