@@ -55,7 +55,7 @@ Plano completo aprovado: arquitetura, camadas e verificação estão nesta seç�
    delete from public.psn_ig_analise where data between '1900-01-01' and '1900-01-31';  -- linha de teste da C5
    ```
    A função já está sem permissão para anon. O bucket `psn-transfer` está vazio.
-7. **PR do branch `claude/psn-metricas` para `main`:** ainda não aberto.
+7. **PR do branch `claude/psn-metricas` para `main`:** aberto em 08/10 (sorellaidigital/mecanismo-inst#2), aguardando merge.
 
 ## Próximos módulos (ideia da Duda: centralizar tudo no PSN)
 
