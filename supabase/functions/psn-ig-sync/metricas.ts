@@ -6,6 +6,7 @@ export const DESEJADAS = {
   account: [
     "views", "reach", "total_interactions", "likes", "comments", "saves",
     "shares", "accounts_engaged", "replies", "follows_and_unfollows", "profile_links_taps",
+    "profile_views",
   ],
   FEED: [
     "reach", "views", "likes", "comments", "saved", "shares",

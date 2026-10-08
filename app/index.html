@@ -2037,9 +2037,7 @@ function metKpis(D){
   lst.push(flux("Alcance",["reach"]), flux("Views",["views"]), flux("Contas engajadas",["accounts_engaged"]));
   const sc=S(["saves","shares"],iv.de,iv.ate), sp=S(["saves","shares"],iv.pDe,iv.pAte);
   lst.push({k:"Salvos + compart.",v:sc,d:deltaHTML(sc,sp),s:""});
-  const vis=["profile_visits","profile_views"], vc=S(vis,iv.de,iv.ate);
-  lst.push({k:"Visitas ao perfil",v:vc,d:vc==null?`<span class="d">—</span>`:deltaHTML(vc,S(vis,iv.pDe,iv.pAte)),s:vc==null?"não vem no nível da conta":""});
-  lst.push(flux("Cliques no link",["profile_links_taps"]));
+  lst.push(flux("Visitas ao perfil",["profile_views"]), flux("Cliques no link",["profile_links_taps"]));
   return {lst,seg};
 }
 function kpiHTML(x){
