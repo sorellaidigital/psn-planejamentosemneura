@@ -18,7 +18,7 @@ Plano completo aprovado: arquitetura, camadas e verificação estão nesta seç�
 | **C2 Histórico do VPS** | Feita. Importados 96 snapshots de conta (03/07 a 08/10) e 1.289 métricas diárias (03/06 a 08/10), com contagens e somas mensais iguais à origem. Os posts não foram importados: vieram pela primeira coleta (60 posts, métricas atuais). A série diária de cada post antes de 08/10 ficou só no VPS (backup de 08/10 18:06). |
 | **C3 Coletor** | No ar. Edge Function `psn-ig-sync`, pg_cron `5 */4 * * *` UTC. Autenticação pelo segredo `psn_ig_cron` do Vault. Primeira coleta: 35 s, 66 chamadas, sem erro. |
 | **C4 Aba Métricas** | No ar. Números conferidos contra o banco. |
-| **C5 Rotinas apontando para o Supabase** | **Em andamento (09/10).** Banco pronto e testado (migração `20261009_psn_ig_c5.sql`); PR sorellaidigital/mecanismo-car#7 aberto; faltam o merge, a variável `PSN_ROTINA_SEGREDO` e o `update_trigger` (prompts em `docs/ROTINAS-C5.md`). |
+| **C5 Rotinas apontando para o Supabase** | **Feita em 08/10.** Migração `20261009_psn_ig_c5.sql`, PR sorellaidigital/mecanismo-car#7 (merge feito), variável `PSN_ROTINA_SEGREDO` no ambiente "Instagram", prompts trocados por `update_trigger` (texto em `docs/ROTINAS-C5.md`). Disparo de teste da Métricas do Dia às 19:46 UTC gravou a linha de 08/10 em `psn_ig_analise` com os números do resumo. A Pauta do Dia é conferida na execução de 09/10 (05:47). |
 | **C6 Paralelo de 7 dias e desligamento** | **Pendente.** O paralelo começa assim que C5 estiver pronta. |
 
 ### Pendências do módulo Métricas
@@ -34,15 +34,11 @@ Plano completo aprovado: arquitetura, camadas e verificação estão nesta seç�
      `pauta-do-dia` atualizadas, PR sorellaidigital/mecanismo-car#7.
    - Paralelo: a Métricas do Dia mantém o `pipeline.metricas` → Notion (fonte independente para a comparação) e
      grava no Notion o mesmo texto de análise que vai ao PSN.
-2. **C5 — falta, nesta ordem:**
-   - a Duda copia o segredo (SQL editor: `select decrypted_secret from vault.decrypted_secrets where name='psn_ig_rotina'`)
-     para a variável `PSN_ROTINA_SEGREDO` do ambiente "Instagram";
-   - merge do PR sorellaidigital/mecanismo-car#7;
-   - `update_trigger` nas duas rotinas com os prompts de `docs/ROTINAS-C5.md`;
-   - disparo manual da Métricas do Dia e conferência da linha em `psn_ig_analise`; a Pauta do Dia é conferida na
-     execução seguinte (não disparar à mão: cria pauta real).
+2. **C5 — conferir:** a execução da Pauta do Dia de 09/10 (05:47) deve dizer "fonte: PSN" nas métricas da página.
 3. **C6 — paralelo de 7 dias:**
-   - comparar diariamente PSN × VPS × Notion, com critério de diferença ≤ 1%;
+   - começa em 09/10; comparar diariamente PSN × VPS × Notion, com critério de diferença ≤ 1%;
+   - atenção: o resumo do PSN usa a conta do último dia completo (D-1); conferir de que dia é o número que o
+     `pipeline.metricas` grava no Notion antes de comparar;
    - delegar o relatório ao Haiku;
    - só então, com o ok da Duda: Notion deixa de receber dados, sai o coletor do `mecanismo-car` e decide-se o IG Analytics. Ela ainda vai conferir se usa hub, agentes, CRM ou radar lá. Se não usar, desligar o cron de coleta do VPS e o agendador antigo do Windows, se existir.
 4. **Saúde do token:** o `debug_token` respondeu "Invalid OAuth access token signature", ou seja, o par `META_APP_ID`/`META_APP_SECRET` não confere. Conferir os dois no painel do Supabase (Edge Functions → Secrets). Isso não impede a coleta, que segue funcionando com `META_PAGE_TOKEN`.
