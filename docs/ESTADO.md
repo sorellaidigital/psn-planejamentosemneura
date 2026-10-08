@@ -54,11 +54,10 @@ Plano completo aprovado: arquitetura, camadas e verificação estão nesta seç�
   - migração `psn_ig_story` (+ insights por coleta) e `psn_ig_publico` (data, tipo, breakdown, chave, valor), mesmas
     políticas das `psn_ig_*`;
   - coletor: stories ativos a cada execução (os insights só existem enquanto o story está no ar, 24h; por isso
-    coleta agendada, não consulta avulsa), `follower_demographics`/`engaged_audience_demographics` 1x por dia e
-    `profile_views` na conta (pendência 5);
+    coleta agendada, não consulta avulsa) e `follower_demographics`/`engaged_audience_demographics` 1x por dia
+    (`profile_views` já entrou no coletor v4, pendência 5);
   - antes, conferir numa execução manual se a v25 aceita esses nomes de métrica;
   - abas Stories e Público no app.
-
 - Ponte ideias → produção, página de série, banco de ganchos (a partir de `aprendizado.pontos`).
 - Login, quando a plataforma estiver completa.
 - Partes do IG Analytics, se ela usar: hub/kanban, agentes, radar, relatório semanal, CRM.
