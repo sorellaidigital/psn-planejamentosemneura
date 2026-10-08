@@ -467,6 +467,58 @@ main.territorio{background:transparent;color:var(--texto-invertido);border-radiu
   .placar .v{font-size:var(--t-num)}
   .sheethead{padding-left:var(--e6);padding-right:var(--e6)}
 }
+/* ===== MÉTRICAS ======================================================= */
+:root{--ok-texto:#17683A;--serie-a:#4A16A8;--serie-b:#C25E00}
+.metricas-entrada{width:100%;display:flex;align-items:center;gap:var(--e4);text-align:left;
+  background:var(--acao-ganho);color:var(--sobre-ganho);border-radius:var(--r-lg);
+  padding:var(--e4);margin:0 0 var(--e6);min-height:72px;transition:transform .1s}
+.metricas-entrada:active{transform:scale(.985)}
+.metricas-entrada .em{font-size:28px;line-height:1}
+.metricas-entrada .nm{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);
+  font-size:var(--t-lg);line-height:1.05;text-transform:lowercase}
+.metricas-entrada .hd{font-size:var(--t-micro);opacity:.8;margin-top:2px}
+.metricas-entrada .go{margin-left:auto;font-size:var(--t-lg);font-weight:700}
+.mperiodo{display:flex;flex-wrap:wrap;gap:var(--e2);margin-bottom:var(--e3)}
+.mcustom{display:flex;flex-wrap:wrap;gap:var(--e3);align-items:flex-end;margin-bottom:var(--e3)}
+.mcustom label{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);
+  text-transform:uppercase;color:var(--texto-medio);display:flex;flex-direction:column;gap:var(--e1)}
+.mcustom .campo{width:auto;min-width:150px}
+.mcomp{font-size:var(--t-micro);color:var(--texto-fraco);margin:0 0 var(--e5)}
+.msaude{font-size:var(--t-micro);color:var(--texto-medio);margin:0 0 var(--e4);display:flex;gap:var(--e2);align-items:center}
+.msaude i{width:8px;height:8px;border-radius:50%;background:var(--ok-texto);flex:none}
+.msaude.aviso i{background:var(--selo-valor)}
+.maviso{background:rgba(110,38,57,.08);border:1.5px solid rgba(110,38,57,.28);color:var(--texto-forte);
+  border-radius:var(--r-md);padding:var(--e3) var(--e4);margin:0 0 var(--e4);font-size:var(--t-mini);line-height:1.45}
+.maviso b{color:var(--selo-valor)}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--e3);margin-bottom:var(--e6)}
+.kpi{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);
+  padding:var(--e4);display:flex;flex-direction:column;gap:var(--e2);min-width:0}
+.kpi .k{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;
+  color:var(--texto-medio);line-height:1.3}
+.kpi .v{font-size:var(--t-xl);line-height:1}
+.kpi .d{font-size:var(--t-micro);font-weight:700;color:var(--texto-fraco);font-variant-numeric:tabular-nums}
+.kpi .d.up{color:var(--ok-texto)} .kpi .d.down{color:var(--alerta-texto)}
+.kpi .s{font-size:var(--t-nano);color:var(--texto-fraco);line-height:1.35}
+.mcard{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);
+  padding:var(--e4);margin-bottom:var(--e4)}
+.mcard h3{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);
+  font-size:var(--t-md);margin:0 0 var(--e3);text-transform:lowercase}
+.mleg{display:flex;flex-wrap:wrap;gap:var(--e4);margin:0 0 var(--e3);font-size:var(--t-micro);color:var(--texto-medio)}
+.mleg span{display:inline-flex;align-items:center;gap:6px}
+.mleg i{width:12px;height:3px;border-radius:2px;display:inline-block}
+.mchart{position:relative;width:100%;touch-action:pan-y}
+.mchart svg{display:block;width:100%;height:auto;overflow:visible}
+.mchart text{font-family:var(--f-ui);font-size:11px;fill:var(--texto-fraco)}
+.mtip{position:absolute;top:0;pointer-events:none;background:var(--superficie-peso);color:var(--texto-invertido);
+  border-radius:var(--r-sm);padding:var(--e2) var(--e3);font-size:var(--t-micro);line-height:1.45;
+  white-space:nowrap;box-shadow:var(--sombra);z-index:3;opacity:0;transition:opacity .08s}
+.mtip.on{opacity:1}
+.mtip b{display:block;margin-bottom:2px}
+.mtip i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.msemdados{padding:var(--e6) 0;text-align:center;color:var(--texto-fraco);font-size:var(--t-mini)}
+.manalise p{margin:0 0 var(--e2);font-size:var(--t-mini);color:var(--texto-medio);white-space:pre-wrap;line-height:1.5}
+.manalise .dt{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-fraco);margin-bottom:var(--e2)}
+@media(min-width:700px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){*{transition:none !important}}
 </style>
 </head>
@@ -726,6 +778,7 @@ function extrairUrl(s){
 /* ============ ROTAS ============ */
 function rota(){
   const hash=location.hash;
+  if(hash==="#/metricas"){ atual=null; busca=""; renderMetricas(); window.scrollTo(0,0); return }
   const capMatch = hash.match(/^#\/capturar(?:\?(.*))?$/);
   if(capMatch){
     atual=null; busca=""; filtro="todas"; focoFiltro=serieFiltro=temaFiltro=null;
@@ -745,10 +798,10 @@ function rota(){
   render();
 }
 window.addEventListener("hashchange",rota);
-let rz; window.addEventListener("resize",()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(atual) render() },160) });
+let rz; window.addEventListener("resize",()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(atual) render(); else if(location.hash==="#/metricas"&&MET.dados&&MET._graf) MET._graf() },160) });
 
 /* ============ RENDER ============ */
-function render(){ atual ? renderBoard() : renderHome() }
+function render(){ if(location.hash==="#/metricas") return renderMetricas(); atual ? renderBoard() : renderHome() }
 
 /* pasta de canal — muda de cara conforme finalidade */
 function pastaHTML(c){
@@ -842,6 +895,10 @@ function renderHome(){
         <div class="pastas">${producaoList.map(pastaHTML).join("")}</div></div>`:""}
     </div>`;
   }
+
+  (view.querySelector(".wrap")||view).insertAdjacentHTML("afterbegin",`<button class="metricas-entrada" id="goMetricas">
+    <span class="em">📊</span><span><div class="nm">Métricas</div><div class="hd">Instagram: alcance, views e seguidores</div></span><span class="go">→</span></button>`);
+  $("#goMetricas").onclick=()=>location.hash="#/metricas";
 
   const bs=$("#hBusca");
   if(bs) bs.oninput=e=>{ busca=e.target.value; const p=e.target.selectionStart;
@@ -1877,6 +1934,280 @@ document.addEventListener("keydown",e=>{
   if(!$("#sheet2").classList.contains("hide")) return fechar2();
   if(!$("#sheet").classList.contains("hide")) return fecharCard();
 });
+
+/* ============ MÉTRICAS (Instagram · leitura anon das tabelas psn_ig_*) ============ */
+const TZ="America/Sao_Paulo";
+const hojeSP=()=>new Intl.DateTimeFormat("en-CA",{timeZone:TZ}).format(new Date());
+const addDias=(s,n)=>{ const d=new Date(s+"T00:00:00Z"); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10) };
+const difDias=(a,b)=>Math.round((new Date(b+"T00:00:00Z")-new Date(a+"T00:00:00Z"))/864e5);
+const faixaDias=(a,b)=>{ const r=[]; for(let d=a; d<=b; d=addDias(d,1)) r.push(d); return r };
+const fmtDM=s=>s.slice(8,10)+"/"+s.slice(5,7);
+const fmtDMA=s=>fmtDM(s)+"/"+s.slice(0,4);
+const fmtInt=n=>(n==null||isNaN(n))?"—":Math.round(n).toLocaleString("pt-BR");
+const fmtPct=n=>n.toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})+"%";
+function fmtQuando(iso){
+  const d=new Date(iso); if(isNaN(d)) return "";
+  const p=Object.fromEntries(new Intl.DateTimeFormat("pt-BR",{timeZone:TZ,day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(d).map(x=>[x.type,x.value]));
+  return p.day+"/"+p.month+" "+p.hour+":"+p.minute;
+}
+const MET_PERIODOS=[["7","7 dias"],["28","28 dias"],["90","90 dias"],["custom","Personalizado"]];
+let MET={periodo:"28",de:"",ate:"",dados:null,chave:"",carregando:false,erro:false,seq:0};
+
+function metIntervalo(){
+  let de,ate;
+  if(MET.periodo==="custom" && MET.de && MET.ate && MET.de<=MET.ate){ de=MET.de; ate=MET.ate }
+  else { const n=MET.periodo==="custom"?28:+MET.periodo; ate=addDias(hojeSP(),-1); de=addDias(ate,-(n-1)) }
+  const n=difDias(de,ate)+1, pAte=addDias(de,-1), pDe=addDias(pAte,-(n-1));
+  return {de,ate,n,pDe,pAte};
+}
+/* paginação por limit/offset (PostgREST limita a 1000 linhas por resposta) */
+async function dbTodas(path){
+  const out=[]; const sep=path.includes("?")?"&":"?";
+  for(let off=0; off<50000; off+=1000){
+    const r=await db(path+sep+"limit=1000&offset="+off)||[];
+    out.push(...r); if(r.length<1000) break;
+  }
+  return out;
+}
+async function carregarMetricas(){
+  const iv=metIntervalo(), chave=[iv.pDe,iv.ate].join("|"), seq=++MET.seq;
+  MET.carregando=true; MET.erro=false;
+  try{
+    const [snapUlt,analise,sync,cfg]=await Promise.all([
+      db("psn_ig_conta_snapshot?select=data,seguidores&order=data.desc&limit=1"),
+      db("psn_ig_analise?select=*&order=data.desc&limit=1"),
+      db("psn_ig_sync?select=*&order=iniciado_em.desc&limit=1"),
+      db("psn_ig_config?select=chave,valor,atualizado_em&chave=in.(token_saude,ultima_coleta_ok)")
+    ]);
+    const ancora=snapUlt&&snapUlt[0]?snapUlt[0].data:null;
+    const topo=ancora&&ancora>iv.ate?ancora:iv.ate;
+    const [diaria,snaps]=await Promise.all([
+      dbTodas("psn_ig_conta_diaria?select=data,metrica,valor&data=gte."+iv.pDe+"&data=lte."+topo+"&order=data.asc,metrica.asc"),
+      dbTodas("psn_ig_conta_snapshot?select=data,seguidores&data=gte."+iv.pDe+"&data=lte."+topo+"&order=data.asc")
+    ]);
+    if(seq!==MET.seq) return;
+    const mapa={}; diaria.forEach(r=>{ (mapa[r.data]??={})[r.metrica]=r.valor==null?null:Number(r.valor) });
+    const conf={}; (cfg||[]).forEach(r=>conf[r.chave]=r);
+    MET.dados={chave,iv,mapa,nDiaria:diaria.length,snaps,snapUlt:snapUlt&&snapUlt[0]||null,
+      analise:analise&&analise[0]||null,sync:sync&&sync[0]||null,conf};
+    MET.chave=chave;
+  }catch(e){ console.error(e); if(seq===MET.seq){ MET.erro=true; MET.dados=null } }
+  if(seq===MET.seq){ MET.carregando=false; if(location.hash==="#/metricas") renderMetricas() }
+}
+/* LAST para seguidores, SUM para fluxos; null quando não há nenhuma linha da métrica */
+function somaMet(mapa,chaves,de,ate){
+  let s=0,achou=false;
+  for(let d=de; d<=ate; d=addDias(d,1)){ const m=mapa[d]; if(!m) continue;
+    for(const k of chaves) if(m[k]!=null){ s+=m[k]; achou=true } }
+  return achou?s:null;
+}
+/* reconstrói seguidores: âncora no snapshot mais recente, propaga com follower_count (delta) */
+function reconstruirSeguidores(mapa,snaps,snapUlt,de,ate){
+  const sn={}; snaps.forEach(s=>{ if(s.seguidores!=null) sn[s.data]=s.seguidores });
+  if(snapUlt&&snapUlt.seguidores!=null) sn[snapUlt.data]=snapUlt.seguidores;
+  const out={}; const ds=Object.keys(sn).sort(); if(!ds.length) return out;
+  const temDelta=Object.values(mapa).some(m=>m.follower_count!=null);
+  if(!temDelta){ ds.forEach(d=>{ if(d>=de&&d<=ate) out[d]=sn[d] }); return out }
+  const anc=ds[ds.length-1], ini=de<anc?de:anc, fim=ate>anc?ate:anc;
+  const dias=faixaDias(ini,fim), ai=dias.indexOf(anc), r={}; r[anc]=sn[anc];
+  const dl=d=>(mapa[d]&&mapa[d].follower_count)||0;
+  for(let i=ai+1;i<dias.length;i++) r[dias[i]]=sn[dias[i]]??r[dias[i-1]]+dl(dias[i]);
+  for(let i=ai-1;i>=0;i--) r[dias[i]]=sn[dias[i]]??r[dias[i+1]]-dl(dias[i+1]);
+  dias.forEach(d=>{ if(d>=de&&d<=ate) out[d]=r[d] });
+  return out;
+}
+function deltaHTML(cur,prev){
+  if(cur==null||prev==null||prev===0) return `<span class="d">—</span>`;
+  const p=(cur-prev)/Math.abs(prev)*100;
+  if(Math.abs(p)<0.05) return `<span class="d">= 0,0%</span>`;
+  return `<span class="d ${p>0?"up":"down"}">${p>0?"▲":"▼"} ${fmtPct(Math.abs(p))}</span>`;
+}
+function metKpis(D){
+  const {iv,mapa}=D, S=(ks,a,b)=>somaMet(mapa,ks,a,b);
+  const seg=reconstruirSeguidores(mapa,D.snaps,D.snapUlt,iv.pDe,iv.ate);
+  const segAtual=D.snapUlt&&D.snapUlt.seguidores!=null?D.snapUlt.seguidores:null;
+  let ganho=S(["follower_count"],iv.de,iv.ate);
+  if(ganho==null){ const a=seg[iv.de], b=seg[iv.ate]; if(a!=null&&b!=null) ganho=b-a }
+  const sinal=n=>(n>0?"+":n<0?"−":"")+fmtInt(Math.abs(n));
+  const lst=[];
+  lst.push({k:"Seguidores",v:segAtual,
+    d:ganho==null?`<span class="d">—</span>`:`<span class="d ${ganho>0?"up":ganho<0?"down":""}">${ganho>0?"▲":ganho<0?"▼":""} ${sinal(ganho)}</span>`,
+    s:ganho==null?"":"no período"});
+  const flux=(k,ch)=>{ const c=S(ch,iv.de,iv.ate), p=S(ch,iv.pDe,iv.pAte); return {k,v:c,d:deltaHTML(c,p),s:""} };
+  lst.push(flux("Alcance",["reach"]), flux("Views",["views"]), flux("Contas engajadas",["accounts_engaged"]));
+  const sc=S(["saves","shares"],iv.de,iv.ate), sp=S(["saves","shares"],iv.pDe,iv.pAte);
+  lst.push({k:"Salvos + compart.",v:sc,d:deltaHTML(sc,sp),s:""});
+  const vis=["profile_visits","profile_views"], vc=S(vis,iv.de,iv.ate);
+  lst.push({k:"Visitas ao perfil",v:vc,d:vc==null?`<span class="d">—</span>`:deltaHTML(vc,S(vis,iv.pDe,iv.pAte)),s:vc==null?"não vem no nível da conta":""});
+  lst.push(flux("Cliques no link",["profile_links_taps"]));
+  return {lst,seg};
+}
+function kpiHTML(x){
+  return `<div class="kpi"><div class="k">${esc(x.k)}</div>
+    <div class="v num">${x.v==null?"—":esc(fmtInt(x.v))}</div>${x.d}${x.s?`<div class="s">${esc(x.s)}</div>`:""}</div>`;
+}
+
+/* ---------- gráficos SVG ---------- */
+function ticksBonitos(lo,hi,n){
+  let r=(hi-lo)||Math.max(1,Math.abs(hi)*.1), passo=r/n, p=Math.pow(10,Math.floor(Math.log10(passo))), f=passo/p;
+  passo=(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;
+  const a=Math.floor(lo/passo)*passo, b=Math.ceil(hi/passo)*passo, t=[];
+  for(let v=a; v<=b+passo/1e6; v+=passo) t.push(Math.round(v*1e6)/1e6);
+  return t;
+}
+/* cfg: datas[], series[{nome,cor,vals[]}], tipo "linha"|"barras", zero, ligar */
+function desenharGrafico(el,cfg){
+  const {datas,series,tipo}=cfg, n=datas.length;
+  const todos=series.flatMap(s=>s.vals).filter(v=>v!=null);
+  if(!todos.length){ el.innerHTML=`<div class="msemdados">Sem dados neste período.</div>`; return }
+  const W=Math.max(260,el.clientWidth||320), H=cfg.h||210, L=46, R=10, T=10, B=26, iw=W-L-R, ih=H-T-B;
+  let lo=cfg.zero===false?Math.min(...todos):0, hi=Math.max(...todos);
+  if(tipo==="barras") lo=Math.min(0,lo);
+  const tk=ticksBonitos(lo,hi,4), y0=tk[0], y1=tk[tk.length-1];
+  const Y=v=>T+ih-(v-y0)/((y1-y0)||1)*ih;
+  const banda=iw/n, X=i=>tipo==="barras"?L+banda*(i+.5):(n===1?L+iw/2:L+i*iw/(n-1));
+  const sa=Math.max(1,Math.ceil(n/Math.max(2,Math.floor(iw/58))));
+  let g=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(cfg.rotulo||"gráfico")}" data-pts="${series.reduce((a,s)=>a+s.vals.filter(v=>v!=null).length,0)}">`;
+  tk.forEach(v=>{ g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="rgba(28,18,37,${v===0?.28:.09})" stroke-width="1"/>
+    <text x="${L-6}" y="${Y(v)+4}" text-anchor="end">${esc(fmtInt(v))}</text>` });
+  for(let i=0;i<n;i+=1) if(i%sa===0) g+=`<text x="${X(i)}" y="${H-7}" text-anchor="middle">${fmtDM(datas[i])}</text>`;
+  series.forEach((s,si)=>{
+    if(tipo==="barras"){
+      const bw=Math.max(1.5,Math.min(18,banda*.72));
+      s.vals.forEach((v,i)=>{ if(v==null) return; const yy=Y(Math.max(v,0)), h=Math.max(1,Math.abs(Y(v)-Y(0)));
+        g+=`<rect class="bar" x="${X(i)-bw/2}" y="${Math.min(Y(v),Y(0))}" width="${bw}" height="${h}" rx="${Math.min(3,bw/2)}" fill="${s.cor}"/>` });
+    } else {
+      let d="",pen=false;
+      s.vals.forEach((v,i)=>{ if(v==null){ if(!cfg.ligar) pen=false; return }
+        d+=(pen?"L":"M")+X(i).toFixed(1)+" "+Y(v).toFixed(1); pen=true });
+      g+=`<path d="${d}" fill="none" stroke="${s.cor}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    }
+  });
+  g+=`<line class="cross" x1="0" x2="0" y1="${T}" y2="${T+ih}" stroke="rgba(28,18,37,.35)" stroke-width="1" style="display:none"/>`;
+  series.forEach((s,si)=>{ g+=`<circle class="mk" data-s="${si}" r="4.5" fill="${s.cor}" stroke="#fff" stroke-width="2" style="display:none"/>` });
+  g+=`</svg><div class="mtip"></div>`;
+  el.innerHTML=g;
+  const svg=el.querySelector("svg"), tip=el.querySelector(".mtip"), cr=svg.querySelector(".cross"), mks=[...svg.querySelectorAll(".mk")];
+  const fm=cfg.fmt||fmtInt;
+  function mostrar(ev){
+    const r=svg.getBoundingClientRect(), x=(ev.clientX-r.left)*(W/r.width);
+    let i=tipo==="barras"?Math.floor((x-L)/banda):Math.round((x-L)/(iw/Math.max(1,n-1)));
+    i=Math.max(0,Math.min(n-1,i)); const cx=X(i);
+    cr.setAttribute("x1",cx); cr.setAttribute("x2",cx); cr.style.display="";
+    mks.forEach((m,si)=>{ const v=series[si].vals[i]; if(v==null){ m.style.display="none" } else { m.setAttribute("cx",cx); m.setAttribute("cy",Y(v)); m.style.display="" } });
+    tip.innerHTML=`<b>${fmtDMA(datas[i])}</b>`+series.map(s=>`<div><i style="background:${s.cor}"></i>${series.length>1?esc(s.nome)+": ":""}${s.vals[i]==null?"—":esc(fm(s.vals[i]))}</div>`).join("");
+    tip.classList.add("on");
+    const px=cx*(r.width/W), tw=tip.offsetWidth;
+    tip.style.left=Math.max(0,Math.min(r.width-tw,px+12>r.width-tw?px-tw-12:px+12))+"px";
+    tip.style.top=(T)+"px";
+  }
+  const esconder=()=>{ tip.classList.remove("on"); cr.style.display="none"; mks.forEach(m=>m.style.display="none") };
+  svg.addEventListener("pointermove",mostrar); svg.addEventListener("pointerdown",mostrar);
+  svg.addEventListener("pointerleave",ev=>{ if(ev.pointerType!=="touch") esconder() });
+}
+
+function metAvisos(D){
+  const av=[]; const s=D.sync, tk=D.conf.token_saude&&D.conf.token_saude.valor;
+  if(s&&s.status==="erro"){
+    let det=""; if(s.detalhe){ det=typeof s.detalhe==="string"?s.detalhe:(s.detalhe.erro||s.detalhe.error||s.detalhe.mensagem||s.detalhe.message||"") }
+    av.push(`<b>A última coleta não terminou.</b> As métricas abaixo podem estar um pouco atrasadas; a próxima rodada tenta de novo.${det?` <span style="color:var(--texto-fraco)">(${esc(String(det).slice(0,140))})</span>`:""}`);
+  }
+  if(tk&&tk.valido===false) av.push(`<b>O acesso ao Instagram precisa ser renovado.</b> O token deixou de valer, então novas métricas não entram até ele ser gerado de novo.`);
+  else if(tk){
+    // vale o que vencer primeiro: o token em si ou o acesso a dados (90 dias, mesmo com token "sem expiração")
+    const datas=[tk.expira_em,tk.acesso_dados_expira_em].filter(Boolean).map(d=>new Date(d)).filter(d=>!isNaN(d));
+    const ex=datas.length?new Date(Math.min(...datas)):null;
+    if(ex){ const dias=Math.floor((ex-new Date())/864e5);
+      if(!isNaN(dias)&&dias<10) av.push(`<b>O token do Instagram vence ${dias<=0?"hoje ou já venceu":"em "+dias+" dia"+(dias===1?"":"s")}.</b> Vale renovar com calma antes disso para a coleta não parar.`) }
+  }
+  return av;
+}
+function metQuandoColeta(D){
+  const c=D.conf.ultima_coleta_ok&&D.conf.ultima_coleta_ok.valor; let iso=null;
+  if(typeof c==="string") iso=c;
+  else if(c&&typeof c==="object") iso=c.em||c.at||c.quando||c.data||c.finalizado_em||Object.values(c).find(v=>typeof v==="string"&&!isNaN(new Date(v)))||null;
+  if(!iso&&D.conf.ultima_coleta_ok) iso=D.conf.ultima_coleta_ok.atualizado_em;
+  if(!iso&&D.sync) iso=D.sync.finalizado_em||D.sync.iniciado_em;
+  return iso;
+}
+function metAnaliseHTML(a){
+  if(!a) return `<div class="mcard manalise"><h3>análise do dia</h3><p>Sem análise ainda.</p></div>`;
+  const link=a.melhor_post&&/^https?:\/\//i.test(a.melhor_post)?a.melhor_post:"";
+  return `<div class="mcard manalise"><h3>análise do dia</h3>
+    <div class="dt">${esc(fmtDMA(String(a.data).slice(0,10)))}</div>
+    ${a.analise?`<p>${esc(a.analise)}</p>`:""}
+    ${a.sinal_pauta?`<div class="destaque"><div class="t">Sinal para a pauta</div><p style="margin:0;color:var(--texto-forte)">${esc(a.sinal_pauta)}</p></div>`:""}
+    ${link?`<p style="margin-top:var(--e3)">Melhor post: <a href="${esc(link)}" target="_blank" rel="noopener">abrir no Instagram ↗</a>${a.melhor_post_valor!=null?` · <b>${esc(fmtInt(a.melhor_post_valor))}</b> salvos + compart.`:""}</p>`:""}
+    ${a.avisos?`<p style="color:var(--texto-fraco)">${esc(a.avisos)}</p>`:""}</div>`;
+}
+
+function renderMetricas(){
+  atual=null;
+  $("#hd").innerHTML=`<div class="hrow">
+    <button class="icb" id="bVoltar" aria-label="Voltar aos canais">←</button>
+    <div class="tt"><div class="n1">📊 Métricas</div><div class="n2">Instagram · visão geral</div></div></div>`;
+  $("#bVoltar").onclick=()=>location.hash="#/";
+  $("#abas").classList.add("hide"); $("#fabslot").innerHTML="";
+  const view=$("#view"); view.className="clara";
+  const iv=metIntervalo(), chave=[iv.pDe,iv.ate].join("|");
+  if(!MET.dados||MET.chave!==chave){
+    if(!MET.carregando&&!MET.erro) carregarMetricas();
+    else if(!MET.carregando&&MET.erro&&MET._tent!==chave){ MET._tent=chave; carregarMetricas() }
+  }
+  const chips=`<div class="mperiodo" role="group" aria-label="Período">${MET_PERIODOS.map(([k,n])=>
+    `<button class="filtro ${MET.periodo===k?"on":""}" data-p="${k}">${n}</button>`).join("")}</div>
+    ${MET.periodo==="custom"?`<div class="mcustom"><label>De<input class="campo" type="date" id="mDe" value="${esc(MET.de||iv.de)}" max="${esc(hojeSP())}"></label>
+      <label>Até<input class="campo" type="date" id="mAte" value="${esc(MET.ate||iv.ate)}" max="${esc(hojeSP())}"></label></div>`:""}`;
+  const D=MET.dados&&MET.chave===chave?MET.dados:null;
+  let corpo="";
+  if(!D){
+    corpo = MET.erro ? `<div class="vazio"><h4>não consegui carregar</h4><p>Confira a conexão e tente de novo.</p><button class="btn btn-fantasma" id="mTentar">Tentar de novo</button></div>`
+                     : `<div class="carregando" style="color:var(--texto-medio)">carregando métricas…</div>`;
+  } else if(!D.nDiaria&&!D.snaps.length&&!D.snapUlt&&!D.analise&&!D.sync){
+    corpo=`<div class="vazio"><span class="n num">0</span><h4>nada por aqui ainda</h4>
+      <p>As métricas aparecem aqui assim que a coleta rodar pela primeira vez.</p></div>`;
+  } else {
+    const {lst,seg}=metKpis(D), dias=faixaDias(iv.de,iv.ate);
+    const q=metQuandoColeta(D), av=metAvisos(D);
+    const st=D.sync?(D.sync.status==="ok"?"coleta ok":D.sync.status==="erro"?"última rodada com erro":"coleta rodando"):"";
+    corpo=`${av.map(a=>`<div class="maviso" role="status">${a}</div>`).join("")}
+      <div class="msaude ${av.length?"aviso":""}"><i></i><span>${q?"Última coleta: "+esc(fmtQuando(q)):"Ainda sem coleta registrada"}${st?" · "+esc(st):""}</span></div>
+      <div class="kpis">${lst.map(kpiHTML).join("")}</div>
+      <div class="mcard"><h3>seguidores ao longo do tempo</h3><div class="mchart" id="gSeg"></div></div>
+      <div class="mcard"><h3>alcance e views por dia</h3>
+        <div class="mleg"><span><i style="background:var(--serie-a)"></i>Alcance</span><span><i style="background:var(--serie-b)"></i>Views</span></div>
+        <div class="mchart" id="gAlc"></div></div>
+      <div class="mcard"><h3>salvos + compartilhamentos por dia</h3><div class="mchart" id="gSav"></div></div>
+      ${metAnaliseHTML(D.analise)}`;
+    MET._graf=()=>{
+      const vd=(ks)=>dias.map(d=>{ const m=D.mapa[d]; if(!m) return null; let s=0,a=false; ks.forEach(k=>{ if(m[k]!=null){ s+=m[k]; a=true } }); return a?s:null });
+      const g1=$("#gSeg"),g2=$("#gAlc"),g3=$("#gSav"); if(!g1) return;
+      desenharGrafico(g1,{datas:dias,tipo:"linha",zero:false,ligar:true,rotulo:"Seguidores ao longo do tempo",
+        series:[{nome:"Seguidores",cor:"var(--serie-a)",vals:dias.map(d=>seg[d]??null)}]});
+      desenharGrafico(g2,{datas:dias,tipo:"linha",rotulo:"Alcance e views por dia",
+        series:[{nome:"Alcance",cor:"var(--serie-a)",vals:vd(["reach"])},{nome:"Views",cor:"var(--serie-b)",vals:vd(["views"])}]});
+      desenharGrafico(g3,{datas:dias,tipo:"barras",rotulo:"Salvos e compartilhamentos por dia",
+        series:[{nome:"Salvos + compart.",cor:"var(--serie-a)",vals:vd(["saves","shares"])}]});
+    };
+  }
+  view.innerHTML=`<div class="wrap" style="max-width:960px">
+    <div class="secao-tit"><h2>métricas</h2></div>
+    <p class="secao-sub">Como o perfil do Instagram está indo no período escolhido.</p>
+    ${chips}
+    <p class="mcomp">${esc(fmtDMA(iv.de))} a ${esc(fmtDMA(iv.ate))} · comparado com ${esc(fmtDMA(iv.pDe))} a ${esc(fmtDMA(iv.pAte))}</p>
+    ${corpo}</div>`;
+  view.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{
+    MET.periodo=b.dataset.p;
+    if(MET.periodo==="custom"&&!MET.de){ const c=metIntervalo(); MET.de=c.de; MET.ate=c.ate }
+    MET.erro=false; renderMetricas() });
+  const mt=$("#mTentar"); if(mt) mt.onclick=()=>{ MET.erro=false; MET._tent=null; renderMetricas() };
+  const aplicar=()=>{ const a=$("#mDe").value,b=$("#mAte").value;
+    if(!a||!b) return; if(a>b){ toast("A data inicial vem antes da final",1); return }
+    if(difDias(a,b)>400){ toast("Escolha até 400 dias",1); return }
+    MET.de=a; MET.ate=b; MET.erro=false; renderMetricas() };
+  if($("#mDe")){ $("#mDe").onchange=aplicar; $("#mAte").onchange=aplicar }
+  if(D&&MET._graf) MET._graf();
+}
 
 /* ============ START ============ */
 (async()=>{ await carregar(); await filaFlush(); rota(); })();
