@@ -37,12 +37,13 @@ Plano completo aprovado: arquitetura, camadas e verificação estão nesta seç�
 2. **C5 — conferir:** a execução da Pauta do Dia de 09/10 (05:47) deve dizer "fonte: PSN" nas métricas da página.
 3. **C6 — paralelo de 7 dias:**
    - começa em 09/10; comparar diariamente PSN × VPS × Notion, com critério de diferença ≤ 1%;
-   - atenção: o resumo do PSN usa a conta do último dia completo (D-1); conferir de que dia é o número que o
-     `pipeline.metricas` grava no Notion antes de comparar;
+   - atenção: o resumo do PSN usa a conta do último dia completo (D-1). O `pipeline.metricas` pede os insights da
+     conta sem `since/until`, e nesse caso a API devolve uma janela de ~2 dias terminando agora (testado em 08/10
+     com `profile_views`: 38 sem datas × 21 só em 07/10). Comparar Notion × PSN somando os mesmos dias, não linha a linha;
    - delegar o relatório ao Haiku;
    - só então, com o ok da Duda: Notion deixa de receber dados, sai o coletor do `mecanismo-car` e decide-se o IG Analytics. Ela ainda vai conferir se usa hub, agentes, CRM ou radar lá. Se não usar, desligar o cron de coleta do VPS e o agendador antigo do Windows, se existir.
 4. **Saúde do token:** resolvida em 08/10 (secrets `META_APP_ID`/`META_APP_SECRET` regravados). `debug_token` válido: token de página sem vencimento, escopos de insights ok. **O acesso a dados vence em 04/01/2027**: antes disso a Duda precisa reautorizar o app da Meta (o app PSN avisa quando estiver perto).
-5. **"Visitas ao perfil"** aparece "—" porque o coletor não pede essa métrica no nível da conta. Testar se a API v25 entrega `profile_views` para a conta e incluir.
+5. **"Visitas ao perfil":** resolvida em 08/10. A v25 entrega `profile_views` da conta por dia (só com `metric_type=total_value`). Coletor v4 (Edge Function `psn-ig-sync`, versão 4) pede a métrica; histórico de 03/06 a 06/10 preenchido direto da API (126 dias, soma 2.822); 07/10 e 08/10 vieram pela coleta. Card do app passou a somar `profile_views` (28 dias até 07/10 = 370, ▼ 2,9% contra 381), site no ar conferido. `psn_ig_resumo_dia` já inclui a métrica em `conta_dia_anterior`.
 6. **Limpeza no Supabase:** feita em 08/10 pela Duda no SQL editor (função `psn_ig_importar_tmp`, 5 políticas `psn_transfer_*` e a linha de teste de 1900 em `psn_ig_analise` removidas; conferido). O bucket `psn-transfer` ficou: o Supabase não deixa apagá-lo por SQL e a tela não apagou. Está vazio, privado e sem políticas (ninguém além do service role acessa); decisão: deixar e não usar.
 7. **PR do branch `claude/psn-metricas` para `main`:** feito (sorellaidigital/mecanismo-inst#2, merge em 08/10).
 

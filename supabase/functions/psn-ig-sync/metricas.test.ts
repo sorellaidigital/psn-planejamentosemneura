@@ -62,3 +62,7 @@ Deno.test("metricaRejeitada casa por palavra inteira", () => {
   assertEquals(metricaRejeitada("bad ig_reels_avg_watch_time", ["views", "ig_reels_avg_watch_time"]), "ig_reels_avg_watch_time");
   assertEquals(metricaRejeitada("profile_views invalid", ["views"]), null);
 });
+
+Deno.test("conta pede visitas ao perfil (profile_views, total_value por dia na v25)", () => {
+  assert((DESEJADAS.account as readonly string[]).includes("profile_views"));
+});
