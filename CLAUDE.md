@@ -1,9 +1,13 @@
-# mecanismo-inst — contexto para novas sessões
+# psn-planejamentosemneura — contexto para novas sessões
+
+Repositório central do PSN (desde 08/10/2026). Recebeu o `sorellaidigital/mecanismo-inst` com o histórico inteiro
+(Tempo 1); o `sorellaidigital/mecanismo-car` (motor do carrossel, skills e rotinas) entra no Tempo 2. Plano em
+`docs/PLANO-CENTRAL.md`.
 
 Objetivo: centralizar todo o trabalho de conteúdo da Duda (@dudafonte.s) no app **Planejamento sem Neura (PSN)**,
 em camadas, descontinuando os mecanismos espalhados (IG Analytics no VPS, rotinas que gravam no Notion).
 
-Antes de mexer em qualquer coisa, leia `docs/ESTADO.md` (o que já foi feito, o que falta, decisões).
+Antes de mexer em qualquer coisa, leia `docs/ESTADO.md` e `docs/PLANO-CENTRAL.md` (o que já foi feito, o que falta, decisões).
 
 ## Peças
 

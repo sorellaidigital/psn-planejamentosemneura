@@ -8,6 +8,19 @@
 | **Produção** (funil de 7 etapas do curso) | No ar, sem mudanças. |
 | **Métricas** (visão geral do Instagram) | No ar desde 08/10/2026, em paralelo com os coletores antigos (camada C6 abaixo). |
 
+## Módulo Pauta (Notion → PSN): em planejamento desde 08/10/2026
+
+Plano aprovado em `docs/PLANO-CENTRAL.md`: tela "Hoje" como entrada do app, Pauta do Dia em 2 portões (de manhã ≥3
+sugestões sem render; a Duda escolhe no app; só o escolhido é produzido, no estilo editorial), banco de ideias,
+paralelo de 5 dias úteis com o Notion antes do corte.
+
+| Release | Situação |
+|---|---|
+| R0 base (repo central + inventário do Notion) | Em andamento: histórico do `mecanismo-inst` trazido para este repo |
+| R1 escolher antes de produzir | Aguarda protótipo "Hoje" e ok da Duda |
+| R2 produção sob demanda | Depois do R1 em uso |
+| R3 corte do Notion + Tempo 2 do repo | Depois do paralelo e do fim da C6 |
+
 ## Módulo Métricas: plano em camadas e onde estamos
 
 Plano completo aprovado: arquitetura, camadas e verificação estão nesta seção e no README do coletor.
@@ -80,7 +93,8 @@ Plano completo aprovado: arquitetura, camadas e verificação estão nesta seç�
 ## Fontes e acessos úteis
 
 - **Repositórios:**
-  - `sorellaidigital/mecanismo-inst` (este);
+  - `sorellaidigital/psn-planejamentosemneura` (este, central desde 08/10/2026);
+  - `sorellaidigital/mecanismo-inst` (origem deste repo, histórico trazido inteiro; arquivar depois do Tempo 1);
   - `sorellaidigital/ig-analytics` (VPS, `/opt/ig-analytics`, EasyPanel, `appig.mariafontes.tech`);
   - `sorellaidigital/mecanismo-car` (rotinas Pauta do Dia e Métricas do Dia).
 - **Notion:** "Central de Conteúdo @dudafonte.s" → "Métricas IG" (`collection://4ed9f0d3-84b1-4dec-91ec-e840dcffafae`) e "Painel IG".

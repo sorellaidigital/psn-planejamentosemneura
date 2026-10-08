@@ -43,11 +43,11 @@ Sugestão de rotina: rodar `/insta-ops:fila` uma vez por semana.
 No terminal:
 
 ```bash
-claude plugin marketplace add sorellaidigital/mecanismo-inst
+claude plugin marketplace add sorellaidigital/psn-planejamentosemneura
 claude plugin install insta-ops@sorellai
 ```
 
-A partir de um clone local, troque a primeira linha por `claude plugin marketplace add ./mecanismo-inst`.
+A partir de um clone local, troque a primeira linha por `claude plugin marketplace add ./psn-planejamentosemneura`.
 
 Dentro do Claude Code, configure a URL e a chave do mesmo projeto Supabase do app:
 
