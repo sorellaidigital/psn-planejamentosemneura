@@ -1,0 +1,1137 @@
+<title>Hoje no PSN</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;600;700&family=Inter:ital,wght@0,500;0,700;1,700&family=Covered+By+Your+Grace&display=swap");
+:root{
+  /* tokens copiados de app/index.html (PSN 3.0) */
+  --superficie-territorio:#4A16A8;
+  --superficie-territorio-alta:#5C21C6;
+  --superficie-territorio-baixa:#3B0F87;
+  --superficie-trabalho:#F2EFFA;
+  --superficie-cartao:#FFFFFF;
+  --superficie-cartao-territorio:rgba(242,239,250,.10);
+  --superficie-peso:#1C1225;
+  --acao-ganho:#D7FF3E;
+  --sobre-ganho:#1C1225;
+  --selo-valor:#6E2639;
+  --alerta:#FF2D55;
+  --alerta-texto:#C4102F;
+  --ok-texto:#17683A;
+  --texto-forte:#1C1225;
+  --texto-medio:#4B4160;
+  --texto-fraco:#6C6285;
+  --texto-invertido:#F2EFFA;
+  --texto-invertido-medio:rgba(242,239,250,.74);
+  --texto-invertido-fraco:rgba(242,239,250,.56);
+  --linha:rgba(28,18,37,.13);
+  --linha-forte:rgba(28,18,37,.24);
+  --linha-territorio:rgba(242,239,250,.20);
+  /* tokens derivados (só tema claro) */
+  --chip-bg:rgba(74,22,168,.09);
+  --chip-tx:#4A16A8;
+  --chip-neutro-bg:rgba(28,18,37,.07);
+  --chip-selo-bg:rgba(110,38,57,.11);
+  --chip-erro-bg:rgba(196,16,47,.10);
+  --sutil:rgba(28,18,37,.06);
+  --aviso-bg:rgba(110,38,57,.08);
+  --aviso-borda:rgba(110,38,57,.28);
+  --ganho-suave:rgba(215,255,62,.22);
+  --ganho-borda:rgba(215,255,62,.55);
+  --foco:#4A16A8;
+  --f-display:'Bricolage Grotesque',system-ui,sans-serif;
+  --f-ui:'Space Grotesk',system-ui,-apple-system,sans-serif;
+  --t-nano:11px; --t-micro:12px; --t-mini:13px; --t-base:15px;
+  --t-md:17px; --t-lg:21px; --t-xl:27px; --t-2xl:34px; --t-num:46px;
+  --tr-display:-.045em; --tr-rotulo:.16em;
+  --e1:4px; --e2:8px; --e3:12px; --e4:16px; --e5:24px; --e6:32px; --e7:48px;
+  --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+  --alvo:44px;
+  --sombra:0 10px 30px rgba(28,18,37,.18);
+  /* cores do carrossel editorial (conteúdo, não mudam com o tema) */
+  --ed-grafite:#1F1E1D; --ed-offwhite:#F1ECE4; --ed-marsala:#5E0B1A; --ed-creme:#F1E4D8;
+  color-scheme:light;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--superficie-territorio);color:var(--texto-invertido);
+  font:var(--t-base)/1.5 var(--f-ui);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none;font-family:var(--f-ui)}
+:focus-visible{outline:3px solid var(--acao-ganho);outline-offset:2px;border-radius:6px}
+main :focus-visible{outline-color:var(--foco)}
+.hide{display:none !important}
+.num{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);font-variant-numeric:tabular-nums;line-height:.9}
+.disp{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);line-height:1.02;text-transform:lowercase}
+.rotulo{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase}
+
+/* botões (vocabulário do app) */
+.btn{min-height:var(--alvo);padding:0 var(--e4);border-radius:var(--r-pill);font-weight:700;font-size:var(--t-base);
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--e2);text-align:center;transition:transform .08s}
+.btn:active{transform:scale(.975)}
+.btn-ganho{background:var(--acao-ganho);color:var(--sobre-ganho)}
+.btn-fantasma{background:transparent;border:1.5px solid var(--linha-forte);color:var(--texto-forte)}
+.btn-fantasma-inv{background:var(--superficie-cartao-territorio);color:var(--texto-invertido);border:1.5px solid var(--linha-territorio)}
+.btn-risco{background:transparent;border:1.5px solid var(--aviso-borda);color:var(--alerta-texto)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.icb{width:var(--alvo);height:var(--alvo);border-radius:var(--r-sm);display:grid;place-items:center;font-size:var(--t-md);flex:none;
+  background:var(--superficie-cartao-territorio);color:var(--texto-invertido)}
+.icb-clara{background:var(--sutil);color:var(--texto-forte)}
+.campo{width:100%;background:var(--superficie-cartao);color:var(--texto-forte);border:1.5px solid var(--linha);border-radius:var(--r-md);
+  padding:var(--e3) var(--e4);min-height:var(--alvo);resize:vertical;outline:none;font-size:var(--t-base);line-height:1.55;font-family:var(--f-ui)}
+.campo::placeholder{color:var(--texto-fraco)}
+.campo:focus{border-color:var(--foco);box-shadow:0 0 0 3px rgba(74,22,168,.16)}
+select.campo{min-height:40px;padding:0 var(--e3);font-size:var(--t-mini);font-weight:600}
+.lbl{display:block;font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-medio);margin:var(--e5) 0 var(--e2)}
+.dica{font-size:var(--t-micro);color:var(--texto-fraco);margin:var(--e1) 0 var(--e2);line-height:1.45}
+
+/* header território */
+header{position:sticky;top:0;z-index:30;background:var(--superficie-territorio);padding:calc(env(safe-area-inset-top) + 14px) var(--e4) 0}
+.hrow{display:flex;align-items:center;gap:var(--e3);min-height:var(--alvo)}
+.hrow .tt{flex:1;min-width:0}
+.hrow .tt .n1{font-size:var(--t-md);font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow .tt .n2{font-size:var(--t-micro);color:var(--texto-invertido-medio);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.marca .selo{width:38px;height:38px;border-radius:11px;background:var(--acao-ganho);display:grid;place-items:center;flex:none}
+.marca .selo svg{width:26px;height:26px}
+.placar{display:flex;gap:var(--e5);padding:var(--e4) 0 var(--e4);align-items:flex-end;flex-wrap:wrap}
+.placar .it{display:flex;flex-direction:column;gap:2px;text-align:left;color:inherit}
+.placar .v{font-size:var(--t-2xl)}
+.placar .v small{font-size:var(--t-md);color:var(--texto-invertido-fraco);letter-spacing:0}
+.placar .k{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-invertido-medio);line-height:1.3}
+.placar .it.ganho .v{color:var(--acao-ganho)}
+.hdia{font-family:var(--f-ui);font-weight:600;font-size:var(--t-md);color:var(--texto-invertido);line-height:1.2;margin-top:var(--e3)}
+.hdia i{color:var(--acao-ganho);font-style:normal}
+
+/* área de trabalho */
+main{background:var(--superficie-trabalho);color:var(--texto-forte);min-height:calc(100vh - 120px);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;padding:var(--e5) var(--e4) 140px}
+.wrap{max-width:720px;margin:0 auto}
+.secao-tit{display:flex;align-items:baseline;gap:var(--e3);margin:var(--e6) 0 var(--e1)}
+.secao-tit:first-child{margin-top:0}
+.secao-tit h2{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);font-size:var(--t-xl);margin:0;text-transform:lowercase;line-height:1.05}
+.secao-tit .qt{font-size:var(--t-lg);color:var(--texto-fraco)}
+.secao-sub{color:var(--texto-medio);font-size:var(--t-mini);margin:0 0 var(--e4);max-width:52ch;text-wrap:pretty}
+
+.chip{font-size:var(--t-nano);font-weight:600;padding:4px 9px;border-radius:var(--r-pill);background:var(--chip-bg);color:var(--chip-tx);
+  white-space:nowrap;max-width:24ch;overflow:hidden;text-overflow:ellipsis;display:inline-block}
+.chip-neutro{background:var(--chip-neutro-bg);color:var(--texto-medio)}
+.chip-selo{background:var(--chip-selo-bg);color:var(--selo-valor)}
+.chip-erro{background:var(--chip-erro-bg);color:var(--alerta-texto)}
+.chip-ganho{background:var(--acao-ganho);color:var(--sobre-ganho);font-weight:700}
+.chip-ex{background:transparent;border:1px dashed var(--linha-forte);color:var(--texto-fraco);font-weight:600}
+.metas{display:flex;flex-wrap:wrap;gap:var(--e2);align-items:center}
+
+.card{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e4);margin-bottom:var(--e3);
+  color:var(--texto-forte);position:relative}
+.card h3{margin:0;font-family:var(--f-display);font-weight:600;letter-spacing:-.02em;font-size:var(--t-md);line-height:1.22;text-wrap:pretty}
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.abre{display:block;width:100%;text-align:left;color:inherit;padding:0}
+.acoes{display:flex;gap:var(--e2);margin-top:var(--e4);align-items:center}
+.acoes .btn{flex:1}
+.acoes .btn-ganho{flex:1.4}
+
+/* sugestão */
+.sug .topo{display:flex;align-items:center;gap:var(--e2);margin-bottom:var(--e3);flex-wrap:wrap}
+.sug .ordem{font-family:var(--f-ui);font-weight:700;font-size:var(--t-base);line-height:1;color:var(--selo-valor);width:26px;height:26px;border-radius:50%;background:var(--chip-selo-bg);display:grid;place-items:center;margin-right:2px}
+.sug .gancho{font-family:var(--f-ui);font-weight:600;font-size:var(--t-base);line-height:1.35;margin:var(--e2) 0 var(--e3);color:var(--texto-forte);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.sug .gancho::before{content:attr(data-rot) " · ";font-family:var(--f-ui);font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);
+  text-transform:uppercase;color:var(--texto-fraco);vertical-align:middle}
+.porque{font-size:var(--t-mini);color:var(--texto-medio);margin:var(--e3) 0 0;line-height:1.45}
+.porque b{color:var(--texto-forte)}
+.precisa{margin-top:var(--e3);font-size:var(--t-micro);color:var(--selo-valor);font-weight:600;display:flex;gap:6px;align-items:flex-start}
+.decidida{display:flex;gap:var(--e3);align-items:center;font-size:var(--t-mini);color:var(--texto-medio);padding:var(--e3) var(--e4);
+  border:1.5px dashed var(--linha-forte);border-radius:var(--r-md);margin-bottom:var(--e2)}
+.decidida b{color:var(--texto-forte);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+
+/* acompanhamento (stories) */
+.trilha{display:flex;gap:var(--e1);margin:var(--e3) 0 var(--e2)}
+.trilha span{flex:1;height:6px;border-radius:var(--r-pill);background:var(--sutil)}
+.trilha span.feito{background:var(--chip-tx);opacity:.55}
+.trilha span.on{background:var(--acao-ganho);opacity:1;box-shadow:0 0 0 1px rgba(28,18,37,.15)}
+.trilha-leg{display:flex;justify-content:space-between;font-size:var(--t-nano);color:var(--texto-fraco);font-weight:600}
+.prev{font-size:var(--t-mini);color:var(--texto-medio);margin-top:var(--e2)}
+.prev b{color:var(--texto-forte)}
+
+/* miniaturas */
+.thumbs{display:flex;gap:6px;margin:var(--e3) 0 0}
+.thumbs .sl{flex:0 0 64px;border-radius:6px}
+
+/* avisos e destaque */
+.maviso{background:var(--aviso-bg);border:1.5px solid var(--aviso-borda);color:var(--texto-forte);border-radius:var(--r-md);
+  padding:var(--e4);margin:0 0 var(--e4);font-size:var(--t-mini);line-height:1.5}
+.maviso b{color:var(--selo-valor)}
+.maviso .btn{margin-top:var(--e3)}
+.destaque{background:var(--ganho-suave);border:1.5px solid var(--ganho-borda);border-radius:var(--r-md);padding:var(--e4);margin:var(--e3) 0}
+.destaque .t{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--selo-valor);margin-bottom:var(--e1)}
+
+.vazio{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e6) var(--e5);
+  display:flex;flex-direction:column;gap:var(--e3);align-items:flex-start;margin-bottom:var(--e3)}
+.vazio .n{font-size:var(--t-2xl);color:var(--acao-ganho);-webkit-text-stroke:1px var(--sobre-ganho)}
+.vazio h4{font-family:var(--f-display);font-weight:700;letter-spacing:var(--tr-display);font-size:var(--t-lg);margin:0;text-transform:lowercase}
+.vazio p{margin:0;color:var(--texto-medio);font-size:var(--t-mini);max-width:46ch;text-wrap:pretty}
+.vazio ul{margin:0;padding-left:1.1em;color:var(--texto-medio);font-size:var(--t-mini)}
+
+/* métricas compactas */
+.mini{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e4);margin-bottom:var(--e3)}
+.mini .nums{display:flex;gap:var(--e5);margin:var(--e3) 0;flex-wrap:wrap}
+.mini .nums div{display:flex;flex-direction:column;gap:2px}
+.mini .nums .v{font-size:var(--t-xl)}
+.mini .nums .k{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-fraco)}
+.mini p{margin:0;font-size:var(--t-mini);color:var(--texto-medio);line-height:1.5}
+.mini p b{color:var(--texto-forte)}
+.linkb{display:inline-flex;align-items:center;gap:6px;margin-top:var(--e3);font-size:var(--t-micro);font-weight:700;color:var(--chip-tx);min-height:36px}
+
+/* atalhos para os módulos (destinos, não abas) */
+.atalhos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--e2);margin-top:var(--e6)}
+.atalho{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-md);padding:var(--e3);text-align:left;
+  display:flex;flex-direction:column;gap:2px;min-height:76px;color:var(--texto-forte)}
+.atalho .em{font-size:20px;line-height:1}
+.atalho .nm{font-weight:700;font-size:var(--t-mini);margin-top:auto;line-height:1.2}
+.atalho .hd{font-size:var(--t-nano);color:var(--texto-fraco)}
+
+/* simulador do protótipo */
+.simular{margin-top:var(--e7);border:1.5px dashed var(--linha-forte);border-radius:var(--r-md);padding:var(--e3) var(--e4)}
+.simular summary{cursor:pointer;font-size:var(--t-micro);font-weight:700;color:var(--texto-fraco);min-height:32px;display:flex;align-items:center}
+.filtros{display:flex;gap:var(--e2);flex-wrap:wrap;margin:var(--e2) 0}
+.filtro{min-height:36px;padding:0 var(--e3);border-radius:var(--r-pill);font-size:var(--t-micro);font-weight:600;background:var(--sutil);color:var(--texto-medio);border:1.5px solid transparent}
+.filtro.on{background:var(--superficie-territorio);color:var(--texto-invertido);font-weight:700}
+
+/* banco */
+.bfiltros{display:grid;grid-template-columns:1fr 1fr;gap:var(--e2);margin-bottom:var(--e3)}
+.seg{display:flex;background:var(--sutil);border-radius:var(--r-pill);padding:3px;gap:2px;margin-bottom:var(--e4)}
+.seg button{flex:1;min-height:36px;border-radius:var(--r-pill);font-size:var(--t-micro);font-weight:700;color:var(--texto-medio)}
+.seg button.on{background:var(--superficie-territorio);color:var(--texto-invertido)}
+.ideia .lin{display:flex;gap:var(--e3);align-items:flex-start}
+.ideia .lin .abre{flex:1;min-width:0}
+.ideia .ang{font-size:var(--t-mini);color:var(--texto-medio);margin:var(--e2) 0 0;line-height:1.45}
+.ideia .metas{margin-top:var(--e3)}
+.ideia.velha{border-style:dashed}
+.ideia .lado{display:flex;flex-direction:column;gap:var(--e2);flex:none}
+.ideia .lado .btn{min-height:40px;padding:0 var(--e3);font-size:var(--t-mini)}
+details.grupo{margin-top:var(--e5)}
+details.grupo>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:var(--e3);min-height:var(--alvo);
+  font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-medio)}
+details.grupo>summary::-webkit-details-marker{display:none}
+details.grupo>summary::after{content:"";flex:1;height:1.5px;background:var(--linha)}
+details.grupo>summary .seta{transition:transform .15s}
+details.grupo[open]>summary .seta{transform:rotate(90deg)}
+.semres{padding:var(--e5) 0;color:var(--texto-fraco);font-size:var(--t-mini)}
+
+/* ficha */
+.fstatus{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e3) var(--e4);margin-bottom:var(--e4)}
+.fstatus .linha1{display:flex;align-items:center;gap:var(--e2);flex-wrap:wrap;font-size:var(--t-mini);color:var(--texto-medio)}
+.ftema{font-family:var(--f-display);font-weight:700;letter-spacing:-.03em;font-size:var(--t-xl);line-height:1.08;margin:var(--e3) 0 var(--e2);text-wrap:balance}
+.fbloco{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-lg);padding:var(--e4);margin-top:var(--e3)}
+.fbloco h3{margin:0 0 var(--e2);font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-medio);
+  display:flex;align-items:center;gap:var(--e2)}
+.fbloco h3 .chip{letter-spacing:0;text-transform:none}
+.fbloco ol,.fbloco ul{margin:0;padding-left:1.3em;font-size:var(--t-mini);line-height:1.5}
+.fbloco li{margin-bottom:6px}
+.fbloco p{margin:0;font-size:var(--t-mini);line-height:1.55;color:var(--texto-medio)}
+.gancho-g{font-family:var(--f-ui);font-weight:700;font-size:var(--t-lg);line-height:1.25;letter-spacing:-.01em;color:var(--texto-forte);margin:0}
+.txtlongo{white-space:pre-wrap;font-size:var(--t-mini);line-height:1.55;color:var(--texto-forte);max-height:220px;overflow:auto;
+  background:var(--sutil);border-radius:var(--r-sm);padding:var(--e3);margin:0;font-family:var(--f-ui);user-select:text;-webkit-user-select:text}
+.txtlongo.aberto{max-height:none}
+.blocohead{display:flex;align-items:center;justify-content:space-between;gap:var(--e2);margin-bottom:var(--e2)}
+.blocohead h3{margin:0}
+.btn-mini{min-height:36px;padding:0 var(--e3);font-size:var(--t-micro);border-radius:var(--r-pill);font-weight:700;
+  background:var(--sutil);color:var(--texto-forte);display:inline-flex;align-items:center;gap:6px}
+.ajuste{background:var(--superficie-cartao);border:1.5px solid var(--foco);border-radius:var(--r-lg);padding:var(--e4);margin-top:var(--e3)}
+.ajuste .rapidos{display:flex;gap:var(--e2);flex-wrap:wrap;margin:var(--e2) 0 var(--e3)}
+.ajuste .acoes{margin-top:var(--e3)}
+.coment{font-size:var(--t-mini);color:var(--texto-medio);border-left:3px solid var(--selo-valor);padding:2px 0 2px var(--e3);margin-top:var(--e2)}
+.semdesc{font-size:var(--t-micro);color:var(--texto-fraco);margin-top:var(--e3)}
+
+/* barra fixa de ação */
+.barra{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--superficie-trabalho);border-top:1.5px solid var(--linha);
+  padding:var(--e3) var(--e4) calc(env(safe-area-inset-bottom) + 12px)}
+.barra .in{max-width:720px;margin:0 auto;display:flex;gap:var(--e2)}
+.barra .btn{flex:1;min-height:52px;font-size:var(--t-md)}
+.barra .btn-ganho{flex:1.5}
+.barra .icb{width:52px;height:52px}
+
+/* tira de slides (carrossel editorial desenhado em CSS) */
+.tira{display:flex;gap:var(--e3);overflow-x:auto;scroll-snap-type:x mandatory;padding:var(--e2) 0 var(--e3);
+  margin:0 calc(var(--e4) * -1);padding-left:var(--e4);padding-right:var(--e4);scroll-padding-left:var(--e4);scrollbar-width:none}
+.tira::-webkit-scrollbar{display:none}
+.tira .sl{flex:0 0 82%;max-width:360px;scroll-snap-align:start;border-radius:var(--r-sm);box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.tirainfo{display:flex;justify-content:space-between;align-items:center;font-size:var(--t-micro);color:var(--texto-fraco);font-weight:600}
+.pontos{display:flex;gap:4px}
+.pontos i{width:6px;height:6px;border-radius:50%;background:var(--linha-forte)}
+.pontos i.on{background:var(--chip-tx);width:16px;border-radius:3px}
+
+.sl{position:relative;aspect-ratio:4/5;overflow:hidden;container-type:inline-size;font-family:'Inter',system-ui,sans-serif;
+  background:var(--ed-grafite);color:#F4F1EC}
+.sl::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);background-size:3px 3px}
+.sl.t-offwhite{background:var(--ed-offwhite);color:#1F1E1D}
+.sl.t-offwhite::after{background-image:radial-gradient(rgba(0,0,0,.06) 1px,transparent 1px)}
+.sl.t-marsala{background:var(--ed-marsala);color:#F4EDE6}
+.sl-foto{position:absolute;inset:0;background:linear-gradient(165deg,#5b5560 0%,#2b2830 45%,#121114 100%);display:flex;align-items:flex-start;justify-content:flex-start}
+.sl-foto::before{content:"";position:absolute;width:38cqw;height:38cqw;border-radius:50%;right:16cqw;top:16cqw;
+  background:radial-gradient(circle at 40% 35%,#8d7f78,#4a403d 70%);opacity:.55}
+.sl-foto::after{content:"";position:absolute;width:70cqw;height:60cqw;border-radius:45% 45% 0 0;right:0;top:50cqw;background:#3a1a22;opacity:.6}
+.sl-foto span{position:relative;z-index:1;margin:3cqw;font:600 2.6cqw/1.2 'Space Grotesk',sans-serif;background:rgba(0,0,0,.45);color:#fff;
+  padding:.6cqw 1.6cqw;border-radius:2cqw;letter-spacing:.02em}
+.sl-imagem .sl-foto{bottom:auto;height:54%}
+.sl-in{position:absolute;inset:0;padding:7.8cqw;display:flex;flex-direction:column;z-index:2}
+.com-foto .sl-in{background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.78) 92%)}
+.sl-imagem .sl-in{background:none;padding-top:58%}
+.sl-serie{font-size:2.3cqw;font-weight:500;opacity:.75;letter-spacing:.04em;text-transform:uppercase}
+.sl-imagem .sl-serie{position:absolute;top:7.8cqw;left:7.8cqw}
+.sl-mid{margin:auto 0;display:flex;flex-direction:column;gap:2.6cqw}
+.com-foto .sl-mid,.sl-imagem .sl-mid{margin:auto 0 0}
+.sl-kicker{font-size:3.4cqw;font-weight:700;opacity:.9}
+.sl-tit{font-weight:700;letter-spacing:-.045em;line-height:1.02;font-size:9cqw;text-wrap:balance}
+.sl-capa-foto .sl-tit{font-size:8.6cqw}
+.sl-imagem .sl-tit{font-size:6.6cqw}
+.sl-citacao .sl-tit{font-size:9.6cqw}
+.sl-numero .sl-tit{font-size:5.8cqw}
+.sl-lista .sl-tit{font-size:6.2cqw}
+.sl-passo .sl-tit,.sl-cta .sl-tit{font-size:7.4cqw}
+.sl-num{font-size:26cqw;font-weight:700;letter-spacing:-.06em;line-height:.85;color:var(--ed-marsala)}
+.sl-sub,.sl-corpo{font-size:3.9cqw;line-height:1.3;font-weight:500;opacity:.92;text-wrap:pretty}
+.sl-citacao .sl-corpo{font-size:7cqw;font-weight:700;letter-spacing:-.04em;line-height:1.08;opacity:1}
+.sl-manus{font-family:'Covered By Your Grace',cursive;font-size:6.1cqw;line-height:1.05;opacity:.95}
+.t-offwhite .sl-manus{color:var(--ed-marsala)}
+.sl-fonte{font-size:2.3cqw;opacity:.65}
+.sl-itens{display:flex;flex-direction:column;gap:2.2cqw;margin-top:1cqw}
+.sl-itens div{font-size:3.2cqw;line-height:1.25;border-top:.3cqw solid currentColor;padding-top:1.6cqw;opacity:.95}
+.sl-itens b{display:block;font-size:3.4cqw}
+.sl-rod{display:flex;justify-content:space-between;font-size:2.3cqw;opacity:.7;margin-top:3cqw}
+.sl-logos{display:flex;gap:1.6cqw}
+.sl-logos span{font:700 2.4cqw/1 'Space Grotesk',sans-serif;background:rgba(255,255,255,.9);color:#1F1E1D;border-radius:9cqw;padding:1.2cqw 2.2cqw}
+.sl-ctapill{align-self:flex-start;font-size:3.2cqw;font-weight:700;background:var(--ed-marsala);color:#fff;border-radius:9cqw;padding:1.6cqw 3.4cqw}
+.sl em.dq{font-style:italic}
+.t-offwhite em.dq{color:var(--ed-marsala)}
+.t-grafite em.dq,.com-foto em.dq{background:var(--ed-marsala);color:#fff;padding:0 .14em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.t-marsala em.dq{color:var(--ed-creme)}
+.thumbs .sl .sl-in{padding:6cqw}
+
+/* toast com desfazer */
+.toast{position:fixed;left:50%;transform:translate(-50%,-16px);top:calc(env(safe-area-inset-top) + 12px);z-index:99;
+  background:var(--superficie-peso);color:#F2EFFA;font-weight:700;font-size:var(--t-mini);padding:var(--e2) var(--e2) var(--e2) var(--e4);
+  border-radius:var(--r-pill);opacity:0;transition:opacity .18s,transform .18s;pointer-events:none;max-width:calc(100vw - 32px);
+  box-shadow:var(--sombra);display:flex;align-items:center;gap:var(--e3);border:1px solid rgba(242,239,250,.14)}
+.toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast .pt{width:8px;height:8px;border-radius:50%;background:var(--acao-ganho);flex:none}
+.toast.err .pt{background:var(--alerta)}
+.toast .tx{padding:6px 0}
+.toast button{min-height:36px;padding:0 var(--e3);border-radius:var(--r-pill);background:rgba(242,239,250,.14);color:var(--acao-ganho);font-weight:700;font-size:var(--t-micro);flex:none}
+.toast.sem-btn{padding-right:var(--e4)}
+
+@media(min-width:900px){
+  header{padding-left:var(--e6);padding-right:var(--e6)}
+  main{padding:var(--e6) var(--e6) 140px}
+  .placar{gap:var(--e7)}
+  .placar .v{font-size:var(--t-num)}
+  .tira .sl{flex-basis:300px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none !important}}
+
+/* ===== v2: placar do dia, faixas (rails), calendário, lixeira, roteiro de Reels ===== */
+header.solta{position:relative}
+.clamp3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hoje-linha{display:flex;align-items:center;gap:var(--e2);flex-wrap:wrap;margin-top:var(--e3);min-height:var(--alvo);color:inherit;text-align:left;width:100%}
+.hoje-linha .k{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-invertido-medio)}
+.pill{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 var(--e3);border-radius:var(--r-pill);font-weight:700;font-size:var(--t-mini);
+  border:1.5px solid var(--linha-territorio);background:var(--superficie-cartao-territorio);color:var(--texto-invertido)}
+.pill.on{background:var(--acao-ganho);color:var(--sobre-ganho);border-color:var(--acao-ganho)}
+.hmeta{font-size:var(--t-micro);color:var(--texto-invertido-fraco);padding-bottom:var(--e4)}
+.placar{padding:var(--e3) 0 var(--e3)}
+
+/* faixas horizontais de sugestões */
+.rail{display:flex;gap:var(--e3);overflow-x:auto;scroll-snap-type:x mandatory;margin:0 calc(var(--e4) * -1);padding:var(--e1) var(--e4) var(--e2);
+  scroll-padding-left:var(--e4);scrollbar-width:none;align-items:stretch;-webkit-overflow-scrolling:touch}
+.rail::-webkit-scrollbar{display:none}
+.rail .card{flex:0 0 86%;max-width:340px;scroll-snap-align:start;margin-bottom:0;display:flex;flex-direction:column;min-width:0}
+.rail .card .abre{flex:1}
+.acoes3 .par{display:flex;flex:1;min-width:0;border-radius:var(--r-pill);overflow:hidden;border:1.5px solid var(--linha-forte)}
+.acoes3 .par .btn{flex:1;min-width:0;border:0;border-radius:0;padding:0 var(--e2);font-size:var(--t-base)}
+.acoes3 .par .btn-ganho{flex:1.3}
+.acoes3 .par .btn-fantasma{border-left:1.5px solid var(--linha-forte)}
+.btn-lix{flex:0 0 auto;width:var(--alvo);height:var(--alvo);display:inline-flex;align-items:center;justify-content:center;background:transparent;border:0;border-radius:50%;color:var(--alerta-texto);cursor:pointer}
+.btn-lix:hover{background:rgba(196,16,47,.08)}
+.btn-lix:focus-visible{outline:2px solid var(--alerta-texto);outline-offset:2px}
+.rail-pontos{display:flex;gap:4px;justify-content:center;margin:var(--e1) 0 var(--e3)}
+.rail-pontos i{width:6px;height:6px;border-radius:50%;background:var(--linha-forte)}
+.rail-pontos i.on{background:var(--chip-tx);width:16px;border-radius:3px}
+.cenas-n{font-size:var(--t-micro);color:var(--texto-fraco);font-weight:600}
+
+/* cenas do Reels */
+.cena{display:flex;gap:var(--e3);padding:var(--e3) 0;border-top:1.5px solid var(--linha)}
+.cena:first-of-type{border-top:none;padding-top:0}
+.cena-n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--chip-selo-bg);color:var(--selo-valor);font-weight:700;font-size:var(--t-mini);display:grid;place-items:center}
+.cena-c{font-size:var(--t-micro);font-weight:700;color:var(--chip-tx)}
+.cena-f{font-size:var(--t-base);line-height:1.45;color:var(--texto-forte);margin-top:2px;font-weight:500}
+.cena-t{font-size:var(--t-nano);color:var(--texto-fraco);font-weight:600;margin-left:6px}
+.cena.gancho-cena .cena-f{font-weight:700}
+
+/* agendado para */
+.hora-atual{display:flex;align-items:baseline;gap:var(--e3);flex-wrap:wrap}
+.hora-atual .num{font-size:var(--t-2xl)}
+.hora-atual span:nth-child(2){font-weight:600;color:var(--texto-medio)}
+.hora-ops{display:flex;gap:var(--e2);flex-wrap:wrap;margin:var(--e3) 0}
+.hmanual{display:flex;gap:var(--e2);align-items:center}
+.hmanual .campo{width:auto;flex:1;min-height:var(--alvo)}
+.hmanual .btn{flex:none}
+
+/* calendário */
+.hor .metas{margin-bottom:var(--e2)}
+.hor h3{font-family:var(--f-display);font-weight:600;letter-spacing:-.02em;font-size:var(--t-md);margin:0}
+.hrow2{display:flex;align-items:center;gap:var(--e2);padding:6px 0;border-top:1px solid var(--linha);font-size:var(--t-mini)}
+.hrow2:first-of-type{border-top:none}
+.hrow2 b{width:34px;flex:none;text-transform:uppercase;font-size:var(--t-nano);letter-spacing:var(--tr-rotulo);color:var(--texto-medio)}
+.hrow2.hj b{color:var(--texto-forte)}
+.faixa{flex:1;min-width:0;text-align:center;padding:6px 4px;border-radius:var(--r-pill);background:var(--sutil);color:var(--texto-medio);font-weight:600;font-size:var(--t-micro);white-space:nowrap}
+.faixa.top{background:var(--acao-ganho);color:var(--sobre-ganho);font-weight:700}
+.cnav{display:flex;align-items:center;gap:var(--e2);margin:var(--e4) 0 var(--e3)}
+.cnav .t{flex:1;text-align:center;font-family:var(--f-display);font-weight:700;letter-spacing:-.03em;font-size:var(--t-lg);text-transform:lowercase;line-height:1.1}
+.cnav .icb{background:var(--sutil);color:var(--texto-forte)}
+.cdia{margin-bottom:var(--e4)}
+.cdia h3{margin:0 0 var(--e2);font-family:var(--f-display);font-weight:700;letter-spacing:-.03em;font-size:var(--t-md);text-transform:lowercase;display:flex;gap:var(--e2);align-items:center}
+.cdia.hoje h3 .chip{background:var(--acao-ganho);color:var(--sobre-ganho)}
+.vagas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--e2)}
+.vaga{background:var(--superficie-cartao);border:1.5px solid var(--linha);border-radius:var(--r-md);padding:var(--e3);display:flex;flex-direction:column;gap:var(--e2);min-width:0}
+.vaga .vaga-b{display:flex;flex-direction:column;gap:6px;align-items:flex-start;flex:1;min-width:0;color:var(--texto-forte)}
+.vaga .vf{font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-medio)}
+.vaga .vtema{font-size:var(--t-mini);font-weight:600;line-height:1.3;color:var(--texto-forte);text-wrap:pretty}
+.vaga .vhora{font-size:var(--t-micro);color:var(--texto-fraco);font-weight:600}
+.vaga.v-postado{border-color:var(--ganho-borda);background:var(--ganho-suave)}
+.vaga.v-vazio{border-style:dashed}
+.vaga .linkb{margin-top:0;min-height:32px}
+.vaga .semlink{font-size:var(--t-micro);color:var(--chip-tx);font-weight:700}
+.seg2{margin:var(--e4) 0 0}
+.mes{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.mes .dh{font-size:var(--t-nano);font-weight:700;text-align:center;color:var(--texto-fraco);text-transform:uppercase;padding-bottom:2px}
+.mes .dia{min-height:56px;border-radius:var(--r-sm);background:var(--superficie-cartao);border:1.5px solid var(--linha);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  padding:4px 0;font-weight:700;font-size:var(--t-mini);color:var(--texto-forte)}
+.mes .dia.hoje{border-color:var(--foco);border-width:2px}
+.mes .dia.sel{background:var(--superficie-territorio);color:var(--texto-invertido);border-color:var(--superficie-territorio)}
+.dots{display:flex;gap:4px}
+.dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--linha-forte);background:transparent;display:inline-block}
+.dia.sel .dot{border-color:rgba(242,239,250,.6)}
+.d-postado{background:var(--ok-texto);border-color:var(--ok-texto)}
+.d-aprovado{background:var(--chip-tx);border-color:var(--chip-tx)}
+.d-revisar{background:var(--selo-valor);border-color:var(--selo-valor)}
+.d-producao{border-color:var(--chip-tx);border-width:2.5px}
+.d-sugerida{border-style:dashed;border-color:var(--selo-valor)}
+.legenda-cal{display:flex;gap:var(--e3);flex-wrap:wrap;font-size:var(--t-micro);color:var(--texto-medio);margin:var(--e3) 0 var(--e4)}
+.legenda-cal span{display:inline-flex;gap:6px;align-items:center}
+.painel-dia{margin-top:var(--e2)}
+
+/* lixeira */
+.lix .lin{display:flex;gap:var(--e3);align-items:flex-start}
+.lix .lin .abre{flex:1;min-width:0}
+.lix .lado{flex:none}
+.lix .lado .btn{min-height:44px}
+
+.atalhos{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:520px){.atalhos{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.rodape-lix{display:flex;justify-content:center;margin-top:var(--e3)}
+</style>
+
+<header id="hd"></header>
+<main id="view"></main>
+<div id="barra"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><span class="pt"></span><span class="tx" id="toastTx"></span><button id="toastBtn" class="hide">Desfazer</button></div>
+
+<script>
+/* ===================== DADOS (protótipo) ===================== */
+const URG={U01:"Não confia em quem ensina",U02:"Falta o básico",U03:"Ficar para trás",U04:"Hype x valor",U05:"Perder o emprego",
+  U06:"Pode usar no trabalho?",U07:"Empresa não dá nem treina",U08:"Vazar dado",U09:"IA erra e vira retrabalho",U10:"Só teoria"};
+const LIN={L1:"IA no trabalho sem medo",L2:"Do zero de verdade 2026",L3:"IA com segurança",L4:"O COMO no trabalho real",L5:"Radar sem hype"};
+const DEG={D0:"Isca grátis",D1:"Low ticket",D2:"Turma ao vivo",D3:"Clube",D4:"Empresas"};
+const FORM={estatico:{nome:"Estático",ic:"▦"},reels:{nome:"Reels",ic:"▶"}};
+const STATUS_TX={ideia:"no banco",sugerida:"sugestão de hoje",aprovada_producao:"na fila de produção",em_producao:"em produção",
+  para_revisar:"pronto para revisar",ajustar:"ajuste pedido",aprovado:"aprovado · falta postar",postado:"postado",descartado:"na lixeira"};
+
+/* deck real: mecanismo-car/entrada/ia-concorda-editorial.deck.json */
+const DECK={serie:"A IA concorda com você",slides:[
+ {layout:"capa-foto",tema:"grafite",kicker:"A IA concorda com você",logos:["Claude","Gemini","Copilot"],titulo:"49% mais do que um humano concordaria",foto:"cena-28 · vagão do metrô"},
+ {layout:"imagem",tema:"grafite",titulo:"Ou seja, toda vez que você pede um conselho",destaques:["conselho"],corpo:"Existe uma boa chance de estar apenas recebendo a sua própria opinião de volta.",foto:"cena-25 · celular, cética"},
+ {layout:"numero",tema:"offwhite",numero:"49%",titulo:"mais concordância do que um humano daria",destaques:["estava errada"],corpo:"Stanford testou 11 IAs com dilemas reais. Mesmo quando a pessoa estava errada, a IA deu razão a ela em 51% dos casos.",fonte:"Cheng et al., Science, mar/2026 (Stanford)"},
+ {layout:"citacao",tema:"marsala",titulo:"A boa notícia:",corpo:"Tem uma forma de resolver isso com um único prompt.",destaques:["resolver"]},
+ {layout:"texto",tema:"offwhite",titulo:"A solução é criar um conselho de IAs.",subtitulo:"A ideia vem do LLM Council, de Andrej Karpathy.",manuscrito:"ex-OpenAI e ex-diretor de IA da Tesla"},
+ {layout:"texto",tema:"grafite",titulo:"Em vez de pedir uma única resposta,",destaques:["única"],corpo:"você monta uma mesa de conselheiros com perspectivas diferentes."},
+ {layout:"lista",tema:"offwhite",titulo:"Peça para a IA responder como 5 especialistas:",itens:[["Advogado do diabo","procura riscos e falhas"],["Primeiros princípios","questiona as suas premissas"],["Expansionista","busca oportunidades e vantagens"],["Olhar de fora","analisa sem os vícios do seu mercado"],["Executor","só se importa com a execução"]]},
+ {layout:"texto",tema:"marsala",kicker:"Depois que cada um responder,",titulo:"peça que eles revisem as respostas dos outros.",subtitulo:"Sem saber quem escreveu o quê.",manuscrito:"o objetivo é desafiar os argumentos e encontrar pontos cegos"},
+ {layout:"passo",tema:"offwhite",titulo:"Por último, entra o presidente do conselho",destaques:["argumentos","sintetiza o que importa","recomendação final"],corpo:"Ele analisa todos os argumentos, sintetiza o que importa e entrega uma recomendação final com próximos passos claros."},
+ {layout:"imagem",tema:"grafite",titulo:"A IA para de ser espelho e vira conselho",destaques:["conselho"],corpo:"Você decide com os riscos na mesa, não só com a confirmação do que já pensava.",foto:"cena-29 · alívio, notebook"},
+ {layout:"cta",tema:"grafite",titulo:"O prompt completo está na legenda",corpo:"Salva este post e testa na próxima decisão difícil.",manuscrito:"e me conta o que ele disse",foto:"cena-26 · escada rolante"}
+]};
+const LEGENDA_DECK="A IA concorda com você 49% mais do que um humano concordaria. Quem mediu foi Stanford, num estudo publicado na Science em março de 2026.\n\nEles testaram 11 modelos (ChatGPT, Claude, Gemini e outros) com dilemas reais. Mesmo quando a pessoa estava errada, a IA deu razão a ela em cerca de metade das vezes. E quem recebeu a resposta bajuladora saiu mais convicta de que estava certa.\n\nOu seja: se você usa IA pra pensar uma decisão, pode estar só ouvindo a sua própria opinião de volta.\n\nO jeito que eu uso pra fugir disso vem do LLM Council do Andrej Karpathy: em vez de uma resposta, um conselho que discorda entre si. Copia o prompt:\n\n\"Quero tomar esta decisão: [descreva a situação e o que você está pensando em fazer].\nResponda como um conselho de 5 especialistas, cada um em um parágrafo:\n1. Advogado do diabo: procura riscos, falhas e o que pode dar errado.\n2. Primeiros princípios: questiona as premissas que eu assumi.\n3. Expansionista: mostra oportunidades que eu não estou vendo.\n4. Olhar de fora: analisa sem os vícios do meu mercado.\n5. Executor: só se importa com o que dá pra fazer amanhã.\nDepois, cada especialista revisa as respostas dos outros sem saber quem escreveu e aponta o ponto mais fraco de cada uma.\nPor último, um presidente do conselho junta os melhores argumentos e me dá uma recomendação final com 3 próximos passos. Não concorde comigo só para agradar.\"\n\nSalva pra usar na próxima decisão difícil e me conta o que o seu conselho disse.\n\nFonte: Cheng et al., \"Sycophantic AI decreases prosocial intentions and promotes dependence\", Science, 2026 (Stanford).\n\n#inteligenciaartificial #IA #chatgpt #claude #gemini #prompt #produtividade";
+
+/* 6 sugestões de exemplo: 3 de estático + 3 de Reels, a partir do sinal real de 08/10, do PUBLICO.md e do banco de ideias do Notion */
+const SUGS=[
+ {id:"e1",formato:"estatico",deck:true,tema:"A IA concorda com você 49% mais do que um humano",gancho:"A IA concorda com você 49% mais do que um humano concordaria",
+  estrutura:"notícia comentada",u:"U09",l:"L5",d:"D0",
+  roteiro:["Capa: 49% mais concordância que um humano (logos das 3 ferramentas)","Ou seja: quando pede conselho, você recebe a sua opinião de volta","O número: Stanford testou 11 IAs; deu razão até a quem estava errado","A boa notícia: dá para resolver com um prompt","A solução: um conselho de 5 especialistas (LLM Council, Karpathy)","Eles revisam as respostas uns dos outros sem saber quem escreveu","Um presidente junta tudo e dá a recomendação final","CTA: o prompt completo está na legenda, salva"],
+  porque:[["sinal","Carrossel ainda salva pouco (0,75 de média): tutorial com prompt pronto para copiar puxa salvo."],["radar","Estudo de Stanford na Science (mar/2026) ainda pouco explicado em português."],["rodízio","ChatGPT, Claude e Gemini juntos: tema comum vira \"IA\" com os logos."]],
+  fontes:"Cheng et al., \"Sycophantic AI decreases prosocial intentions and promotes dependence\", Science, 2026 (Stanford).",
+  confirmar:"",legenda:LEGENDA_DECK},
+ {id:"e2",formato:"estatico",tema:"O que nunca colar no ChatGPT (nem no Gemini) do trabalho",gancho:"5 coisas que você nunca deve colar na IA do trabalho",
+  estrutura:"lista",u:"U08",l:"L3",d:"D0",
+  roteiro:["Capa: 5 coisas que você nunca cola na IA do trabalho","1. Dado de cliente: nome, CPF, contrato","2. Salário e dado de RH","3. Senha, chave e acesso","4. Documento marcado como confidencial","Como anonimizar antes: o truque do apelido","CTA: comenta GUIA que eu mando o checklist"],
+  porque:[["público","U08 (vazar dado) não aparece nas pautas novas desde 05/10."],["sinal","Carrossel salva pouco: lista curta com checklist para guardar puxa salvo."],["banco","Ideia guardada em 05/10, reproposta hoje."]],
+  fontes:"Sem dado externo; a política de IA da empresa de quem assiste prevalece.",confirmar:"",
+  legenda:"Antes de colar qualquer coisa na IA do trabalho, pergunta: isso identifica alguém ou revela um segredo da empresa?\n\n5 coisas que eu nunca colo: dado de cliente, salário e RH, senha e acesso, documento confidencial e contrato inteiro. Quando preciso do texto, troco nomes por apelidos antes.\n\nComenta GUIA que eu te mando o checklist.\n\n#ia #chatgpt #seguranca #trabalho"},
+ {id:"e3",formato:"estatico",tema:"\"A IA vai te substituir\": mito ou verdade, tarefa por tarefa",gancho:"A IA não vai tirar o seu emprego. Mas vai mudar essas 4 tarefas",
+  estrutura:"mito×verdade",u:"U05",l:"L1",d:"D0",
+  roteiro:["Capa: o medo dito em voz alta","Mito: a IA faz o seu trabalho inteiro","Verdade: ela faz partes (rascunho, resumo, primeira versão)","Mito: quem não usa vai ser demitida amanhã","Verdade: quem confere e decide continua valendo mais","O que muda na sua semana, com 1 exemplo real","CTA: manda para a colega que tem esse medo"],
+  porque:[["público","U05 não aparece há mais de 30 dias (só em teste)."],["sinal","Tema de identificação: bom para compartilhamento."],["degrau","D0, sem promessa de renda nem de emprego garantido."]],
+  fontes:"Sem dado externo; se usar número de mercado, a produção cita a fonte.",confirmar:"Um exemplo seu de tarefa que a IA mudou no BI.",
+  legenda:"A IA não vai tirar o seu emprego amanhã. Mas ela já está mudando 4 tarefas do seu dia: rascunho, resumo, primeira versão e pesquisa inicial.\n\nQuem confere e decide continua valendo mais. Manda para a colega que tem esse medo.\n\n#ia #carreira #trabalho"},
+ {id:"r1",formato:"reels",tema:"Copilot no Outlook: 40 e-mails resumidos em 1 minuto, sem colar nada fora",gancho:"Você ainda lê os 40 e-mails da segunda-feira um por um?",
+  estrutura:"tutorial",u:"U07",l:"L4",d:"D0",dur:"~36 s",
+  cenas:[{t:"0–3 s",c:"Duda, close, olhando para a câmera",f:"Você ainda lê os 40 e-mails da segunda-feira um por um?"},
+         {t:"3–10 s",c:"Tela do Outlook com a caixa cheia",f:"Abre o Outlook e clica no Copilot. Ele já vem na sua empresa."},
+         {t:"10–18 s",c:"Tela: pedido digitado",f:"Pede: resume essa conversa em 3 linhas."},
+         {t:"18–26 s",c:"Tela: lista de pedidos e prazos",f:"Depois: o que estão pedindo pra mim, e até quando?"},
+         {t:"26–32 s",c:"Duda, plano médio",f:"Confere antes de mandar. Ele erra nome e data."},
+         {t:"32–36 s",c:"Duda, câmera",f:"Salva e manda para quem vive afogada em e-mail."}],
+  porque:[["sinal","Reels de identificação puxam compartilhamento (59 nos últimos 10 posts)."],["rodízio","Copilot não aparece desde 25/09; ontem foi Claude."],["público","U07: quem tem Copilot pela empresa e ninguém ensinou."]],
+  fontes:"Experiência própria; sem afirmação nova sobre o produto.",confirmar:"Se a sua conta do trabalho tem o Copilot no Outlook para gravar a tela.",
+  legenda:"Segunda-feira, 40 e-mails. Em vez de ler um por um, peça ao Copilot do Outlook: resuma a conversa em 3 linhas, liste o que estão pedindo para mim e o prazo, e rascunhe uma resposta curta.\n\nConfira antes de mandar: ele pode errar nome e data.\n\nSalva e manda para quem vive afogada em e-mail.\n\n#copilot #outlook #ia #produtividade"},
+ {id:"r2",formato:"reels",tema:"Seu chefe perguntou se você usa IA? Como responder sem mentir",gancho:"Seu chefe perguntou se você usa IA e você disse que não?",
+  estrutura:"identificação",u:"U06",l:"L1",d:"D0",dur:"~30 s",
+  cenas:[{t:"0–3 s",c:"Duda, close, sobrancelha levantada",f:"Seu chefe perguntou se você usa IA e você disse que não?"},
+         {t:"3–8 s",c:"Duda, plano médio, mesa de trabalho",f:"Calma. Quase todo mundo já passou por isso."},
+         {t:"8–15 s",c:"Texto na tela: resposta 1",f:"Eu uso para rascunho e resumo. Depois eu confiro tudo."},
+         {t:"15–22 s",c:"Texto na tela: resposta 2",f:"Eu nunca colo dado de cliente. Anonimizo antes."},
+         {t:"22–27 s",c:"Texto na tela: resposta 3",f:"Se a empresa tem regra, eu sigo. Se não tem, posso ajudar a criar."},
+         {t:"27–30 s",c:"Duda, câmera",f:"Salva para a próxima conversa com o seu chefe."}],
+  porque:[["sinal","Reels de identificação puxam compartilhamento (59 nos últimos 10 posts)."],["público","U06: quem esconde que usa IA no trabalho."],["banco","Ideia guardada em 08/10, reproposta como Reels."]],
+  fontes:"Sem dado externo.",confirmar:"",
+  legenda:"Se o seu chefe perguntar se você usa IA, não precisa esconder. Três respostas honestas: eu uso para rascunho e resumo e confiro tudo; eu nunca colo dado de cliente; se a empresa tem regra, eu sigo.\n\nSalva para a próxima conversa.\n\n#ia #trabalho #carreira"},
+ {id:"r3",formato:"reels",tema:"Errei 3 vezes com o ChatGPT no trabalho para você não errar",gancho:"Eu errei 3 vezes com o ChatGPT no trabalho. Você não precisa.",
+  estrutura:"erro comum",u:"U09",l:"L2",d:"D0",dur:"~34 s",
+  cenas:[{t:"0–3 s",c:"Duda, close, riso sem graça",f:"Eu errei 3 vezes com o ChatGPT no trabalho. Você não precisa."},
+         {t:"3–12 s",c:"Tela: o pedido que deu errado",f:"Erro 1: [Duda: erro real 1]. Agora eu faço assim: [correção]."},
+         {t:"12–21 s",c:"Tela: o pedido que deu errado",f:"Erro 2: [Duda: erro real 2]. Agora eu faço assim: [correção]."},
+         {t:"21–30 s",c:"Tela: o pedido que deu errado",f:"Erro 3: [Duda: erro real 3]. Agora eu faço assim: [correção]."},
+         {t:"30–34 s",c:"Duda, câmera",f:"Qual foi o seu? Conta aqui embaixo."}],
+  porque:[["sinal","Vídeo de erro real tende a gerar comentário; comentário alimenta o alcance."],["público","U09: IA erra e vira retrabalho."],["banco","Ideia guardada em 05/10, reproposta como Reels."]],
+  fontes:"Experiência própria da Duda.",confirmar:"Escolher os 3 erros reais.",
+  legenda:"3 erros reais que eu cometi com o ChatGPT no trabalho, e o que eu faço diferente agora.\n\nQual foi o seu? Conta aqui embaixo.\n\n#chatgpt #ia #trabalho #erros"}
+];
+
+/* banco de ideias: as ideias reais do Notion (14 "Ideia" menos 3 [TESTE]); 3 foram repropostas hoje como sugestão. Cada ideia tem 1 formato. */
+const BANCO=[
+ {id:"b1",formato:"reels",tema:"Quanto tempo a IA te poupa de verdade? Cronometra uma tarefa",u:"U10",l:"L4",d:"D0",criado:"2026-10-08",angulo:"Medir uma tarefa antes e depois de usar IA (cronômetro, 3 passos) em vez de confiar na sensação. Prova da Duda: ela mede o ganho no BI.",confirmar:"Seu tempo antes e depois numa tarefa do BI."},
+ {id:"b3",formato:"estatico",tema:"O botão novo do Copilot no Word, Excel e PowerPoint (o que a empresa já paga)",u:"U07",l:"L2",d:"D0",criado:"2026-10-07",angulo:"Microsoft 365 Copilot ganha campo de pedido direto no botão do Copilot (rollout set–dez/2026). Tutorial de 3 pedidos prontos."},
+ {id:"b4",formato:"reels",tema:"Claude para quem não é de tecnologia: o primeiro pedido em 10 minutos",u:"U02",l:"L2",d:"D0",criado:"2026-10-07",angulo:"Passo a passo do zero no Claude (criar conta, 1º pedido, pedir revisão) com prompts reais da Duda."},
+ {id:"b5",formato:"estatico",tema:"Gems do Gemini somem em 20/10: como não perder o que você criou",u:"U04",l:"L5",d:"D0",criado:"2026-10-07",valida_ate:"2026-10-20",angulo:"Google avisa que os Gems saem em 20/10 e viram Skills; passo a passo para salvar as instruções antes.",confirmar:"Confirmação oficial do Google antes de produzir."},
+ {id:"b7",formato:"estatico",tema:"IA para RH: 10 usos para amanhã sem expor dado de ninguém",u:"U07",l:"L4",d:"D4",criado:"2026-10-05",angulo:"Lista prática por área (RH) com o truque do apelido; CTA suave para levar ao time."},
+ {id:"b8",formato:"reels",tema:"Antes/depois: a rotina de 2 horas que virou 15 minutos",u:"U10",l:"L4",d:"D0",criado:"2026-10-05",angulo:"Caso real de BI/dados da Duda com números. Sem números inventados.",confirmar:"Qual rotina, tempo antes e depois."},
+ {id:"b9",formato:"estatico",tema:"Gemini grátis muda dia 9: o que você perde e o que fazer",u:"U07",l:"L5",d:"D0",criado:"2026-10-05",valida_ate:"2026-10-10",angulo:"Quem usa a IA grátis no trabalho perde o 3.6 Flash e o 3.1 Pro em 09/10 e fica só no 3.5 Flash-Lite. O que muda e quando vale pagar."},
+ {id:"b11",formato:"estatico",tema:"Pode usar IA no trabalho? 3 perguntas para fazer ao seu gestor",u:"U06",l:"L1",d:"D4",criado:"2026-10-05",angulo:"Tirar o uso de IA do escondido com 3 perguntas objetivas (o que pode, com que dado, com qual ferramenta)."}
+];
+/* 4 pautas reais produzidas no Notion e nunca revisadas (39 PNGs) */
+const LEGADO=[
+ {id:"n1",tema:"seu primeiro pedido ao Claude em 10 minutos",data:"2026-10-08",png:10,u:"U02",url:"https://app.notion.com/p/3f3d7db518aa8182a0d9dd54cf569b68"},
+ {id:"n2",tema:"IA no RH: 5 usos para amanhã sem expor ninguém",data:"2026-10-07",png:10,u:"U07",url:"https://app.notion.com/p/3f2d7db518aa8146be7defa61faaa018"},
+ {id:"n3",tema:"o Gemini agora guarda a tarefa que você repete",data:"2026-10-06",png:10,u:"U10",url:"https://app.notion.com/p/3f0d7db518aa81b3a629f6d0a4908286"},
+ {id:"n4",tema:"o que nunca colar na IA do trabalho",data:"2026-10-05",png:9,u:"U08",url:"https://app.notion.com/p/3f0d7db518aa81faa439d5a919e62f1e"}
+];
+
+/* melhores horários do público (EXEMPLO). 0 = domingo. v = força relativa 0–100 */
+const HOR=[
+ [{ini:"10:00",fim:"12:00",pico:"10:30",v:70},{ini:"20:00",fim:"22:00",pico:"20:30",v:95}],
+ [{ini:"12:00",fim:"13:00",pico:"12:15",v:68},{ini:"19:00",fim:"21:00",pico:"19:30",v:100}],
+ [{ini:"12:00",fim:"13:00",pico:"12:15",v:72},{ini:"19:30",fim:"21:00",pico:"19:45",v:96}],
+ [{ini:"07:00",fim:"08:30",pico:"07:30",v:60},{ini:"19:00",fim:"21:00",pico:"19:30",v:98}],
+ [{ini:"12:00",fim:"13:30",pico:"12:30",v:70},{ini:"19:00",fim:"21:00",pico:"19:30",v:100}],
+ [{ini:"11:30",fim:"13:00",pico:"12:00",v:66},{ini:"18:00",fim:"20:00",pico:"18:30",v:88}],
+ [{ini:"09:30",fim:"11:30",pico:"10:00",v:72},{ini:"20:00",fim:"22:00",pico:"20:30",v:90}]
+];
+const FONTE_HOR={online:"pelos seguidores online por hora (Instagram)",historico:"pelo alcance dos seus posts nas primeiras horas"};
+
+/* histórico de exemplo: 21/09 a 07/10 (E = estático, R = Reels postados no dia) */
+const HD={"2026-09-21":"ER","2026-09-22":"E","2026-09-23":"R","2026-09-24":"ER","2026-09-25":"E","2026-09-26":"","2026-09-27":"R","2026-09-28":"E","2026-09-29":"ER","2026-09-30":"",
+  "2026-10-01":"E","2026-10-02":"ER","2026-10-03":"R","2026-10-04":"","2026-10-05":"ER","2026-10-06":"R","2026-10-07":"E"};
+const TH_E=["IA no RH: 5 usos sem expor ninguém","Seu primeiro pedido ao Claude","O que nunca colar na IA do trabalho","O Gemini guarda a tarefa que você repete","3 prompts para resumir reunião","ChatGPT ou Claude: qual para cada tarefa","Como conferir o que a IA escreveu","Planilha com IA: 3 fórmulas prontas"];
+const TH_R=["Resumir um PDF em 1 minuto","IA erra e você nem percebe","Prompt para e-mail difícil","Copilot no Teams: ata automática","Peça para a IA te contradizer","Gemini no Drive: achar arquivo","3 sinais de resposta inventada","Dia 1 com IA, sem medo"];
+
+/* ===================== ESTADO ===================== */
+const S={estado:"manha",agora:null,rotina:"ok",pautas:[],filtro:{u:"",l:"",f:"",ordem:"recentes"},velho:0,ajuste:false,hora:false,alvo:null,de:"#hoje",cal:null,fonteHor:"online"};
+const ESTADOS=[["manha","manhã"],["producao","em produção"],["revisar","pronto para revisar"],["feito","tudo feito"],["falhou","rotina falhou"]];
+const clone=o=>JSON.parse(JSON.stringify(o));
+const pad=n=>String(n).padStart(2,"0");
+const DIAS=["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+const DIAS3=["dom","seg","ter","qua","qui","sex","sáb"];
+const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const hh=d=>pad(d.getHours())+":"+pad(d.getMinutes());
+const ddmm=s=>{const [a,m,d]=s.split("-");return d+"/"+m};
+const parse=iso=>{const [a,m,d]=iso.split("-").map(Number);return new Date(a,m-1,d)};
+const isoDe=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const addDias=(iso,n)=>{const d=parse(iso);d.setDate(d.getDate()+n);return isoDe(d)};
+const atHM=(iso,hm)=>{const d=parse(iso);const [H,M]=hm.split(":").map(Number);d.setHours(H,M,0,0);return d};
+const hojeISO=()=>isoDe(S.agora);
+const segunda=iso=>addDias(iso,-((parse(iso).getDay()+6)%7));
+function diaTxt(iso){const h=hojeISO(); if(iso===h) return "hoje"; if(iso===addDias(h,1)) return "amanhã"; if(iso===addDias(h,-1)) return "ontem"; const d=parse(iso); return DIAS3[d.getDay()]+" "+d.getDate()+"/"+(d.getMonth()+1)}
+function histPautas(){
+  const out=[]; let i=0;
+  for(const [dia,k] of Object.entries(HD)){ i++;
+    if(k.includes("E")) out.push({id:"h"+dia+"e",hist:true,exemplo:true,origem:"hist",formato:"estatico",status:"postado",data:dia,tema:TH_E[i%TH_E.length],agendado_para:atHM(dia,sugHora(dia,"estatico")),postado_em:atHM(dia,"19:"+pad(4+(i*7)%46)),postado_origem:"auto"});
+    if(k.includes("R")) out.push({id:"h"+dia+"r",hist:true,exemplo:true,origem:"hist",formato:"reels",status:"postado",data:dia,tema:TH_R[i%TH_R.length],agendado_para:atHM(dia,sugHora(dia,"reels")),postado_em:atHM(dia,"12:"+pad(8+(i*11)%44)),postado_origem:"auto"});
+  }
+  return out;
+}
+function montar(nome){
+  S.estado=nome; S.rotina="ok"; S.ajuste=false; S.hora=false; S.alvo=null; S.agora=new Date(2026,9,8,7,12);
+  const hoje="2026-10-08";
+  S.pautas=[...SUGS.map(s=>({...clone(s),sug:true,exemplo:true,status:"sugerida",data:hoje,criado:hoje})),
+    ...BANCO.map(b=>({...clone(b),status:"ideia",origem:"notion"})),
+    ...LEGADO.map(n=>({id:n.id,legado:true,origem:"notion",formato:"estatico",status:"para_revisar",tema:n.tema,data:n.data,png:n.png,u:n.u,url:n.url,criado:n.data})),
+    ...histPautas()];
+  /* um item já na lixeira, para a tela não nascer vazia */
+  const lx=get("b11"); lx.status="descartado"; lx.descartado_em=new Date(2026,9,7,18,20); lx.exemplo=true;
+  const g=id=>get(id), ag=(id,hm)=>{const p=g(id); p.agendado_para=atHM(hoje,hm)};
+  if(nome==="producao"){ S.agora=new Date(2026,9,8,7,48); const a=g("e1"),b=g("r1");
+    a.status="em_producao"; a.aprovado_producao_em=new Date(2026,9,8,7,15); a.em_producao_em=new Date(2026,9,8,7,50); ag("e1","19:30");
+    b.status="aprovada_producao"; b.aprovado_producao_em=new Date(2026,9,8,7,16); ag("r1","12:30");
+    g("e2").status="ideia"; g("e3").status="ideia"; g("r2").status="ideia"; g("r3").status="descartado"; g("r3").descartado_em=new Date(2026,9,8,7,16) }
+  if(nome==="revisar"){ S.agora=new Date(2026,9,8,8,41); const a=g("e1"),b=g("r1");
+    a.status="para_revisar"; a.aprovado_producao_em=new Date(2026,9,8,7,15); a.produzido_em=new Date(2026,9,8,8,24); ag("e1","19:30");
+    b.status="para_revisar"; b.aprovado_producao_em=new Date(2026,9,8,7,16); b.produzido_em=new Date(2026,9,8,8,31); ag("r1","12:30");
+    g("e2").status="ideia"; g("e3").status="ideia"; g("r2").status="ideia"; g("r3").status="ideia" }
+  if(nome==="feito"){ S.agora=new Date(2026,9,8,20,10); const a=g("e1"),b=g("r1");
+    a.status="postado"; a.postado_em=new Date(2026,9,8,19,42); a.postado_origem="auto"; a.produzido_em=new Date(2026,9,8,8,24); ag("e1","19:30");
+    b.status="postado"; b.postado_em=new Date(2026,9,8,12,48); b.postado_origem="manual"; b.produzido_em=new Date(2026,9,8,8,31); ag("r1","12:30");
+    g("e2").status="ideia"; g("e3").status="descartado"; g("e3").descartado_em=new Date(2026,9,8,7,20); g("r2").status="ideia"; g("r3").status="ideia" }
+  if(nome==="falhou"){ S.pautas=S.pautas.filter(p=>!p.sug); S.rotina="falhou"; S.agora=new Date(2026,9,8,7,12) }
+  S.cal=null;
+}
+const get=id=>S.pautas.find(p=>p.id===id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=s=>document.querySelector(s);
+function diasDesde(iso){return Math.round((S.agora-parse(iso))/864e5)+S.velho}
+
+/* horários: 1º pico = melhor faixa para o estático; o Reels fica com a outra faixa */
+const horDia=iso=>HOR[parse(iso).getDay()];
+function sugHora(iso,f){ const h=horDia(iso); const best=h[0].v>=h[1].v?0:1; return h[f==="estatico"?best:1-best].pico }
+const diaDe=p=>p.data||(S.alvo&&S.alvo.dia)||hojeISO();
+const getHora=p=>p.agendado_para?hh(p.agendado_para):(p.horario_pref||sugHora(diaDe(p),p.formato));
+
+/* Produção da Pauta: rotina de hora em hora, todos os dias, 07h–20h BRT; leva ~30 min */
+function previsao(base){
+  const d=new Date(base||S.agora);
+  const slot=new Date(d); slot.setMinutes(0,0,0); slot.setHours(slot.getHours()+1);
+  if(slot.getHours()<7) slot.setHours(7);
+  if(slot.getHours()>20){ slot.setDate(slot.getDate()+1); slot.setHours(7) }
+  const pronto=new Date(slot.getTime()+30*60000);
+  const a=isoDe(S.agora), b=isoDe(pronto);
+  const quando=b===a?"hoje":b===addDias(a,1)?"amanhã":DIAS[pronto.getDay()];
+  return {rodada:hh(slot),pronto:hh(pronto),quando,txt:quando==="hoje"?"até ~"+hh(pronto):quando+" ~"+hh(pronto)};
+}
+
+/* ===================== AÇÕES ===================== */
+let tT;
+function toast(msg,desfazer,err){
+  const t=$("#toast"),b=$("#toastBtn");
+  $("#toastTx").textContent=msg; t.classList.toggle("err",!!err);
+  if(desfazer){ b.classList.remove("hide"); t.classList.remove("sem-btn"); b.onclick=()=>{ desfazer(); t.classList.remove("on"); clearTimeout(tT) } }
+  else { b.classList.add("hide"); t.classList.add("sem-btn") }
+  t.classList.add("on"); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove("on"),desfazer?5000:2600);
+}
+/* No app real: o PATCH sai depois de 5 s (janela do Desfazer) ou na hora se a página for escondida. */
+function mudar(id,status,extra,msg){
+  const p=get(id); const antes={...p};
+  Object.assign(p,{status},extra||{});
+  render();
+  toast(msg,()=>{ Object.keys(p).forEach(k=>delete p[k]); Object.assign(p,antes); render() });
+}
+function produzir(id,ajuste){
+  const p=get(id); const alvo=S.alvo; const dia=alvo?alvo.dia:hojeISO();
+  const ja=S.pautas.filter(x=>["aprovada_producao","em_producao"].includes(x.status)).length; const pv=previsao();
+  const hora=p.horario_pref||sugHora(dia,p.formato);
+  S.alvo=null; if(alvo) S.filtro.f="";
+  mudar(id,"aprovada_producao",{data:dia,agendado_para:atHM(dia,hora),aprovado_producao_em:new Date(S.agora),decidido_em:new Date(S.agora),comentario:ajuste||"",comentario_em:ajuste?new Date(S.agora):undefined},
+    (ja?`Na fila (${ja+1} em produção). `:"Na fila. ")+(p.formato==="reels"?"Roteiro pronto ":"Pronto ")+pv.txt+(dia!==hojeISO()?` · agendado ${diaTxt(dia)} ${hora}`:""));
+  if(alvo) location.hash="#calendario";
+}
+const paraBanco=id=>mudar(id,"ideia",{decidido_em:new Date(S.agora)},"Guardada no banco de ideias");
+const paraLixeira=id=>mudar(id,"descartado",{decidido_em:new Date(S.agora),descartado_em:new Date(S.agora)},"Foi para a Lixeira");
+const restaurar=id=>mudar(id,"ideia",{},"De volta ao banco");
+const aprovar=id=>mudar(id,"aprovado",{revisado_em:new Date(S.agora)},"Aprovado. Agora é postar.");
+function postado(id,origem){
+  const manual=origem!=="auto";
+  mudar(id,"postado",{postado_em:new Date(S.agora),postado_origem:manual?"manual":"auto",ig_midia_id:manual?undefined:"exemplo"},
+    manual?"Marcado como postado. Conta no dia de hoje.":"Detectado no Instagram: postado agora.");
+}
+function pedirAjuste(id,txt){ S.ajuste=false; const pv=previsao();
+  mudar(id,"ajustar",{comentario:txt,comentario_em:new Date(S.agora),revisado_em:new Date(S.agora)},`Ajuste enviado. Volta ${pv.txt}`) }
+function simularEntrega(id){ const p=get(id); p.status="para_revisar"; p.produzido_em=new Date(S.agora); p.comentario_prev=p.comentario; render(); toast("Simulado: a rotina entregou") }
+function setHora(id,h){ const p=get(id); S.hora=false; const ex={horario_editado:true};
+  if(p.agendado_para){ const [H,M]=h.split(":").map(Number); const d=new Date(p.agendado_para); d.setHours(H,M,0,0); ex.agendado_para=d } else ex.horario_pref=h;
+  mudar(id,p.status,ex,"Agendado para "+diaTxt(diaDe(p))+" "+h) }
+
+function copiar(txt,preId){
+  const ok=()=>toast("Copiado");
+  const falha=()=>{ const el=document.getElementById(preId);
+    if(el){ const dt=el.closest("details"); if(dt) dt.open=true; el.classList.add("aberto"); const r=document.createRange(); r.selectNodeContents(el); const s=getSelection(); s.removeAllRanges(); s.addRange(r) }
+    toast("Não deu para copiar sozinho. Texto selecionado: toque em Copiar",null,true) };
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok).catch(falha); else falha() }catch(e){ falha() }
+}
+const reelsTxt=p=>p.cenas.map((c,i)=>`CENA ${i+1} (${c.t}) [${c.c}]\n"${c.f}"`).join("\n\n");
+
+/* ===================== COMPONENTES ===================== */
+const chipU=c=>c?`<span class="chip" title="${esc(c+" "+URG[c])}">${esc(c)} ${esc(URG[c])}</span>`:"";
+const chipL=c=>c?`<span class="chip chip-neutro" title="${esc(c+" "+LIN[c])}">${esc(c)} ${esc(LIN[c])}</span>`:"";
+const chipD=c=>c?`<span class="chip chip-selo">${esc(c)} ${esc(DEG[c])}</span>`:"";
+const chipF=f=>`<span class="chip chip-neutro">${FORM[f].ic} ${FORM[f].nome}</span>`;
+const ex=p=>p.exemplo?`<span class="chip chip-ex">exemplo</span>`:"";
+
+function hl(txt,dq){
+  let h=esc(txt);
+  (dq||[]).forEach(d=>{ const e=esc(d); const i=h.indexOf(e); if(i>=0) h=h.slice(0,i)+`<em class="dq">${e}</em>`+h.slice(i+e.length) });
+  return h;
+}
+function slideHTML(s,i,n){
+  const foto=s.foto?`<div class="sl-foto"><span>foto: ${esc(s.foto)}</span></div>`:"";
+  const comFoto=s.foto&&s.layout!=="imagem";
+  return `<div class="sl sl-${s.layout} t-${s.tema}${comFoto?" com-foto":""}" role="img" aria-label="Slide ${i+1} de ${n}: ${esc(s.titulo)}">${foto}
+   <div class="sl-in"><div class="sl-serie">${esc(DECK.serie)}</div>
+    <div class="sl-mid">
+     ${s.kicker?`<div class="sl-kicker">${esc(s.kicker)}</div>`:""}
+     ${s.numero?`<div class="sl-num">${esc(s.numero)}</div>`:""}
+     <div class="sl-tit">${hl(s.titulo,s.destaques)}</div>
+     ${s.subtitulo?`<div class="sl-sub">${esc(s.subtitulo)}</div>`:""}
+     ${s.corpo?`<div class="sl-corpo">${hl(s.corpo,s.destaques)}</div>`:""}
+     ${s.itens?`<div class="sl-itens">${s.itens.map(([a,b])=>`<div><b>${esc(a)}</b>${esc(b)}</div>`).join("")}</div>`:""}
+     ${s.manuscrito?`<div class="sl-manus">${esc(s.manuscrito)}</div>`:""}
+     ${s.fonte?`<div class="sl-fonte">Fonte: ${esc(s.fonte)}</div>`:""}
+     ${s.logos?`<div class="sl-logos">${s.logos.map(l=>`<span>${esc(l)}</span>`).join("")}</div>`:""}
+     ${s.layout==="cta"?`<div class="sl-ctapill">🔖 Salvar</div>`:""}
+    </div>
+    <div class="sl-rod"><span>@dudafonte.s</span><span>${i+1}/${n}</span></div></div></div>`;
+}
+function trilhaHTML(st){
+  const et=["escolhida","produzindo","revisar","aprovado","postado"];
+  const idx={aprovada_producao:0,em_producao:1,ajustar:1,para_revisar:2,aprovado:3,postado:4}[st]??-1;
+  return `<div class="trilha" aria-hidden="true">${et.map((_,i)=>`<span class="${i<idx?"feito":i===idx?"on":""}"></span>`).join("")}</div>
+   <div class="trilha-leg">${et.map(e=>`<span>${e}</span>`).join("")}</div>`;
+}
+/* prévia de uma pauta produzida: miniaturas (estático) ou o gancho falado + nº de cenas (Reels) */
+function previaHTML(p){
+  if(p.formato==="reels") return `<p class="porque"><b>Gancho falado:</b> “${esc(p.cenas[0].f)}”</p><p class="cenas-n">${p.cenas.length} cenas · ${esc(p.dur)} · roteiro + legenda</p>`;
+  if(p.deck) return `<div class="thumbs">${DECK.slides.slice(0,4).map((s,i)=>slideHTML(s,i,DECK.slides.length)).join("")}</div>`;
+  return "";
+}
+function sugCard(p,i){
+  const reels=p.formato==="reels";
+  return `<article class="card sug" aria-label="${FORM[p.formato].nome}: sugestão ${i+1}">
+    <div class="topo"><span class="ordem">${i+1}</span><span class="chip chip-neutro">${esc(p.estrutura)}</span>${reels?`<span class="chip chip-neutro">${p.cenas.length} cenas · ${esc(p.dur)}</span>`:""}${ex(p)}</div>
+    <button class="abre" data-abrir="${p.id}">
+      <h3 class="clamp3">${esc(p.tema)}</h3>
+      <p class="gancho" data-rot="${reels?"gancho falado":"capa"}">“${esc(p.gancho)}”</p>
+      <div class="metas">${chipU(p.u)}${chipL(p.l)}${p.d!=="D0"?chipD(p.d):""}</div>
+      <p class="porque clamp2"><b>Por quê:</b> ${esc(p.porque[0][1])}</p>
+      ${p.confirmar?`<div class="precisa"><span>✋</span><span>Precisa de você: ${esc(p.confirmar)}</span></div>`:""}
+    </button>
+    <div class="acoes acoes3">
+      <div class="par"><button class="btn btn-ganho" data-produzir="${p.id}" aria-label="Produzir: ${esc(p.tema)}">Produzir</button><button class="btn btn-fantasma" data-banco="${p.id}" aria-label="Guardar no banco: ${esc(p.tema)}">Banco</button></div>
+      <button class="btn-lix" data-lixeira="${p.id}" aria-label="Mandar para a lixeira: ${esc(p.tema)}" title="Lixeira"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>
+    </div></article>`;
+}
+
+/* ===================== MÉTRICAS DO DIA (placar) ===================== */
+const postadoHoje=f=>S.pautas.some(p=>p.status==="postado"&&p.data===hojeISO()&&p.formato===f);
+function diasComPost(){ const ini=segunda(hojeISO()); let n=0; for(let i=0;i<7;i++){ const d=addDias(ini,i); if(S.pautas.some(p=>p.status==="postado"&&p.data===d)) n++ } return n }
+const doBanco=()=>S.pautas.filter(p=>p.status==="ideia"&&!p.legado);
+const naLixeira=()=>S.pautas.filter(p=>p.status==="descartado");
+
+/* ===================== HEADERS ===================== */
+function hdHoje(){
+  const sem=diasComPost(), eOk=postadoHoje("estatico"), rOk=postadoHoje("reels");
+  const rev=S.pautas.filter(p=>p.status==="para_revisar"&&!p.legado).length, banco=doBanco().length, d=S.agora;
+  const h=$("#hd"); h.className="solta";
+  h.innerHTML=`<div class="hrow marca">
+     <div class="selo"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="15" stroke="#4A16A8" stroke-width="6" stroke-dasharray="70 100" stroke-linecap="round" transform="rotate(-90 24 24)"/></svg></div>
+     <div class="tt"><div class="disp" style="font-size:var(--t-lg)">hoje</div>
+       <div class="rotulo" style="color:var(--texto-invertido-fraco);margin-top:2px">PSN · protótipo</div></div>
+   </div>
+   <div class="hdia">${DIAS[d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]} <i>·</i> ${hh(d)}</div>
+   <button class="hoje-linha" data-ir="#calendario" aria-label="Hoje: Estático ${eOk?"postado":"pendente"}, Reels ${rOk?"postado":"pendente"}. Abrir o calendário"><span class="k">Hoje:</span>
+     <span class="pill ${eOk?"on":""}">Estático ${eOk?"✓":"—"}</span><span class="pill ${rOk?"on":""}">Reels ${rOk?"✓":"—"}</span></button>
+   <div class="placar">
+     <button class="it ganho" data-ir="#calendario" aria-label="Semana: ${sem} de 7 dias com post. Abrir o calendário"><span class="v num">${sem}<small> de 7</small></span><span class="k">Semana:<br>dias com post</span></button>
+     <button class="it" data-ir="#hoje"><span class="v num">${rev}</span><span class="k">para<br>revisar</span></button>
+     <button class="it" data-ir="#banco"><span class="v num">${banco}</span><span class="k">no banco<br>de ideias</span></button>
+   </div>
+   <div class="hmeta">Mínimo: 1 post por dia · Ideal: 1 estático + 1 Reels</div>`;
+}
+function hdSub(tit,sub,volta){
+  const h=$("#hd"); h.className="";
+  h.innerHTML=`<div class="hrow" style="padding-bottom:var(--e3)"><button class="icb" data-ir="${volta||"#hoje"}" aria-label="Voltar">←</button>
+    <div class="tt"><div class="n1">${esc(tit)}</div><div class="n2">${esc(sub)}</div></div></div>`;
+}
+
+/* ===================== TELA HOJE ===================== */
+function faixaSug(f,sugs,fila){
+  const todas=sugs.filter(p=>p.formato===f), pend=todas.filter(p=>p.status==="sugerida"), feitas=todas.filter(p=>p.status!=="sugerida");
+  if(!todas.length) return "";
+  const fm=FORM[f]; let h=`<div class="secao-tit"><h2>${f==="estatico"?"estático de hoje":"reels de hoje"}</h2><span class="qt num">${pend.length?pend.length+"/"+todas.length:"✓"}</span></div>`;
+  if(pend.length){
+    h+=`<p class="secao-sub">${f==="estatico"?"3 ideias de carrossel.":"3 ideias de Reels, com gancho falado e cenas curtas."} Escolha 1 ou mais; o resto vai para o banco ou para a lixeira.${S.agora.getHours()<10?" Escolhendo até 10h, fica pronto para postar hoje.":""}</p>`;
+    h+=`<div class="rail" id="rail-${f}" tabindex="0" aria-label="Sugestões de ${fm.nome}, deslize para o lado">${pend.map(p=>sugCard(p,todas.indexOf(p))).join("")}</div>
+        <div class="rail-pontos" id="pt-${f}" aria-hidden="true">${pend.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`;
+  } else h+=`<p class="secao-sub">Escolha feita. Toque para abrir.</p>`;
+  if(feitas.length) h+=feitas.map(p=>`<button class="decidida abre" data-abrir="${p.id}" style="display:flex"><span class="chip ${p.status==="descartado"?"chip-neutro":p.status==="ideia"?"chip-selo":""}">${esc(STATUS_TX[p.status])}</span><b>${esc(p.tema)}</b><span>›</span></button>`).join("");
+  return h;
+}
+function renderHoje(){
+  hdHoje(); $("#barra").innerHTML="";
+  const P=S.pautas.filter(p=>!p.legado&&!p.hist);
+  const postar=P.filter(p=>p.status==="aprovado");
+  const revisar=P.filter(p=>p.status==="para_revisar");
+  const ajustando=P.filter(p=>p.status==="ajustar");
+  const sugs=P.filter(p=>p.sug&&p.data===hojeISO());
+  const pend=sugs.filter(p=>p.status==="sugerida");
+  const fila=P.filter(p=>["aprovada_producao","em_producao"].includes(p.status));
+  const banco=doBanco().length;
+  let h="";
+
+  /* 1. bloqueio: rotina falhou */
+  if(S.rotina==="falhou") h+=`<div class="maviso" role="status"><b>As sugestões de hoje não chegaram.</b><br>
+     A rotina das 05:47 não terminou. Não é nada com você: já ficou registrado e ela tenta de novo amanhã.
+     Quer postar algo hoje? Escolha uma do banco, de estático ou de Reels.<br>
+     <button class="btn btn-ganho" data-ir="#banco">Abrir banco de ideias (${banco})</button></div>`;
+
+  /* 2. postar (mais perto de contar no dia) */
+  if(postar.length){ h+=`<div class="secao-tit"><h2>falta postar</h2><span class="qt num">${postar.length}</span></div>
+    <p class="secao-sub">Aprovado. Copie a legenda, poste no Instagram. Se o app não detectar sozinho, marque aqui.</p>`;
+    postar.forEach(p=>{ h+=`<article class="card"><button class="abre" data-abrir="${p.id}"><div class="metas" style="margin-bottom:var(--e2)">${chipF(p.formato)}<span class="chip chip-neutro">${diaTxt(diaDe(p))} ${getHora(p)}</span>${ex(p)}</div><h3>${esc(p.tema)}</h3>${previaHTML(p)}</button>
+      <div class="acoes"><button class="btn btn-fantasma" data-copiar="${p.id}">Copiar legenda</button><button class="btn btn-ganho" data-postado="${p.id}">Marquei como postado</button></div></article>` }) }
+
+  /* 3. revisar */
+  if(revisar.length){ h+=`<div class="secao-tit"><h2>pronto para revisar</h2><span class="qt num">${revisar.length}</span></div>
+    <p class="secao-sub">O que você escolheu chegou. Revise até as 10h para postar hoje.</p>`;
+    revisar.forEach(p=>{ h+=`<article class="card"><button class="abre" data-abrir="${p.id}"><div class="metas" style="margin-bottom:var(--e2)">${chipF(p.formato)}<span class="chip chip-neutro">${p.formato==="reels"?p.cenas.length+" cenas":(p.deck?DECK.slides.length+" slides":"sem slides no protótipo")}</span><span class="chip chip-neutro">${diaTxt(diaDe(p))} ${getHora(p)}</span>${ex(p)}</div><h3>${esc(p.tema)}</h3>${previaHTML(p)}
+      <p class="porque">Chegou às ${hh(p.produzido_em)}${p.formato==="reels"?" · roteiro + legenda, você grava":" · conferência automática: 0 erro"}</p></button>
+      <div class="acoes"><button class="btn btn-ganho" data-abrir="${p.id}">Revisar →</button></div></article>` }) }
+
+  /* 4. escolher: duas faixas (estático e Reels) */
+  if(sugs.length){ h+=faixaSug("estatico",sugs,fila)+faixaSug("reels",sugs,fila) }
+
+  /* 5. acompanhar: em produção / ajuste */
+  if(fila.length||ajustando.length){ h+=`<div class="secao-tit"><h2>em produção</h2><span class="qt num">${fila.length+ajustando.length}</span></div>
+    <p class="secao-sub">Não precisa fazer nada. Avisamos no celular quando chegar.</p>`;
+    [...fila,...ajustando].forEach(p=>{ const pv=previsao(p.status==="em_producao"?new Date(S.agora.getTime()-3600000):S.agora);
+      h+=`<article class="card"><button class="abre" data-abrir="${p.id}"><div class="metas" style="margin-bottom:var(--e2)">${chipF(p.formato)}<span class="chip chip-neutro">${diaTxt(diaDe(p))} ${getHora(p)}</span>${ex(p)}</div><h3>${esc(p.tema)}</h3>${trilhaHTML(p.status)}
+       <p class="prev">${p.status==="em_producao"?`A rotina das ${pv.rodada} está montando. <b>Pronto ${pv.txt}</b>`:p.status==="ajustar"?`Refazendo com o seu comentário. <b>Volta ${pv.txt}</b>`:`Na fila da rodada das ${pv.rodada}. <b>Pronto ${pv.txt}</b>`}</p>
+       ${p.comentario?`<div class="coment">“${esc(p.comentario)}”</div>`:""}</button>
+       ${p.deck||p.formato==="reels"?`<button class="linkb" data-entregar="${p.id}">⟳ protótipo: simular entrega da rotina</button>`:`<p class="semdesc">No protótipo só a sugestão de estático 1 tem slides. Use “simular estado” lá embaixo.</p>`}</article>` }) }
+
+  /* 6. tudo feito */
+  if(!postar.length&&!revisar.length&&!pend.length&&!fila.length&&!ajustando.length&&S.rotina!=="falhou"){
+    const e=postadoHoje("estatico"), r=postadoHoje("reels"), n=(e?1:0)+(r?1:0);
+    h+=`<div class="vazio" style="margin-top:var(--e2)"><span class="n num">✓</span><h4>nada esperando você</h4>
+      <p>${n===2?"Estático e Reels de hoje estão postados: o ideal do dia foi cumprido. ":n===1?`O ${e?"estático":"Reels"} de hoje está postado: o mínimo do dia foi cumprido. Falta o ${e?"Reels":"estático"} para o ideal (1 estático + 1 Reels). `:""}Amanhã às 05:47 chegam 3 sugestões de estático e 3 de Reels, já pensadas a partir das métricas de hoje.</p>
+      <ul><li>${banco} ideias guardadas no banco</li><li>${diasComPost()} de 7 dias com post nesta semana</li></ul>
+      <button class="btn btn-fantasma" data-ir="#banco">Ver banco de ideias</button></div>`;
+  }
+
+  /* 7. sinal das métricas (informativo) */
+  h+=`<div class="secao-tit"><h2>ontem no instagram</h2></div>
+    <div class="mini"><div class="metas"><span class="chip chip-ex">exemplo</span><span class="chip chip-neutro">análise das 05:23</span></div>
+     <div class="nums"><div><span class="v num">2.696</span><span class="k">alcance</span></div><div><span class="v num">32</span><span class="k">salvos</span></div><div><span class="v num">59</span><span class="k">compart.</span></div></div>
+     <p><b>Sinal para a pauta:</b> Reels de identificação puxam compartilhamento. Carrossel ainda salva pouco: prefira tutorial com prompt pronto e CTA de salvar.</p>
+     <button class="linkb" data-ir="#metricas">Ver métricas →</button></div>`;
+
+  /* 8. destinos */
+  h+=`<div class="atalhos">
+     <button class="atalho" data-ir="#calendario"><span class="em">📅</span><span class="nm">Calendário</span><span class="hd">${diasComPost()} de 7 dias com post</span></button>
+     <button class="atalho" data-ir="#banco"><span class="em">🗂️</span><span class="nm">Banco de ideias</span><span class="hd">${banco} guardadas</span></button>
+     <button class="atalho" data-ir="#metricas"><span class="em">📊</span><span class="nm">Métricas</span><span class="hd">Instagram</span></button>
+     <button class="atalho" data-ir="#canais"><span class="em">📁</span><span class="nm">Canais</span><span class="hd">referências e funil</span></button></div>
+     <div class="rodape-lix"><button class="linkb" data-ir="#lixeira">Lixeira (${naLixeira().length}) →</button></div>`;
+
+  /* simulador */
+  h+=`<details class="simular" ${S._simAberto?"open":""}><summary>⚙ protótipo · simular estado</summary>
+    <div class="filtros" role="group" aria-label="Simular estado">${ESTADOS.map(([k,n])=>`<button class="filtro ${S.estado===k?"on":""}" data-estado="${k}">${n}</button>`).join("")}</div>
+    <p class="dica">Os botões mexem só neste protótipo. Nada é gravado.</p></details>`;
+
+  $("#view").innerHTML=`<div class="wrap">${h}</div>`;
+  ligarRails();
+}
+function ligarRails(){
+  ["estatico","reels"].forEach(f=>{ const r=document.getElementById("rail-"+f); if(!r) return;
+    r.onscroll=()=>{ const c=r.querySelector(".card"); if(!c) return; const w=c.getBoundingClientRect().width+12; const i=Math.min(r.children.length-1,Math.round(r.scrollLeft/w));
+      document.querySelectorAll("#pt-"+f+" i").forEach((e,k)=>e.classList.toggle("on",k===i)) } });
+}
+
+/* ===================== BANCO DE IDEIAS ===================== */
+function renderBanco(){
+  const todas=doBanco(); const F=S.filtro; const A=S.alvo;
+  if(A) F.f=A.formato;
+  hdSub("Banco de ideias",A?`escolhendo para ${diaTxt(A.dia)} · ${FORM[A.formato].nome}`:`${todas.length} guardadas · produzir a qualquer dia`,A?"#calendario":"#hoje"); $("#barra").innerHTML="";
+  let L=todas.filter(p=>(!F.u||p.u===F.u)&&(!F.l||p.l===F.l)&&(!F.f||p.formato===F.f));
+  if(F.ordem==="recentes") L.sort((a,b)=>b.criado.localeCompare(a.criado));
+  if(F.ordem==="antigas") L.sort((a,b)=>a.criado.localeCompare(b.criado));
+  if(F.ordem==="prazo") L.sort((a,b)=>(a.valida_ate||"9999").localeCompare(b.valida_ate||"9999")||b.criado.localeCompare(a.criado));
+  const novas=L.filter(p=>diasDesde(p.criado)<=30), velhas=L.filter(p=>diasDesde(p.criado)>30);
+  const legado=S.pautas.filter(p=>p.legado&&["para_revisar","ideia"].includes(p.status));
+  const card=p=>{ const idade=diasDesde(p.criado); let prazo="";
+    if(p.valida_ate){ const falta=Math.round((parse(p.valida_ate)-S.agora)/864e5)-S.velho;
+      prazo=falta<0?`<span class="chip chip-erro">passou do prazo (${ddmm(p.valida_ate)})</span>`:falta<=3?`<span class="chip chip-erro">vale até ${ddmm(p.valida_ate)}</span>`:`<span class="chip chip-neutro">vale até ${ddmm(p.valida_ate)}</span>` }
+    return `<article class="card ideia ${idade>30?"velha":""}"><div class="lin"><button class="abre" data-abrir="${p.id}">
+      <h3>${esc(p.tema)}</h3>${p.angulo||p.gancho?`<p class="ang clamp2">${esc(p.angulo||p.gancho)}</p>`:""}
+      <div class="metas">${chipF(p.formato)}${prazo}${idade>30?`<span class="chip chip-selo">há ${idade} dias · ainda vale?</span>`:`<span class="chip chip-neutro">${idade===0?"hoje":idade===1?"ontem":"há "+idade+" dias"}</span>`}${chipU(p.u)}${chipL(p.l)}${p.d!=="D0"?chipD(p.d):""}${ex(p)}</div></button>
+      <div class="lado"><button class="btn btn-ganho" data-produzir="${p.id}">Produzir</button><button class="btn-lix" data-lixeira="${p.id}" aria-label="Mandar para a lixeira: ${esc(p.tema)}" title="Lixeira"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></div></div></article>` };
+  const opt=(o,v,ph)=>`<option value="">${ph}</option>`+Object.entries(o).map(([k,n])=>`<option value="${k}" ${v===k?"selected":""}>${k} ${n}</option>`).join("");
+  $("#view").innerHTML=`<div class="wrap">
+    ${A?`<div class="destaque"><div class="t">Escolhendo para ${diaTxt(A.dia)} · ${FORM[A.formato].nome}</div><p style="margin:0;font-size:var(--t-mini)">Toque em Produzir na ideia que quer nessa vaga. <button class="linkb" data-ir="#calendario" style="margin:0">Cancelar</button></p></div>`:""}
+    <div class="bfiltros"><select class="campo" id="fU" aria-label="Filtrar por urgência">${opt(URG,F.u,"Todas as urgências")}</select>
+      <select class="campo" id="fL" aria-label="Filtrar por linha">${opt(LIN,F.l,"Todas as linhas")}</select></div>
+    ${A?"":`<div class="seg" role="group" aria-label="Filtrar por formato">${[["","todos"],["estatico","estático"],["reels","Reels"]].map(([k,n])=>`<button class="${F.f===k?"on":""}" data-ffmt="${k}">${n}</button>`).join("")}</div>`}
+    <div class="seg" role="group" aria-label="Ordenar">${[["recentes","recentes"],["prazo","com prazo"],["antigas","antigas"]].map(([k,n])=>`<button class="${F.ordem===k?"on":""}" data-ordem="${k}">${n}</button>`).join("")}</div>
+    ${L.length?"":`<p class="semres">Nenhuma ideia com esse filtro. <button class="linkb" id="limpar">Limpar filtros</button></p>`}
+    ${novas.map(card).join("")}
+    ${velhas.length?`<details class="grupo" open><summary><span class="seta">›</span>mais de 30 dias · ${velhas.length}</summary>
+      <p class="dica">Ideia parada há mais de um mês: produza ou mande para a lixeira. A rotina da manhã só repropõe se ainda fizer sentido.</p>${velhas.map(card).join("")}</details>`:""}
+    ${A?"":`<details class="grupo"><summary><span class="seta">›</span>produzidas no notion, nunca revisadas · ${legado.length}</summary>
+      <p class="dica">Vieram da rotina antiga (${legado.reduce((a,b)=>a+b.png,0)} PNGs no estilo padrão). Ficam aqui para não lotar o Hoje. Decisão em aberto na spec.</p>
+      ${legado.map(n=>`<article class="card"><h3>${esc(n.tema)}</h3><div class="metas" style="margin-top:var(--e2)"><span class="chip chip-neutro">${ddmm(n.data)} · ${n.png} slides</span>${chipU(n.u)}</div>
+        <div class="acoes"><a class="btn btn-fantasma" href="${esc(n.url)}" target="_blank" rel="noopener" style="text-decoration:none">Abrir no Notion ↗</a><button class="btn-lix" data-lixeira="${n.id}" aria-label="Mandar para a lixeira: ${esc(n.tema)}" title="Lixeira"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></div></article>`).join("")}</details>
+    <div class="rodape-lix"><button class="linkb" data-ir="#lixeira">Lixeira (${naLixeira().length}) →</button></div>
+    <details class="simular"><summary>⚙ protótipo · envelhecer o banco</summary>
+      <div class="filtros"><button class="filtro ${S.velho===0?"on":""}" data-velho="0">hoje</button><button class="filtro ${S.velho===40?"on":""}" data-velho="40">daqui a 40 dias</button></div></details>`}
+  </div>`;
+  $("#fU").onchange=e=>{F.u=e.target.value;renderBanco()};
+  $("#fL").onchange=e=>{F.l=e.target.value;renderBanco()};
+  const lp=$("#limpar"); if(lp) lp.onclick=()=>{F.u=F.l="";if(!S.alvo)F.f="";renderBanco()};
+}
+
+/* ===================== LIXEIRA ===================== */
+function renderLixeira(){
+  const L=naLixeira().sort((a,b)=>(b.descartado_em||0)-(a.descartado_em||0));
+  hdSub("Lixeira",`${L.length} ${L.length===1?"descartada":"descartadas"} · nada se apaga sozinho`,"#banco"); $("#barra").innerHTML="";
+  $("#view").innerHTML=`<div class="wrap">
+    <p class="secao-sub">O que você descartou fica aqui. “Restaurar” leva a ideia de volta para o banco de ideias.</p>
+    ${L.length?L.map(p=>`<article class="card lix"><div class="lin"><button class="abre" data-abrir="${p.id}">
+        <div class="metas" style="margin-bottom:var(--e2)">${chipF(p.formato)}<span class="chip chip-neutro">descartada ${p.descartado_em?diaTxt(isoDe(p.descartado_em))+" "+hh(p.descartado_em):""}</span>${ex(p)}</div>
+        <h3>${esc(p.tema)}</h3>${p.angulo||p.gancho?`<p class="ang clamp2" style="font-size:var(--t-mini);color:var(--texto-medio);margin:var(--e2) 0 0">${esc(p.angulo||p.gancho)}</p>`:""}</button>
+        <div class="lado"><button class="btn btn-ganho" data-restaurar="${p.id}" aria-label="Restaurar: ${esc(p.tema)}">Restaurar</button></div></div></article>`).join("")
+     :`<div class="vazio"><span class="n num">✓</span><h4>lixeira vazia</h4><p>Quando você mandar uma sugestão ou ideia para a lixeira, ela aparece aqui e dá para restaurar.</p><button class="btn btn-fantasma" data-ir="#banco">Ver banco de ideias</button></div>`}
+  </div>`;
+}
+
+/* ===================== CALENDÁRIO ===================== */
+const PRI=["postado","aprovado","para_revisar","ajustar","em_producao","aprovada_producao"];
+const ESTV={postado:"postado",aprovado:"aprovado",para_revisar:"para revisar",ajustar:"em produção",em_producao:"em produção",aprovada_producao:"em produção"};
+const ESTCLS={postado:"postado",aprovado:"aprovado","para revisar":"revisar","em produção":"producao",sugerida:"sugerida",vazio:"vazio"};
+function vaga(dia,f){
+  const c=S.pautas.filter(p=>p.data===dia&&p.formato===f&&PRI.includes(p.status)&&!p.legado).sort((a,b)=>PRI.indexOf(a.status)-PRI.indexOf(b.status));
+  if(c.length) return {p:c[0],n:c.length,estado:ESTV[c[0].status]};
+  const pend=S.pautas.filter(p=>p.sug&&p.data===dia&&p.formato===f&&p.status==="sugerida").length;
+  if(pend) return {estado:"sugerida",pend};
+  return {estado:"vazio"};
+}
+function vagaHTML(dia,f){
+  const v=vaga(dia,f), fm=FORM[f], futuro=dia>=hojeISO();
+  const chipCls={postado:"chip-ganho","para revisar":"chip-selo",vazio:"chip-neutro",sugerida:"chip-selo"}[v.estado]||"";
+  let tema, hora, ig="", dentro="", abre="", div=false;
+  if(v.p){ const p=v.p; tema=esc(p.tema);
+    hora=p.status==="postado"?`postado ${hh(p.postado_em)}`:`${p.horario_editado?"agendado":"sugerido"} ${getHora(p)}`;
+    abre=`data-abrir="${p.id}"`;
+    if(p.status==="postado") ig=`<a class="linkb" href="https://www.instagram.com/" target="_blank" rel="noopener" title="Link de exemplo">ver no Instagram ↗</a>`;
+  } else if(v.estado==="sugerida"){ tema=`${v.pend} sugestões para escolher`; hora=`sugerido ${sugHora(dia,f)}`; abre=`data-ir="#hoje"`; dentro=`<span class="semlink">ver no Hoje →</span>`; }
+  else if(futuro){ tema="Vaga livre"; hora=`sugerido ${sugHora(dia,f)}`; abre=`data-escolher="${dia}|${f}"`; dentro=`<span class="semlink">escolher do banco →</span>`; }
+  else { tema="Sem post"; hora="sem registro"; div=true }
+  const corpo=`<span class="vf">${fm.ic} ${fm.nome}</span><span class="chip ${chipCls}">${v.estado}${v.n>1?" +"+(v.n-1):""}</span><span class="vtema clamp2">${tema}</span><span class="vhora">${hora}</span>${dentro}`;
+  const rot=`${fm.nome} em ${diaTxt(dia)}: ${v.estado}. ${v.p?v.p.tema:""}${dentro?" "+dentro.replace(/<[^>]+>/g,""):""}`;
+  return `<div class="vaga v-${ESTCLS[v.estado]}">${div?`<div class="vaga-b">${corpo}</div>`:`<button class="abre vaga-b" ${abre} aria-label="${esc(rot)}">${corpo}</button>`}${ig}</div>`;
+}
+function renderCalendario(){
+  hdSub("Calendário","2 vagas por dia · estático e Reels","#hoje"); $("#barra").innerHTML="";
+  const hoje=hojeISO();
+  if(!S.cal){ S.cal={vista:"semana",ini:segunda(hoje),mes:hoje.slice(0,7),sel:hoje} }
+  const C=S.cal;
+  const dow=parse(hoje).getDay();
+  const hor=`<div class="card hor"><div class="metas"><h3>Melhores horários do seu público</h3><span class="chip chip-ex">exemplo</span></div>
+    <p class="dica" style="margin-top:0">Fonte: ${FONTE_HOR[S.fonteHor]}. 2 faixas por dia; a mais forte em verde.</p>
+    ${[1,2,3,4,5,6,0].map(d=>{ const h=HOR[d], top=h[0].v>=h[1].v?0:1; return `<div class="hrow2 ${d===dow?"hj":""}"><b>${DIAS3[d]}</b>${h.map((x,i)=>`<span class="faixa ${i===top?"top":""}">${x.ini}–${x.fim}</span>`).join("")}</div>` }).join("")}</div>
+    <div class="destaque" style="margin-top:0"><div class="t">Postado é automático</div><p style="margin:0;font-size:var(--t-mini);line-height:1.45">Quando o post aparece no Instagram (o app olha a cada 4 h), a vaga vira “postado” sozinha, com o horário real. Se demorar, abra a pauta e toque em “Marquei como postado”.</p></div>`;
+  const seg=`<div class="seg seg2" role="group" aria-label="Visão do calendário"><button class="${C.vista==="semana"?"on":""}" data-vista="semana">Semana</button><button class="${C.vista==="mes"?"on":""}" data-vista="mes">Mês</button></div>`;
+  let corpo="";
+  if(C.vista==="semana"){
+    const ini=C.ini, fim=addDias(ini,6), a=parse(ini), b=parse(fim);
+    const tit=a.getMonth()===b.getMonth()?`${a.getDate()} a ${b.getDate()} de ${MESES[b.getMonth()]}`:`${a.getDate()}/${a.getMonth()+1} a ${b.getDate()}/${b.getMonth()+1}`;
+    corpo=`<div class="cnav"><button class="icb" data-nav="-1" aria-label="Semana anterior">‹</button><div class="t">${tit}</div><button class="icb" data-nav="1" aria-label="Próxima semana">›</button></div>
+      ${ini!==segunda(hoje)?`<div style="text-align:center;margin-bottom:var(--e3)"><button class="btn-mini" data-hoje-cal="1">Voltar para hoje</button></div>`:""}
+      ${[0,1,2,3,4,5,6].map(i=>{ const d=addDias(ini,i), dd=parse(d); return `<section class="cdia ${d===hoje?"hoje":""}"><h3>${DIAS[dd.getDay()]} ${dd.getDate()}${d===hoje?` <span class="chip">hoje</span>`:""}</h3><div class="vagas">${vagaHTML(d,"estatico")}${vagaHTML(d,"reels")}</div></section>` }).join("")}`;
+  } else {
+    const [y,m]=C.mes.split("-").map(Number), prim=new Date(y,m-1,1), ult=new Date(y,m,0).getDate(), lead=(prim.getDay()+6)%7;
+    if(!C.sel.startsWith(C.mes)) C.sel=C.mes===hoje.slice(0,7)?hoje:C.mes+"-01";
+    let cel="";
+    for(let i=0;i<lead;i++) cel+=`<span></span>`;
+    for(let dnum=1;dnum<=ult;dnum++){ const d=C.mes+"-"+pad(dnum), e=vaga(d,"estatico"), r=vaga(d,"reels");
+      cel+=`<button class="dia ${d===hoje?"hoje":""} ${d===C.sel?"sel":""}" data-dia="${d}" aria-label="${dnum} de ${MESES[m-1]}: Estático ${e.estado}, Reels ${r.estado}" ${d===C.sel?'aria-pressed="true"':""}><span>${dnum}</span><span class="dots"><i class="dot d-${ESTCLS[e.estado]}"></i><i class="dot d-${ESTCLS[r.estado]}"></i></span></button>` }
+    const sd=parse(C.sel);
+    corpo=`<div class="cnav"><button class="icb" data-nav="-1" aria-label="Mês anterior">‹</button><div class="t">${MESES[m-1]} de ${y}</div><button class="icb" data-nav="1" aria-label="Próximo mês">›</button></div>
+      <div class="mes" role="group" aria-label="Dias do mês">${["seg","ter","qua","qui","sex","sáb","dom"].map(x=>`<span class="dh">${x}</span>`).join("")}${cel}</div>
+      <div class="legenda-cal" aria-hidden="true"><span><i class="dot d-postado"></i>postado</span><span><i class="dot d-aprovado"></i>aprovado</span><span><i class="dot d-revisar"></i>para revisar</span><span><i class="dot d-producao"></i>em produção</span><span><i class="dot d-sugerida"></i>sugerida</span><span><i class="dot"></i>vazio</span></div>
+      <p class="dica">Em cada dia: primeiro ponto = estático, segundo = Reels.${C.mes<="2026-09"?" Histórico de exemplo a partir de 21/09.":""}</p>
+      <section class="cdia painel-dia ${C.sel===hoje?"hoje":""}"><h3>${DIAS[sd.getDay()]}, ${sd.getDate()} de ${MESES[sd.getMonth()]}${C.sel===hoje?` <span class="chip">hoje</span>`:""}</h3><div class="vagas">${vagaHTML(C.sel,"estatico")}${vagaHTML(C.sel,"reels")}</div></section>`;
+  }
+  $("#view").innerHTML=`<div class="wrap">${hor}${seg}${corpo}
+    <details class="simular"><summary>⚙ protótipo · fonte do horário</summary><div class="filtros"><button class="filtro ${S.fonteHor==="online"?"on":""}" data-fonte="online">seguidores online</button><button class="filtro ${S.fonteHor==="historico"?"on":""}" data-fonte="historico">alcance das primeiras horas</button></div>
+    <p class="dica">Se a API do Instagram não entregar “seguidores online”, o app usa o alcance dos seus próprios posts nas primeiras horas.</p></details></div>`;
+}
+
+/* ===================== FICHA ===================== */
+function emUmaHora(){ const t=new Date(S.agora.getTime()+3600000); t.setMinutes(Math.ceil(t.getMinutes()/5)*5,0,0); return (t.getDate()!==S.agora.getDate()||t.getHours()>=22)?"21:30":hh(t) }
+const proxColeta=()=>pad((Math.floor(S.agora.getHours()/4)*4+4)%24)+":00";
+function horaBlock(p){
+  const dia=diaDe(p), h=horDia(dia), atual=getHora(p), top=h[0].v>=h[1].v?0:1;
+  const terc=dia===hojeISO()?emUmaHora():"08:00";
+  const ops=[[h[top].pico,"melhor horário"],[h[1-top].pico,"2ª faixa"],[terc,dia===hojeISO()?"em ~1 h":"cedo"]];
+  return `<div class="fbloco"><div class="blocohead"><h3>Agendado para</h3><button class="btn-mini" data-mudar-hora="1" aria-expanded="${S.hora}">${S.hora?"Fechar":"Mudar horário"}</button></div>
+    <div class="hora-atual"><span class="num">${atual}</span><span>${diaTxt(dia)}</span><span class="chip ${p.horario_editado?"":"chip-neutro"}">${p.horario_editado?"escolhido por você":"sugerido"}</span></div>
+    <p class="dica">Faixas fortes de ${DIAS[parse(dia).getDay()]} (exemplo): ${h.map(x=>x.ini+"–"+x.fim).join(" e ")}.</p>
+    ${S.hora?`<div class="hora-ops" role="group" aria-label="Opções rápidas de horário">${ops.map(([x,n])=>`<button class="filtro ${x===atual?"on":""}" data-hora="${x}">${x} · ${n}</button>`).join("")}</div>
+      <label class="lbl" for="horaIn" style="margin-top:var(--e2)">Outro horário</label><div class="hmanual"><input type="time" class="campo" id="horaIn" value="${atual}"><button class="btn btn-ganho" data-salvar-hora="1">Usar</button></div>`:""}</div>`;
+}
+function cenasHTML(p){ return p.cenas.map((c,i)=>`<div class="cena ${i===0?"gancho-cena":""}"><span class="cena-n">${i+1}</span><div><div class="cena-c">[${esc(c.c)}]<span class="cena-t">${esc(c.t)}</span></div><div class="cena-f">${i===0?"Gancho falado: ":""}“${esc(c.f)}”</div></div></div>`).join("") }
+function renderFicha(id){
+  const p=get(id); if(!p){ location.hash="#hoje"; return }
+  const conhecidas=["#hoje","#banco","#calendario","#lixeira"];
+  const volta=conhecidas.includes(S.de)?S.de:(p.status==="descartado"?"#lixeira":p.status==="ideia"?"#banco":"#hoje");
+  const produzida=["para_revisar","ajustar","aprovado","postado"].includes(p.status);
+  const reels=p.formato==="reels";
+  hdSub(produzida?(reels?"Reels":"Carrossel"):(p.status==="sugerida"?"Sugestão":"Pauta"),`${FORM[p.formato].nome} · ${STATUS_TX[p.status]}${p.data&&!p.hist?" · "+ddmm(p.data):""}`,volta);
+  const tags=`<div class="metas">${chipF(p.formato)}${p.estrutura?`<span class="chip chip-neutro">${esc(p.estrutura)}</span>`:""}${chipU(p.u)}${chipL(p.l)}${chipD(p.d)}${ex(p)}</div>`;
+  let h="", barra="";
+  if(produzida){
+    h+=`<div class="fstatus"><div class="linha1"><span class="chip ${p.status==="postado"?"chip-ganho":""}">${esc(STATUS_TX[p.status])}</span>
+        ${p.produzido_em?`<span>chegou ${hh(p.produzido_em)}</span>`:""}${p.postado_em?`<span>· postado ${hh(p.postado_em)} · ${p.postado_origem==="auto"?"detectado no Instagram":"marcado por você"}</span>`:""}</div>${trilhaHTML(p.status)}</div>
+      <div class="ftema">${esc(p.tema)}</div>${tags}`;
+    if(p.status==="postado"&&p.hist) h+=`<div class="maviso" style="margin-top:var(--e3)">Post do histórico de exemplo. No app real, aqui entram a capa e as métricas do post vindos do Instagram.</div>`;
+    if(p.status==="postado") h+=`<p style="margin:var(--e3) 0"><a class="linkb" href="https://www.instagram.com/" target="_blank" rel="noopener" title="Link de exemplo">ver no Instagram ↗</a></p>`;
+    if(!reels&&p.deck){
+      const n=DECK.slides.length;
+      h+=`<div class="tira" id="tira" tabindex="0" aria-label="Slides do carrossel, deslize para o lado">${DECK.slides.map((s,i)=>slideHTML(s,i,n)).join("")}</div>
+        <div class="tirainfo"><span id="tiraN">1 de ${n} · deslize</span><span class="pontos" id="pontos">${DECK.slides.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</span></div>
+        <p class="semdesc">Conferência automática: 0 erro, 0 aviso · estilo editorial · 1080×1350${p.exemplo?" · slides desenhados a partir do deck real":""}</p>`;
+    } else if(!reels&&!p.hist) h+=`<div class="maviso" style="margin-top:var(--e3)">Sem slides neste protótipo (só a sugestão de estático 1 tem deck).</div>`;
+    if(reels) h+=`<div class="fbloco"><div class="blocohead"><h3>Roteiro para gravar <span class="chip chip-neutro">${p.cenas.length} cenas · ${esc(p.dur)}</span></h3><button class="btn-mini" data-copiar-reels="${p.id}">⧉ Copiar roteiro</button></div>
+        <p class="dica" style="margin-top:0">Reels produzido é só texto: você grava. Não há vídeo para baixar.</p>${cenasHTML(p)}
+        <details style="margin-top:var(--e3)"><summary style="cursor:pointer;font-size:var(--t-micro);font-weight:700;color:var(--texto-fraco);min-height:32px;display:flex;align-items:center">Texto corrido para copiar</summary><pre class="txtlongo" id="reelsTx">${esc(reelsTxt(p))}</pre></details></div>`;
+    if(p.status==="ajustar") h+=`<div class="maviso"><b>Ajuste pedido.</b> A rotina refaz e avisa quando voltar.<div class="coment">“${esc(p.comentario)}”</div></div>`;
+    if(S.ajuste&&p.status==="para_revisar") h+=`<div class="ajuste" id="ajBox"><label class="lbl" for="ajTx" style="margin-top:0">O que mudar?</label>
+       <div class="rapidos">${(reels?["Troca o gancho falado","Cenas mais curtas","Mais curto","Tom mais leve"]:["Troca o gancho da capa","Outra foto na capa","Mais curto","Tom mais leve"]).map(t=>`<button class="filtro" data-rapido="${esc(t)}">${t}</button>`).join("")}</div>
+       <textarea class="campo" id="ajTx" rows="3" placeholder="${reels?"Ex.: a cena 3 está longa; corta a explicação":"Ex.: slide 5 está longo; corta a parte do Karpathy"}"></textarea>
+       <p class="dica">A rotina lê isto e refaz só o que você pediu.</p>
+       <div class="acoes"><button class="btn btn-fantasma" id="ajCancela">Cancelar</button><button class="btn btn-ganho" id="ajEnvia" disabled>Enviar ajuste</button></div></div>`;
+    if(p.legenda) h+=`<div class="fbloco"><div class="blocohead"><h3>Legenda</h3><button class="btn-mini" data-copiar="${p.id}">⧉ Copiar legenda</button></div>
+        <pre class="txtlongo" id="legTx">${esc(p.legenda)}</pre></div>`;
+    if(p.status!=="postado") h+=horaBlock(p);
+    if(p.status==="aprovado") h+=`<div class="destaque"><div class="t">Postado é automático</div><p style="margin:0;font-size:var(--t-mini);line-height:1.45">Quando o post aparecer no Instagram (coleta a cada 4 h, próxima ~${proxColeta()}), esta pauta vira “postado” sozinha. Se você já postou e ainda não apareceu, use “Marquei como postado”.</p>
+        <button class="linkb" data-coleta="${p.id}">⟳ protótipo: simular a coleta do Instagram</button></div>`;
+    if(p.gancho||p.fontes) h+=`<details class="fbloco"><summary style="cursor:pointer;font-size:var(--t-nano);font-weight:700;letter-spacing:var(--tr-rotulo);text-transform:uppercase;color:var(--texto-medio);min-height:28px">Proposta original e fontes</summary>
+        ${p.gancho?`<p style="margin-top:var(--e2)"><b>${reels?"Gancho falado":"Gancho"}:</b> ${esc(p.gancho)}</p>`:""}${p.fontes?`<p style="margin-top:var(--e2)"><b>Fontes:</b> ${esc(p.fontes)}</p>`:""}${p.comentario_prev?`<div class="coment">Seu pedido antes de produzir: “${esc(p.comentario_prev)}”</div>`:""}</details>`;
+    if(["para_revisar","aprovado"].includes(p.status)) h+=`<div style="margin-top:var(--e6)"><button class="btn btn-risco" data-lixeira="${p.id}" style="width:100%">Não vou postar este</button></div>`;
+    if(p.status==="para_revisar"&&!S.ajuste) barra=`<button class="btn btn-fantasma" id="bAjustar">Ajustar</button><button class="btn btn-ganho" data-aprovar="${p.id}">Aprovar</button>`;
+    if(p.status==="aprovado") barra=`<button class="btn btn-fantasma" data-copiar="${p.id}">Copiar legenda</button><button class="btn btn-ganho" data-postado="${p.id}" style="font-size:var(--t-base)">Marquei como postado</button>`;
+  } else {
+    if(["aprovada_producao","em_producao"].includes(p.status)){ const pv=previsao();
+      h+=`<div class="fstatus"><div class="linha1"><span class="chip">${esc(STATUS_TX[p.status])}</span><span>${reels?"roteiro":"pronto"} ${pv.txt}</span></div>${trilhaHTML(p.status)}</div>` }
+    h+=`${tags}<div class="ftema">${esc(p.tema)}</div>`;
+    if(p.gancho) h+=`<div class="fbloco"><h3>${reels?"Gancho falado":"Gancho da capa"}</h3><p class="gancho-g">“${esc(p.gancho)}”</p></div>`;
+    if(p.angulo) h+=`<div class="fbloco"><h3>Ângulo</h3><p>${esc(p.angulo)}</p>${!p.roteiro&&!p.cenas?`<p class="dica" style="margin-top:var(--e2)">Ideia guardada sem roteiro: a produção monta ${reels?"gancho falado e cenas":"gancho e slides"} a partir do ângulo.</p>`:""}</div>`;
+    if(p.roteiro) h+=`<div class="fbloco"><h3>O que cada slide diz <span class="chip chip-neutro">${p.roteiro.length} slides</span></h3><ol>${p.roteiro.map(r=>`<li>${esc(r)}</li>`).join("")}</ol></div>`;
+    if(p.cenas) h+=`<div class="fbloco"><h3>Cenas <span class="chip chip-neutro">${p.cenas.length} cenas · ${esc(p.dur)}</span></h3>${cenasHTML(p)}</div>`;
+    if(p.porque) h+=`<div class="fbloco"><h3>Por quê</h3><ul>${p.porque.map(([k,v])=>`<li><b>${esc(k)}:</b> ${esc(v)}</li>`).join("")}</ul></div>`;
+    if(p.fontes) h+=`<div class="fbloco"><h3>Fontes</h3><p>${esc(p.fontes)}</p></div>`;
+    if(p.confirmar) h+=`<div class="maviso" style="margin-top:var(--e3)"><b>Precisa de você:</b> ${esc(p.confirmar)}</div>`;
+    if(p.valida_ate) h+=`<div class="maviso"><b>Prazo:</b> só faz sentido até ${ddmm(p.valida_ate)}.</div>`;
+    if(p.status!=="descartado") h+=horaBlock(p);
+    if(["sugerida","ideia"].includes(p.status)){
+      h+=`<label class="lbl" for="ajPre">Ajuste antes de produzir <span style="text-transform:none;letter-spacing:0;font-weight:500">(opcional)</span></label>
+        <textarea class="campo" id="ajPre" rows="2" placeholder="Ex.: troca o exemplo por um de RH">${esc(p._rascunho||"")}</textarea>
+        <p class="dica">A rotina lê isto antes de montar. Deixe em branco para produzir como está.</p>`;
+      barra=`<button class="btn btn-fantasma" data-lixeira="${p.id}">Lixeira</button>
+        ${p.status==="sugerida"?`<button class="btn btn-fantasma" data-banco="${p.id}">Banco</button>`:""}
+        <button class="btn btn-ganho" id="bProduzir">Produzir</button>`;
+    }
+    if(p.status==="aprovada_producao") barra=`<button class="btn btn-fantasma" data-banco="${p.id}">Voltar para o banco</button>`;
+    if(p.status==="descartado") barra=`<button class="btn btn-ganho" data-restaurar="${p.id}">Restaurar para o banco</button>`;
+  }
+  $("#view").innerHTML=`<div class="wrap">${h}</div>`;
+  $("#barra").innerHTML=barra?`<div class="barra"><div class="in">${barra}</div></div>`:"";
+  const tira=$("#tira");
+  if(tira) tira.onscroll=()=>{ const sl=tira.querySelector(".sl"); const w=sl.getBoundingClientRect().width+12; const i=Math.min(DECK.slides.length-1,Math.round(tira.scrollLeft/w));
+    $("#tiraN").textContent=`${i+1} de ${DECK.slides.length}${i?"":" · deslize"}`; $("#pontos").querySelectorAll("i").forEach((e,k)=>e.classList.toggle("on",k===i)) };
+  const bp=$("#bProduzir"); if(bp) bp.onclick=()=>{ const t=($("#ajPre")||{}).value||""; produzir(p.id,t.trim()) };
+  const ap=$("#ajPre"); if(ap) ap.oninput=e=>{ p._rascunho=e.target.value };
+  const ba=$("#bAjustar"); if(ba) ba.onclick=()=>{ S.ajuste=true; renderFicha(id); setTimeout(()=>{ const t=$("#ajTx"); if(t){ t.focus(); t.scrollIntoView({block:"center"}) } },30) };
+  const tx=$("#ajTx");
+  if(tx){ const env=$("#ajEnvia"); tx.oninput=()=>env.disabled=!tx.value.trim();
+    document.querySelectorAll("[data-rapido]").forEach(b=>b.onclick=()=>{ tx.value=(tx.value.trim()?tx.value.trim()+". ":"")+b.dataset.rapido; env.disabled=false; tx.focus() });
+    $("#ajCancela").onclick=()=>{ S.ajuste=false; renderFicha(id) };
+    env.onclick=()=>pedirAjuste(id,tx.value.trim()) }
+}
+
+/* destinos fora do protótipo */
+function renderFora(nome){
+  hdSub(nome==="#metricas"?"Métricas":"Canais",nome==="#metricas"?"já existe no app (#/metricas)":"diretório atual, vai para #/canais","#hoje"); $("#barra").innerHTML="";
+  $("#view").innerHTML=`<div class="wrap"><div class="vazio"><h4>${nome==="#metricas"?"métricas":"canais"}</h4>
+   <p>${nome==="#metricas"?"No app, este atalho abre a tela de Métricas que já existe. Volta para o Hoje pelo ←.":"No app, o diretório de canais (Ideias de referência e Produção) sai da home e passa a morar em #/canais, igual a hoje."}</p>
+   <button class="btn btn-fantasma" data-ir="#hoje">Voltar para o Hoje</button></div></div>`;
+}
+
+/* ===================== ROTEAMENTO ===================== */
+function render(){
+  const h=location.hash||"#hoje";
+  if(h==="#banco") renderBanco();
+  else if(h==="#lixeira") renderLixeira();
+  else if(h==="#calendario") renderCalendario();
+  else if(h.startsWith("#pauta-")) renderFicha(h.slice(7));
+  else if(h==="#metricas"||h==="#canais") renderFora(h);
+  else renderHoje();
+}
+let ultimaRota="";
+window.addEventListener("hashchange",()=>{ S.ajuste=false; S.hora=false;
+  if(!(location.hash==="#banco"||location.hash.startsWith("#pauta-"))&&S.alvo){ S.alvo=null; S.filtro.f="" }
+  render(); if(location.hash!==ultimaRota) window.scrollTo(0,0); ultimaRota=location.hash });
+
+function sairDaFicha(){ if(location.hash.startsWith("#pauta-")) location.hash=["#hoje","#banco","#calendario","#lixeira"].includes(S.de)?S.de:"#hoje" }
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button,[data-abrir]"); if(!t) return;
+  const d=t.dataset;
+  if(d.produzir){ e.stopPropagation(); produzir(d.produzir); return }
+  if(d.banco){ paraBanco(d.banco); sairDaFicha(); return }
+  if(d.lixeira){ paraLixeira(d.lixeira); sairDaFicha(); return }
+  if(d.restaurar){ const noFicha=location.hash.startsWith("#pauta-"); restaurar(d.restaurar); if(noFicha) location.hash="#banco"; return }
+  if(d.aprovar){ aprovar(d.aprovar); return }
+  if(d.postado){ postado(d.postado,"manual"); return }
+  if(d.coleta){ postado(d.coleta,"auto"); return }
+  if(d.copiar){ const p=get(d.copiar); copiar(p.legenda||"","legTx"); return }
+  if(d.copiarReels){ copiar(reelsTxt(get(d.copiarReels)),"reelsTx"); return }
+  if(d.entregar){ simularEntrega(d.entregar); return }
+  if(d.mudarHora){ S.hora=!S.hora; renderFicha(location.hash.slice(7)); return }
+  if(d.hora){ setHora(location.hash.slice(7),d.hora); return }
+  if(d.salvarHora){ const v=($("#horaIn")||{}).value; if(v) setHora(location.hash.slice(7),v); return }
+  if(d.escolher){ const [dia,f]=d.escolher.split("|"); S.alvo={dia,formato:f}; S.filtro.f=f; location.hash="#banco"; return }
+  if(d.vista){ S.cal.vista=d.vista; renderCalendario(); return }
+  if(d.nav){ const n=Number(d.nav), C=S.cal;
+    if(C.vista==="semana") C.ini=addDias(C.ini,7*n);
+    else { const [y,m]=C.mes.split("-").map(Number); const x=new Date(y,m-1+n,1); C.mes=x.getFullYear()+"-"+pad(x.getMonth()+1) }
+    renderCalendario(); return }
+  if(d.dia){ S.cal.sel=d.dia; renderCalendario(); return }
+  if(d.hojeCal){ S.cal=null; renderCalendario(); return }
+  if(d.fonte){ S.fonteHor=d.fonte; renderCalendario(); return }
+  if(d.ffmt!==undefined){ S.filtro.f=d.ffmt; renderBanco(); return }
+  if(d.abrir){ S.de=location.hash||"#hoje"; location.hash="#pauta-"+d.abrir; return }
+  if(d.ir){ location.hash=d.ir; return }
+  if(d.estado){ S._simAberto=true; montar(d.estado); S.velho=0; render(); toast("Estado: "+ESTADOS.find(x=>x[0]===d.estado)[1]); return }
+  if(d.velho!==undefined){ S.velho=Number(d.velho); renderBanco(); return }
+  if(d.ordem){ S.filtro.ordem=d.ordem; renderBanco(); return }
+});
+
+montar("manha");
+if(!location.hash) history.replaceState(null,"","#hoje");
+ultimaRota=location.hash;
+render();
+</script>
