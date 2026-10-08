@@ -41,7 +41,7 @@ Plano completo aprovado: arquitetura, camadas e verificação estão nesta seç�
      `pipeline.metricas` grava no Notion antes de comparar;
    - delegar o relatório ao Haiku;
    - só então, com o ok da Duda: Notion deixa de receber dados, sai o coletor do `mecanismo-car` e decide-se o IG Analytics. Ela ainda vai conferir se usa hub, agentes, CRM ou radar lá. Se não usar, desligar o cron de coleta do VPS e o agendador antigo do Windows, se existir.
-4. **Saúde do token:** o `debug_token` respondeu "Invalid OAuth access token signature", ou seja, o par `META_APP_ID`/`META_APP_SECRET` não confere. Conferir os dois no painel do Supabase (Edge Functions → Secrets). Isso não impede a coleta, que segue funcionando com `META_PAGE_TOKEN`.
+4. **Saúde do token:** resolvida em 08/10 (secrets `META_APP_ID`/`META_APP_SECRET` regravados). `debug_token` válido: token de página sem vencimento, escopos de insights ok. **O acesso a dados vence em 04/01/2027**: antes disso a Duda precisa reautorizar o app da Meta (o app PSN avisa quando estiver perto).
 5. **"Visitas ao perfil"** aparece "—" porque o coletor não pede essa métrica no nível da conta. Testar se a API v25 entrega `profile_views` para a conta e incluir.
 6. **Limpeza no Supabase** (o conector travou nesses comandos). Rodar no SQL editor do painel:
    ```sql
