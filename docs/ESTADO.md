@@ -19,7 +19,7 @@ Plano completo aprovado: arquitetura, camadas e verificação estão nesta seç�
 | **C3 Coletor** | No ar. Edge Function `psn-ig-sync`, pg_cron `5 */4 * * *` UTC. Autenticação pelo segredo `psn_ig_cron` do Vault. Primeira coleta: 35 s, 66 chamadas, sem erro. |
 | **C4 Aba Métricas** | No ar. Números conferidos contra o banco. |
 | **C5 Rotinas apontando para o Supabase** | **Feita em 08/10.** Migração `20261009_psn_ig_c5.sql`, PR sorellaidigital/mecanismo-car#7 (merge feito), variável `PSN_ROTINA_SEGREDO` no ambiente "Instagram", prompts trocados por `update_trigger` (texto em `docs/ROTINAS-C5.md`). Disparo de teste da Métricas do Dia às 19:46 UTC gravou a linha de 08/10 em `psn_ig_analise` com os números do resumo. A Pauta do Dia é conferida na execução de 09/10 (05:47). |
-| **C6 Paralelo de 7 dias e desligamento** | **Pendente.** O paralelo começa assim que C5 estiver pronta. |
+| **C6 Paralelo de 7 dias e desligamento** | **Em andamento.** Começa com as execuções de 09/10; previsão de fim em 15/10, depois o ok da Duda. |
 
 ### Pendências do módulo Métricas
 
@@ -55,7 +55,7 @@ Plano completo aprovado: arquitetura, camadas e verificação estão nesta seç�
    delete from public.psn_ig_analise where data between '1900-01-01' and '1900-01-31';  -- linha de teste da C5
    ```
    A função já está sem permissão para anon. O bucket `psn-transfer` está vazio.
-7. **PR do branch `claude/psn-metricas` para `main`:** aberto em 08/10 (sorellaidigital/mecanismo-inst#2), aguardando merge.
+7. **PR do branch `claude/psn-metricas` para `main`:** feito (sorellaidigital/mecanismo-inst#2, merge em 08/10).
 
 ## Próximos módulos (ideia da Duda: centralizar tudo no PSN)
 
