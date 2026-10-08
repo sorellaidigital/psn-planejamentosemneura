@@ -445,6 +445,18 @@ main.territorio{background:transparent;color:var(--texto-invertido);border-radiu
 /* rótulos claros dentro da captura rápida (fundo escuro) */
 .qcbox .lbl{color:var(--texto-invertido-fraco)}
 
+/* marcações de foco (chips multi-seleção) na captura escura */
+.qcbox .filtros{margin-bottom:0}
+.qcbox .filtro{background:rgba(242,239,250,.08);color:var(--texto-invertido-medio);
+  border-color:var(--linha-territorio);min-height:40px}
+.qcbox .filtro.on{background:var(--acao-ganho);color:var(--sobre-ganho);border-color:transparent}
+.serie-wrap{margin-top:var(--e3)}
+.filtro.sub{min-height:32px}
+.chip-serie{background:rgba(28,18,37,.05);color:var(--texto-medio);border:1px dashed var(--linha-forte)}
+.destaque ol{margin:var(--e2) 0 0;padding-left:1.4em}
+.destaque ol li{margin-bottom:var(--e1)}
+.destaque ul{margin:var(--e2) 0 0;padding-left:1.2em}
+
 @media(min-width:900px){
   header{padding-left:var(--e6);padding-right:var(--e6)}
   main{padding:var(--e6) var(--e6) 120px}
@@ -517,8 +529,15 @@ main.territorio{background:transparent;color:var(--texto-invertido);border-radiu
       <label class="lbl" for="qcCanalSel">Canal de ideias</label>
       <select class="campo campo-inv" id="qcCanalSel"></select>
     </div>
-    <label class="lbl" for="qcTxt">Ideia</label>
+    <label class="lbl" for="qcTxt" id="qcTxtLbl">Ideia</label>
     <textarea class="campo campo-inv" id="qcTxt" placeholder="ex: o erro que todo mundo comete ao cortar o primeiro segundo do vídeo"></textarea>
+    <div id="qcFocoWrap" class="hide">
+      <label class="lbl" id="qcFocoLbl">O que chamou atenção?</label>
+      <div class="filtros" id="qcFocoRow" role="group" aria-labelledby="qcFocoLbl"></div>
+      <div class="serie-wrap hide" id="qcSerieWrap">
+        <input class="campo campo-inv" id="qcSerie" type="text" list="dlSeries" placeholder="Qual série?" aria-label="Qual série?" autocomplete="off">
+      </div>
+    </div>
     <label class="lbl" for="qcRef">Referência (link)</label>
     <div style="display:flex;gap:8px">
       <input class="campo campo-inv" id="qcRef" type="url" placeholder="https://..." style="flex:1" autocomplete="off">
@@ -536,6 +555,8 @@ main.territorio{background:transparent;color:var(--texto-invertido);border-radiu
 <div class="menu hide" id="menu">
   <div class="menubox" id="menubox"></div>
 </div>
+
+<datalist id="dlSeries"></datalist>
 
 <div class="toast" id="toast" role="status" aria-live="polite"><span class="pt"></span><span id="toastTxt"></span></div>
 
@@ -618,6 +639,25 @@ let criadores=[], ideias=[], atual=null, stage="tempestade", busca="", filtro="t
 const isDesk = ()=>window.matchMedia("(min-width:900px)").matches;
 const FILA = "psn_fila";
 
+/* marcações de foco da ideia de post + série; utilidade é pasta de consumo */
+const FOCOS = [["conteudo","Conteúdo"],["formato","Formato/visual"],["gancho","Gancho/copy"],["serie","Série"]];
+const FOCO_CURTO = {conteudo:"Conteúdo",formato:"Formato",gancho:"Gancho",serie:"Série"};
+const isUtil = c => !!c && c.finalidade==="ideias" && c.tipo_conteudo==="utilidade";
+const isIdeiaPost = c => !!c && c.finalidade==="ideias" && c.tipo_conteudo!=="utilidade";
+const canalDe = i => criadores.find(c=>c.id===i.criador_id);
+const ordenaFoco = arr => FOCOS.map(f=>f[0]).filter(k=>arr.includes(k));
+function seriesConhecidas(){
+  const m=new Map();
+  ideias.forEach(i=>{ const s=(i.serie||"").trim(); if(s && !m.has(nrm(s))) m.set(nrm(s),s) });
+  return [...m.values()].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+}
+function pintarSeries(){ $("#dlSeries").innerHTML=seriesConhecidas().map(s=>`<option value="${esc(s)}"></option>`).join("") }
+/* filtros de marcação / série / tema do painel de ideias */
+let focoFiltro=null, serieFiltro=null, temaFiltro=null;
+/* tema por ideia (utilidade), vindo de psn_referencias; cache em memória */
+const temaPorIdeia={}, temasTentado={};
+const temaDe = i => temaPorIdeia[i.id]||"";
+
 function esc(s){return (s||"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 function md(s){return esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")}
 function nrm(s){return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
@@ -688,7 +728,7 @@ function rota(){
   const hash=location.hash;
   const capMatch = hash.match(/^#\/capturar(?:\?(.*))?$/);
   if(capMatch){
-    atual=null; busca=""; filtro="todas";
+    atual=null; busca=""; filtro="todas"; focoFiltro=serieFiltro=temaFiltro=null;
     const qs = capMatch[1] || location.search.replace(/^\?/,"");
     const refRaw = new URLSearchParams(qs).get("ref") || "";
     const url = extrairUrl(refRaw);
@@ -699,7 +739,8 @@ function rota(){
   const m=hash.match(/^#\/c\/(.+)$/);
   atual = m ? criadores.find(c=>c.id===m[1]) : null;
   if(m && !atual){ location.hash="#/"; return }
-  busca="";
+  busca=""; focoFiltro=serieFiltro=temaFiltro=null;
+  if(atual) delete temasTentado[atual.id];
   filtro = (atual && atual.finalidade==="ideias") ? "pendentes" : "todas";
   render();
 }
@@ -718,7 +759,7 @@ function pastaHTML(c){
     return `<div class="pasta" data-go="${c.id}" tabindex="0" role="button">
       ${pend?`<span class="sino" title="${pend} pendente(s) no mecanismo">${pend}</span>`:""}
       <button class="zap" data-zap="${c.id}" aria-label="Nova ideia rápida em ${esc(c.nome)}">⚡</button>
-      <span class="em">${esc(c.emoji||"💡")}</span>
+      <span class="em">${esc(c.emoji||(isUtil(c)?"📚":"💡"))}</span>
       <div>
         <div class="nm">${esc(c.nome)}</div>
         ${c.handle?`<div class="hd">${esc(arroba(c.handle))}</div>`:""}
@@ -837,7 +878,7 @@ function renderPainelIdeias(){
     <div class="hrow">
       <button class="icb" id="bVoltar" aria-label="Voltar aos canais">←</button>
       <div class="tt">
-        <div class="n1">${esc(c.emoji||"💡")} ${esc(c.nome)}</div>
+        <div class="n1">${esc(c.emoji||(isUtil(c)?"📚":"💡"))} ${esc(c.nome)}</div>
         <div class="n2">${esc(arroba(c.handle)||"canal")} · ${meus.length} ideia${meus.length===1?"":"s"}</div>
       </div>
       <button class="icb" id="bMenu" aria-label="Opções do canal">⋯</button>
@@ -860,8 +901,15 @@ function renderPainelIdeias(){
     todas: meus
   };
   if(!["pendentes","processadas","descartadas","todas"].includes(filtro)) filtro="pendentes";
+  const util=isUtil(c);
+  if(util) garantirTemas(c,meus);
   let lista = grupos[filtro]||meus;
-  if(busca) lista = lista.filter(i=>nrm(i.titulo+" "+(i.por_que||"")).includes(nrm(busca)));
+  if(busca) lista = lista.filter(i=>nrm(i.titulo+" "+(i.por_que||"")+" "+(i.serie||"")+(util?" "+temaDe(i):"")).includes(nrm(busca)));
+  if(util){ if(temaFiltro) lista=lista.filter(i=>temaDe(i)===temaFiltro) }
+  else if(focoFiltro){
+    lista=lista.filter(i=>(i.foco||[]).includes(focoFiltro));
+    if(focoFiltro==="serie" && serieFiltro) lista=lista.filter(i=>(i.serie||"").trim()===serieFiltro);
+  }
 
   const view=$("#view"); view.className="clara";
   const chips = [["pendentes","Pendentes",grupos.pendentes.length],
@@ -872,14 +920,38 @@ function renderPainelIdeias(){
     ${chips.map(([k,n,q])=>`<button class="filtro ${filtro===k?"on":""}" data-f="${k}">${n} ${q?"· "+q:""}</button>`).join("")}
     ${semLink?`<span class="chip chip-neutro">🔗 ${semLink} sem link</span>`:""}
   </div>`;
+  let fextra="";
+  if(util){
+    const tm=new Map();
+    grupos.processadas.forEach(i=>{ const t=temaDe(i); if(t) tm.set(t,(tm.get(t)||0)+1) });
+    if(temaFiltro && !tm.has(temaFiltro)) temaFiltro=null;
+    fextra = tm.size ? `<div class="filtros" id="rowTema" role="group" aria-label="Filtrar por tema">
+      ${[...tm].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],"pt-BR")).map(([t,n])=>
+        `<button class="filtro ${temaFiltro===t?"on":""}" data-tema="${esc(t)}">${esc(t)} · ${n}</button>`).join("")}</div>` : "";
+  } else {
+    fextra = `<div class="filtros" id="rowFoco" role="group" aria-label="Filtrar por marcação">
+      ${FOCOS.map(([k])=>{ const n=meus.filter(i=>(i.foco||[]).includes(k)).length;
+        return `<button class="filtro ${focoFiltro===k?"on":""}" data-foco="${k}">${FOCO_CURTO[k]}${n?" · "+n:""}</button>` }).join("")}</div>`;
+    if(focoFiltro==="serie"){
+      const ss=seriesConhecidas();
+      fextra += ss.length ? `<div class="filtros" id="rowSerie" role="group" aria-label="Filtrar por série">
+        ${ss.map(n=>`<button class="filtro sub ${serieFiltro===n?"on":""}" data-serie="${esc(n)}">📺 ${esc(n)}</button>`).join("")}</div>` : "";
+    }
+  }
 
   view.innerHTML = `<div class="wrap">
     ${stageHeaderHTML(STAGES[0].curto.toLowerCase(), STAGES[0].desc, meus.length)}
-    ${fchips}
+    ${fchips}${fextra}
     ${lista.length? lista.map(cardIdeiaHTML).join("") : vazioIdeias(filtro)}
   </div>`;
 
   view.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ filtro=b.dataset.f; renderPainelIdeias() });
+  view.querySelectorAll("[data-foco]").forEach(b=>b.onclick=()=>{
+    focoFiltro = focoFiltro===b.dataset.foco ? null : b.dataset.foco; serieFiltro=null; renderPainelIdeias() });
+  view.querySelectorAll("[data-serie]").forEach(b=>b.onclick=()=>{
+    serieFiltro = serieFiltro===b.dataset.serie ? null : b.dataset.serie; renderPainelIdeias() });
+  view.querySelectorAll("[data-tema]").forEach(b=>b.onclick=()=>{
+    temaFiltro = temaFiltro===b.dataset.tema ? null : b.dataset.tema; renderPainelIdeias() });
   view.querySelectorAll("[data-card]").forEach(el=>el.onclick=()=>abrirFichaIdeia(el.dataset.card));
 
   $("#fabslot").innerHTML = `<div class="fabs">
@@ -889,7 +961,26 @@ function renderPainelIdeias(){
   $("#fNovaIdeia").onclick=()=>abrirQC(c.id);
 }
 
+/* temas da pasta de utilidade: uma consulta em lote por canal (só ideias já processadas) */
+async function garantirTemas(c,meus){
+  if(temasTentado[c.id]) return;
+  const ids=meus.filter(i=>i.mec_status==="processada" && !(i.id in temaPorIdeia)).map(i=>i.id);
+  if(!ids.length) return;
+  temasTentado[c.id]=true;
+  try{
+    for(let k=0;k<ids.length;k+=40){
+      const lote=ids.slice(k,k+40);
+      const rows=await db("psn_referencias?select=ideia_id,aprendizado,tags&ideia_id=in.("+lote.join(",")+")");
+      lote.forEach(id=>{ temaPorIdeia[id]="" });
+      (rows||[]).forEach(r=>{ temaPorIdeia[r.ideia_id]=String((r.aprendizado&&r.aprendizado.tema)||(r.tags||[])[0]||"").trim().toLowerCase() });
+    }
+  }catch(e){ console.error(e); return }
+  if(atual && atual.id===c.id) renderPainelIdeias();
+}
+
 function cardIdeiaHTML(i){
+  const util=isUtil(atual), tema=util?temaDe(i):"";
+  const foco=util?[]:ordenaFoco(i.foco||[]), serie=(i.serie||"").trim();
   const data = i.criado_em ? new Date(i.criado_em).toLocaleDateString("pt-BR") : "";
   return `<div class="card" data-card="${i.id}">
     <div class="corpo">
@@ -897,6 +988,9 @@ function cardIdeiaHTML(i){
       <div class="metas">
         ${i.plataforma?`<span class="chip chip-neutro">${plataformaLabel(i.plataforma)}</span>`:""}
         ${mecChip(i)}
+        ${tema?`<span class="chip">🏷 ${esc(tema)}</span>`:""}
+        ${foco.map(k=>`<span class="chip">${esc(FOCO_CURTO[k])}</span>`).join("")}
+        ${serie&&!util?`<span class="chip chip-serie" title="${esc(serie)}">📺 ${esc(serie)}</span>`:""}
         ${data?`<span class="chip chip-neutro">${esc(data)}</span>`:""}
       </div>
       ${i.por_que?`<p class="clamp2" style="margin:var(--e2) 0 0;font-size:var(--t-mini);color:var(--texto-medio)">${esc(i.por_que)}</p>`:""}
@@ -1086,6 +1180,7 @@ function formCanal(c, finalidadePreset){
   emojiSel=c?.emoji||EMOJIS[criadores.length % EMOJIS.length];
   tipoSel=c?.tipo_conteudo||"reels";
   finalidadeSel=c?.finalidade||finalidadePreset||"producao";
+  if(finalidadeSel!=="ideias" && tipoSel==="utilidade") tipoSel="reels";
   $("#s3Title").textContent = c?"Editar canal":"Novo canal";
   const dicaFinalidade = v=> v==="ideias"
     ? "Ideias: caixa de referências que alimenta o mecanismo."
@@ -1113,7 +1208,9 @@ function formCanal(c, finalidadePreset){
     <div class="seg" id="cTipo">
       <button type="button" data-v="reels" class="${tipoSel==="reels"?"on":""}">🎥 Reels</button>
       <button type="button" data-v="estatico" class="${tipoSel==="estatico"?"on":""}">🖼️ Estático</button>
+      <button type="button" data-v="utilidade" id="cTipoUtil" class="${tipoSel==="utilidade"?"on":""} ${finalidadeSel==="ideias"?"":"hide"}">📚 Utilidade</button>
     </div>
+    <p class="dica ${tipoSel==="utilidade"?"":"hide"}" id="cTipoDica" style="margin-top:var(--e2)">conteúdo pra consumir e aplicar, não ideia de post</p>
     <label class="lbl">Emoji da pasta</label>
     <div class="emgrid" id="cEm">${EMOJIS.map(e=>
       `<button type="button" data-e="${e}" class="${e===emojiSel?"on":""}">${e}</button>`).join("")}</div>
@@ -1127,22 +1224,35 @@ function formCanal(c, finalidadePreset){
   });
   const sugerirNome=()=>{
     const n=$("#cNome"); if(!n) return;
-    const sugestoes=["Ideias · Reels","Ideias · Estático","Produção · Reels","Produção · Estático"];
+    const sugestoes=["Ideias · Reels","Ideias · Estático","Produção · Reels","Produção · Estático","Utilidades"];
     if(!n.value.trim() || sugestoes.includes(n.value.trim())){
-      n.value=(finalidadeSel==="ideias"?"Ideias":"Produção")+" · "+(tipoSel==="reels"?"Reels":"Estático");
+      n.value = tipoSel==="utilidade" ? "Utilidades"
+        : (finalidadeSel==="ideias"?"Ideias":"Produção")+" · "+(tipoSel==="reels"?"Reels":"Estático");
     }
+  };
+  /* utilidade só existe em canal de ideias: em produção a opção some */
+  const ajustaTipo=()=>{
+    if(finalidadeSel!=="ideias" && tipoSel==="utilidade") tipoSel="reels";
+    $("#cTipoUtil").classList.toggle("hide",finalidadeSel!=="ideias");
+    $("#cTipo").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.v===tipoSel));
+    $("#cTipoDica").classList.toggle("hide",tipoSel!=="utilidade");
   };
   $("#cTipo").querySelectorAll("button").forEach(b=>b.onclick=()=>{
     tipoSel=b.dataset.v;
-    $("#cTipo").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
-    sugerirNome();
+    if(tipoSel==="utilidade" && finalidadeSel!=="ideias"){
+      finalidadeSel="ideias";
+      const f=$("#cFinalidade");
+      if(f){ f.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.v==="ideias"));
+        $("#cFinalidadeDica").textContent=dicaFinalidade("ideias") }
+    }
+    ajustaTipo(); sugerirNome();
   });
   const fin=$("#cFinalidade");
   if(fin) fin.querySelectorAll("button").forEach(b=>b.onclick=()=>{
     finalidadeSel=b.dataset.v;
     fin.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
     $("#cFinalidadeDica").textContent = dicaFinalidade(finalidadeSel);
-    sugerirNome();
+    ajustaTipo(); sugerirNome();
   });
   $("#cCancel").onclick=fechar3;
   $("#cSalvar").onclick=salvarCanal;
@@ -1206,19 +1316,39 @@ async function excluirCanal(){
 }
 
 /* ============ CAPTURA RÁPIDA ============ */
-let qcAlvo=null, qcStage="tempestade", qcExterno=false;
+let qcAlvo=null, qcStage="tempestade", qcExterno=false, qcFoco=[];
+/* ajusta rótulo/placeholder e o bloco de marcações conforme o tipo do canal escolhido */
+function pintarQCCanal(canalId){
+  const c=criadores.find(x=>x.id===canalId);
+  const util=isUtil(c), post=isIdeiaPost(c);
+  $("#qcTxtLbl").textContent = util ? "O que quer aprender/usar disso" : "Ideia";
+  $("#qcTxt").placeholder = util ? "ex: lista de ganchos pra testar nos meus carrosséis"
+    : c?.finalidade==="ideias" ? "o que chamou sua atenção e como isso entra no seu conteúdo"
+    : "ex: o erro que todo mundo comete ao cortar o primeiro segundo do vídeo";
+  $("#qcFocoWrap").classList.toggle("hide",!post);
+  pintarQCFoco();
+}
+function pintarQCFoco(){
+  $("#qcFocoRow").innerHTML=FOCOS.map(([k,n])=>
+    `<button type="button" class="filtro ${qcFoco.includes(k)?"on":""}" data-k="${k}" aria-pressed="${qcFoco.includes(k)}">${n}</button>`).join("");
+  $("#qcFocoRow").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    const k=b.dataset.k;
+    qcFoco = qcFoco.includes(k) ? qcFoco.filter(x=>x!==k) : [...qcFoco,k];
+    pintarQCFoco();
+    if(k==="serie" && qcFoco.includes("serie")) setTimeout(()=>$("#qcSerie").focus(),30);
+  });
+  $("#qcSerieWrap").classList.toggle("hide",!qcFoco.includes("serie"));
+}
+function resetQCFoco(){ qcFoco=[]; $("#qcSerie").value=""; pintarSeries() }
 function abrirQC(criadorId, st){
   qcExterno=false;
   qcAlvo=criadorId; qcStage=st||"tempestade";
   const c=criadores.find(x=>x.id===criadorId);
-  const isIdeias = c?.finalidade==="ideias";
   $("#qcRot").textContent = "Tempestade de ideias";
   $("#qcH4").textContent = "joga aqui antes de esquecer";
   $("#qcSub").textContent = "Em "+(c?.nome||"canal")+" · lapida depois. Sem internet, guarda no aparelho e sobe sozinha.";
   $("#qcCanalWrap").classList.add("hide");
-  $("#qcTxt").placeholder = isIdeias
-    ? "o que chamou sua atenção e como isso entra no seu conteúdo"
-    : "ex: o erro que todo mundo comete ao cortar o primeiro segundo do vídeo";
+  resetQCFoco(); pintarQCCanal(criadorId);
   $("#qcTxt").value=""; $("#qcRef").value="";
   $("#qc").classList.remove("hide");
   document.body.style.overflow="hidden";
@@ -1236,7 +1366,9 @@ function abrirQCExterno(url){
   const baixo=(url||"").toLowerCase();
   const sugestaoTipo = /tiktok\.com|\/reel\//.test(baixo) ? "reels"
     : /instagram\.com\/p\//.test(baixo) ? "estatico" : null;
-  const sugerido = (sugestaoTipo && ideiasCanais.find(c=>c.tipo_conteudo===sugestaoTipo)) || ideiasCanais[0];
+  /* nunca sugere utilidade: essa escolha é da pessoa */
+  const sugerido = (sugestaoTipo && ideiasCanais.find(c=>c.tipo_conteudo===sugestaoTipo))
+    || ideiasCanais.find(c=>!isUtil(c)) || ideiasCanais[0];
 
   qcExterno=true; qcAlvo=sugerido.id; qcStage="tempestade";
   $("#qcRot").textContent="Tempestade de ideias";
@@ -1245,13 +1377,14 @@ function abrirQCExterno(url){
   $("#qcCanalWrap").classList.remove("hide");
   $("#qcCanalSel").innerHTML = ideiasCanais.map(c=>
     `<option value="${c.id}" ${c.id===sugerido.id?"selected":""}>${esc(c.emoji||"💡")} ${esc(c.nome)}</option>`).join("");
-  $("#qcTxt").placeholder = "o que chamou sua atenção e como isso entra no seu conteúdo";
+  resetQCFoco(); pintarQCCanal(sugerido.id);
   $("#qcTxt").value=""; $("#qcRef").value=url||"";
   $("#qc").classList.remove("hide");
   document.body.style.overflow="hidden";
   setTimeout(()=>$("#qcTxt").focus(),90);
 }
 function fecharQC(){ $("#qc").classList.add("hide"); document.body.style.overflow=""; qcExterno=false }
+$("#qcCanalSel").onchange=e=>pintarQCCanal(e.target.value);
 $("#qcCancel").onclick=()=>{ const ext=qcExterno; fecharQC(); if(ext) location.hash="#/" };
 $("#qc").onclick=e=>{ if(e.target.id==="qc"){ const ext=qcExterno; fecharQC(); if(ext) location.hash="#/" } };
 $("#qcTxt").addEventListener("keydown",e=>{ if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)) $("#qcSave").click() });
@@ -1272,8 +1405,14 @@ $("#qcSave").onclick=async()=>{
   const linha=(t||ref).split("\n")[0].slice(0,120);
   const payload={criador_id:canalId, titulo:linha||"(sem título)", stage:qcStage};
   if(ref) payload.referencia=ref;
-  if(isIdeias){ if(t) payload.por_que=t; }
-  else { payload.roteiro = t.length>linha.length ? t : ""; }
+  if(isIdeias){
+    if(t) payload.por_que=t;
+    if(isIdeiaPost(c) && qcFoco.length){
+      payload.foco=ordenaFoco(qcFoco);
+      const sr=$("#qcSerie").value.trim();
+      if(qcFoco.includes("serie") && sr) payload.serie=sr;
+    }
+  } else { payload.roteiro = t.length>linha.length ? t : ""; }
   const voltarHome=qcExterno;
   fecharQC();
   try{
@@ -1464,6 +1603,8 @@ function fmtDataBR(d){ if(!d) return null; try{ return new Date(d+"T00:00:00").t
 function abrirFichaIdeia(id){
   const c=ideias.find(x=>x.id===id); if(!c) return;
   aberta=c;
+  const canal=canalDe(c), util=isUtil(canal), post=isIdeiaPost(canal);
+  pintarSeries();
   $("#sTitle").textContent=c.titulo||"Referência";
   $("#sSub").textContent=(atual?.nome||"")+(c.plataforma?" · "+plataformaLabel(c.plataforma):"");
   $("#sStepper").innerHTML="";
@@ -1477,8 +1618,14 @@ function abrirFichaIdeia(id){
       ${/^https?:\/\//i.test(c.referencia||"")?`<a class="btn btn-fantasma" href="${esc(c.referencia)}" target="_blank" rel="noopener">Abrir ↗</a>`:""}
     </div>
 
-    <label class="lbl" for="fPorQue">Ideia</label>
+    <label class="lbl" for="fPorQue">${util?"O que quer aprender/usar disso":"Ideia"}</label>
     <textarea class="campo" id="fPorQue" rows="4">${esc(c.por_que||"")}</textarea>
+
+    ${post?`<label class="lbl" id="fFocoLbl">O que chamou atenção?</label>
+    <div class="filtros" id="fFocoRow" role="group" aria-labelledby="fFocoLbl"></div>
+    <div class="hide" id="fSerieWrap" style="margin:calc(var(--e2) * -1) 0 0">
+      <input class="campo" type="text" id="fSerie" list="dlSeries" placeholder="Qual série?" aria-label="Qual série?" autocomplete="off" value="${esc(c.serie||"")}">
+    </div>`:""}
 
     <label class="lbl">Status</label>
     <div style="margin-bottom:var(--e3)">${mecChip(c)}</div>
@@ -1510,6 +1657,35 @@ function abrirFichaIdeia(id){
     }catch(e){ toast("Falhou ao excluir",1) }
   };
 
+  if(post){
+    const pintarFoco=()=>{
+      const foco=c.foco||[];
+      $("#fFocoRow").innerHTML=FOCOS.map(([k,n])=>
+        `<button type="button" class="filtro ${foco.includes(k)?"on":""}" data-k="${k}" aria-pressed="${foco.includes(k)}">${n}</button>`).join("");
+      $("#fSerieWrap").classList.toggle("hide",!foco.includes("serie"));
+      $("#fFocoRow").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+        const k=b.dataset.k, tinha=(c.foco||[]).includes(k);
+        c.foco = ordenaFoco(tinha ? (c.foco||[]).filter(x=>x!==k) : [...(c.foco||[]),k]);
+        const patch={foco:c.foco.length?c.foco:null};
+        if(k==="serie"){
+          const sr=$("#fSerie").value.trim();
+          c.serie = tinha ? null : (sr||null);
+          patch.serie = c.serie;
+        }
+        salvarDepois(c.id,patch);
+        pintarFoco();
+        if(k==="serie" && !tinha) setTimeout(()=>$("#fSerie").focus(),30);
+        if(c._ref) pintarAnalise(c,c._ref);
+      });
+    };
+    pintarFoco();
+    $("#fSerie").oninput=e=>{
+      const v=e.target.value.trim(); c.serie=v||null;
+      salvarDepois(c.id,{serie:c.serie});
+      if(c._ref) pintarAnalise(c,c._ref);
+    };
+  }
+
   renderAnalise(c);
 
   $("#sheet").classList.remove("hide"); $("#sheet").scrollTop=0;
@@ -1539,19 +1715,27 @@ async function renderAnalise(c){
     const rows = await db("psn_referencias?ideia_id=eq."+c.id+"&select=*");
     const r = rows && rows[0];
     if(!r){ box.innerHTML = `<p class="dica" style="margin-top:var(--e5)">Análise ainda não disponível.</p>`; return }
-    box.innerHTML = analiseHTML(r);
-    const head=box.querySelector("#legHead");
-    if(head) head.onclick=()=>{
-      const b=box.querySelector("#legBody"), f=b.classList.toggle("hide");
-      head.setAttribute("aria-expanded",String(!f));
-      head.querySelector(".arrow").textContent=f?"▾":"▴";
-    };
+    c._ref=r;
+    pintarAnalise(c,r);
   }catch(e){
     box.innerHTML = `<p class="dica" style="margin-top:var(--e5)">Não consegui carregar a análise.</p>`;
   }
 }
 
-function analiseHTML(r){
+function pintarAnalise(c,r){
+  const box=$("#fAnalise"); if(!box || aberta!==c) return;
+  box.innerHTML = analiseHTML(r,c);
+  const head=box.querySelector("#legHead");
+  if(head) head.onclick=()=>{
+    const b=box.querySelector("#legBody"), f=b.classList.toggle("hide");
+    head.setAttribute("aria-expanded",String(!f));
+    head.querySelector(".arrow").textContent=f?"▾":"▴";
+  };
+}
+
+function analiseHTML(r,c){
+  const util=isUtil(canalDe(c)), post=isIdeiaPost(canalDe(c));
+  const foco = post ? (c.foco||[]) : [];
   const metaBits=[
     r.autor?"@"+String(r.autor).replace(/^@+/,""):null,
     r.formato,
@@ -1574,28 +1758,62 @@ function analiseHTML(r){
 
   const an=r.analise||{};
   const naoCapt=r.nao_capturado||[];
+  const pre=t=>`<p style="white-space:pre-wrap;margin:var(--e1) 0 0">${esc(t)}</p>`;
+
+  /* gancho e CTA: seção normal ou, quando marcado, bloco de destaque no topo */
+  const titSec=(dentro,t,chip)=> dentro
+    ? `<div class="rotulo" style="margin-top:var(--e3);display:flex;gap:var(--e2);align-items:center">${t}${chip}</div>`
+    : `<div class="grupo-tit"><span class="t">${t}</span><span class="l"></span>${chip}</div>`;
+  const ganchoHTML=dentro=> r.gancho ? `
+    ${titSec(dentro,"Gancho",r.tipo_gancho?`<span class="chip">${esc(TIPO_GANCHO_LABEL[r.tipo_gancho]||r.tipo_gancho)}</span>`:"")}
+    <p style="white-space:pre-wrap">${esc(r.gancho)}</p>
+    ${an.gancho?`<p class="dica" style="white-space:pre-wrap">${esc(an.gancho)}</p>`:""}` : "";
+  const ctaHTML=dentro=> (r.cta||r.tipo_cta) ? `
+    ${titSec(dentro,"CTA",(r.tipo_cta?`<span class="chip">${esc(TIPO_CTA_LABEL[r.tipo_cta]||r.tipo_cta)}</span>`:"")+
+      (r.palavra_chave?`<span class="chip chip-neutro">🔑 ${esc(r.palavra_chave)}</span>`:""))}
+    ${r.cta?`<p style="white-space:pre-wrap">${esc(r.cta)}</p>`:""}
+    ${an.cta?`<p class="dica" style="white-space:pre-wrap">${esc(an.cta)}</p>`:""}` : "";
+
+  /* blocos do que foi marcado, antes do resto da análise */
+  const vars=Array.isArray(an.variacoes_gancho)?an.variacoes_gancho.filter(Boolean):[];
+  const blocos=[];
+  if(foco.includes("conteudo") && an.pauta)
+    blocos.push(`<div class="destaque"><div class="t">Conteúdo</div>${pre(an.pauta)}</div>`);
+  if(foco.includes("formato") && an.formato_visual)
+    blocos.push(`<div class="destaque"><div class="t">Formato/visual</div>${pre(an.formato_visual)}</div>`);
+  if(foco.includes("gancho") && (r.gancho||r.cta||r.tipo_cta||vars.length))
+    blocos.push(`<div class="destaque"><div class="t">Gancho/copy</div>${ganchoHTML(true)}${ctaHTML(true)}
+      ${vars.length?`<div class="rotulo" style="margin-top:var(--e3)">Variações do gancho</div>
+        <ul>${vars.map(v=>`<li>${esc(String(v))}</li>`).join("")}</ul>`:""}</div>`);
+  if(foco.includes("serie") && an.serie)
+    blocos.push(`<div class="destaque"><div class="t">Série${c.serie?": "+esc(c.serie):""}</div>${pre(an.serie)}</div>`);
+
+  /* utilidade: o aprendizado no lugar de "o que reaproveitar" */
+  const ap=(util && r.aprendizado && typeof r.aprendizado==="object") ? r.aprendizado : null;
+  const pontos=ap && Array.isArray(ap.pontos) ? ap.pontos.filter(x=>x!=null&&x!=="") : [];
+  const apHTML = ap ? `<div class="destaque"><div class="t">Aprendizado</div>
+      ${ap.tema?`<div class="metas" style="margin:var(--e1) 0 var(--e2)"><span class="chip">🏷 ${esc(String(ap.tema))}</span></div>`:""}
+      ${ap.resumo?`<p style="margin:0;white-space:pre-wrap">${esc(String(ap.resumo))}</p>`:""}
+      ${pontos.length?`<ol>${pontos.map(x=>`<li style="white-space:pre-wrap">${esc(String(x))}</li>`).join("")}</ol>`:""}
+      ${ap.como_aplicar?`<div class="rotulo" style="margin-top:var(--e3)">Como aplicar</div>${pre(String(ap.como_aplicar))}`:""}
+    </div>` : "";
 
   return `
-    <div class="fichatopo" style="align-items:flex-start;flex-direction:column;gap:var(--e2)">
+    ${metaBits.length?`<div class="fichatopo" style="align-items:flex-start;flex-direction:column;gap:var(--e2)">
       <div class="rot">Referência</div>
       <div class="secao-sub" style="margin:0">${esc(metaBits.join(" · "))}</div>
-    </div>
+    </div>`:""}
 
-    ${r.gancho?`<div class="grupo-tit"><span class="t">Gancho</span><span class="l"></span>
-      ${r.tipo_gancho?`<span class="chip">${esc(TIPO_GANCHO_LABEL[r.tipo_gancho]||r.tipo_gancho)}</span>`:""}</div>
-      <p style="white-space:pre-wrap">${esc(r.gancho)}</p>
-      ${an.gancho?`<p class="dica" style="white-space:pre-wrap">${esc(an.gancho)}</p>`:""}`:""}
+    ${apHTML}${blocos.join("")}
+
+    ${foco.includes("gancho")?"":ganchoHTML(false)}
 
     ${estruturaChips.length?`<div class="grupo-tit"><span class="t">Estrutura</span><span class="l"></span></div>
       <div class="seq">${estruturaChips.map((e,k)=>
         `<span class="chip chip-neutro">${esc(e)}</span>${k<estruturaChips.length-1?'<span class="sep">→</span>':""}`).join("")}</div>
       ${an.estrutura?`<p class="dica" style="white-space:pre-wrap">${esc(an.estrutura)}</p>`:""}`:""}
 
-    ${(r.cta||r.tipo_cta)?`<div class="grupo-tit"><span class="t">CTA</span><span class="l"></span>
-      ${r.tipo_cta?`<span class="chip">${esc(TIPO_CTA_LABEL[r.tipo_cta]||r.tipo_cta)}</span>`:""}
-      ${r.palavra_chave?`<span class="chip chip-neutro">🔑 ${esc(r.palavra_chave)}</span>`:""}</div>
-      ${r.cta?`<p style="white-space:pre-wrap">${esc(r.cta)}</p>`:""}
-      ${an.cta?`<p class="dica" style="white-space:pre-wrap">${esc(an.cta)}</p>`:""}`:""}
+    ${foco.includes("gancho")?"":ctaHTML(false)}
 
     ${slides?`<div class="grupo-tit"><span class="t">Slides</span><span class="l"></span></div>
       <div class="slides">${slides}</div>`:""}
@@ -1606,11 +1824,11 @@ function analiseHTML(r){
       <div class="accbody hide" id="legBody" style="padding-top:var(--e2);white-space:pre-wrap;font-size:var(--t-mini)">${esc(r.legenda)}</div>
     </div>`:""}
 
-    ${(an.por_que_funciona||an.desenvolvimento||an.o_que_reaproveitar)?
+    ${(an.por_que_funciona||an.desenvolvimento||(!util&&an.o_que_reaproveitar))?
       `<div class="grupo-tit"><span class="t">Análise</span><span class="l"></span></div>`:""}
     ${an.por_que_funciona?`<div class="rotulo" style="margin-top:var(--e3)">Por que funciona</div><p style="white-space:pre-wrap;margin-top:var(--e1)">${esc(an.por_que_funciona)}</p>`:""}
     ${an.desenvolvimento?`<div class="rotulo" style="margin-top:var(--e3)">Desenvolvimento</div><p style="white-space:pre-wrap;margin-top:var(--e1)">${esc(an.desenvolvimento)}</p>`:""}
-    ${an.o_que_reaproveitar?`<div class="destaque"><div class="t">O que reaproveitar</div>
+    ${an.o_que_reaproveitar&&!util?`<div class="destaque"><div class="t">O que reaproveitar</div>
       <p style="margin:0;white-space:pre-wrap">${esc(an.o_que_reaproveitar)}</p></div>`:""}
 
     ${(r.tags||[]).length?`<div class="metas" style="margin-top:var(--e4)">
