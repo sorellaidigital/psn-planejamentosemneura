@@ -16,6 +16,12 @@ export function criarDb(url: string, chave: string): Db {
       if (r.error) throw new Error("ultimo");
       return r.data?.[0]?.criado_em ?? null;
     },
+    async idsUltimoDisparado() {
+      const r = await sb.from("psn_pauta_disparo").select("ids").eq("status", "disparado")
+        .order("criado_em", { ascending: false }).limit(1);
+      if (r.error) throw new Error("ids");
+      return (r.data?.[0]?.ids ?? []) as string[];
+    },
     async contarDisparados(desdeIso) {
       const r = await sb.from("psn_pauta_disparo").select("id", { count: "exact", head: true })
         .eq("status", "disparado").gte("criado_em", desdeIso);

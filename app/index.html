@@ -2534,8 +2534,10 @@ const hjLegado=p=>p.origem==="notion"&&["para_revisar","ajustar","aprovado","pos
 const hjAtivas=()=>HJ.pautas.filter(p=>!hjLegado(p));
 const hjNoBanco=()=>HJ.pautas.filter(p=>p.status==="ideia");
 const hjNaLixeira=()=>HJ.pautas.filter(p=>p.status==="descartado");
-/* sugestão do dia = tem vaga (ordem) e data de hoje; a ideia do Notion reproposta pela rotina mantém origem="notion" */
-const hjEhSugHoje=p=>p.ordem!=null&&p.data===hjHoje()&&p.origem!=="manual";
+/* sugestão do dia = tem vaga (ordem) e data de hoje; a ideia do Notion reproposta pela rotina mantém origem="notion".
+   Produzir do Banco grava data=hoje e a ideia guarda a ordem antiga: depois de decidida, só conta como "de hoje"
+   se foi criada hoje (a sugestão das 05:47); ainda 'sugerida' (inclusive reproposta do banco) sempre conta. */
+const hjEhSugHoje=p=>p.ordem!=null&&p.data===hjHoje()&&p.origem!=="manual"&&(p.status==="sugerida"||hjDia(p.criado_em)===p.data);
 function hjDiaDaPauta(p){
   if(p.status==="postado"&&p.postado_em) return hjDia(p.postado_em);
   return p.data||(p.agendado_para?hjDia(p.agendado_para):"")||(p.aprovado_producao_em?hjDia(p.aprovado_producao_em):"");
@@ -2662,7 +2664,7 @@ function hjMontarDemo(){
     if(k.includes("R")) add({formato:"reels",status:"postado",data:d,tema:TR[i%TR.length],postado_em:T(d,"12:"+hjPad(8+(i*11)%44)),postado_origem:"auto",criado_em:T(d,"06:00"),aprovado_producao_em:T(d,"07:00"),decidido_em:T(d,"07:00")}) });
   const est=HJ_EST_DEMO, g=id=>P.find(p=>p.id===id);
   const to=(p,st,ex)=>Object.assign(p,{status:st},ex||{});
-  if(est==="producao"||est==="janela"||est==="demora"){ to(e1,est==="janela"?"aprovada_producao":"em_producao",{aprovado_producao_em:T(hoje,"07:15"),decidido_em:T(hoje,"07:15"),em_producao_em:est==="janela"?null:T(hoje,"08:02")}); to(r1,"aprovada_producao",{aprovado_producao_em:T(hoje,"07:16"),decidido_em:T(hoje,"07:16")});
+  if(est==="producao"||est==="janela"||est==="demora"){ to(e1,est==="janela"?"aprovada_producao":"em_producao",{aprovado_producao_em:T(hoje,"07:15"),decidido_em:T(hoje,"07:15"),em_producao_em:est==="janela"?null:T(hoje,"08:02")}); to(r1,est==="janela"?"aprovada_producao":"em_producao",{aprovado_producao_em:T(hoje,"07:16"),decidido_em:T(hoje,"07:16"),em_producao_em:est==="janela"?null:T(hoje,"08:02")});
     to(g("e2"),"ideia",{decidido_em:T(hoje,"07:16")}); to(g("e3"),"ideia",{decidido_em:T(hoje,"07:16")}); to(g("r2"),"ideia",{decidido_em:T(hoje,"07:16")}); to(g("r3"),"descartado",{decidido_em:T(hoje,"07:16"),descartado_em:T(hoje,"07:16")}) }
   if(est==="revisar"){ const pr=(p,hm)=>to(p,"para_revisar",{aprovado_producao_em:T(hoje,"07:15"),decidido_em:T(hoje,"07:15"),produzido_em:T(hoje,hm)}); pr(e1,"08:24"); e1.slides=slidesE1; e1.avisos="Conferir: 0 erro, 0 aviso (11 slides).\nFatos a confirmar: o plano grátis passa a ter só o 3.5 Flash-Lite a partir de 9/10.\n\nImagens para gerar (GPT) — anexar rosto_referencia.jpeg e foto-duda.jpg.png:\n\ncena-34-mesa-trabalho.jpg (capa, slide 1: \"e agora?\"; camisa):\nFoto realista, estética de filme analógico 35mm, da MESMA mulher das fotos de referência. Cena: escritório comum, ela à mesa olhando o celular com a testa franzida. Enquadramento VERTICAL 4:5. Sem texto, sem logotipos.\n\ncena-35-celular-na-mesa.jpg (slide 2; camisa):\nFoto realista, 35mm, mesma mulher. Cena: fim de tarde, ela usa o celular pessoal ao lado do monitor. Enquadramento VERTICAL 4:5. Sem texto."; pr(r1,"08:31");
     ["e2","e3","r2","r3"].forEach(id=>to(g(id),"ideia",{decidido_em:T(hoje,"07:16")})) }
@@ -2916,7 +2918,9 @@ function hjTxtProducao(p){
   const ref=p.status==="ajustar"?(p.comentario_em||p.revisado_em||p.decidido_em):(p.decidido_em||p.aprovado_producao_em);
   const disp=d&&d.status==="disparado"&&d.criado_em&&(!ref||new Date(d.criado_em)>new Date(ref))?new Date(d.criado_em):null;
   const inicio=p.status==="em_producao"?(p.em_producao_em?new Date(p.em_producao_em):disp):disp;
-  if(p.status==="em_producao"||disp){
+  /* disparo recente que não pegou o item (teto: 3 por execução, 6 por dia) = segue na fila para a próxima janela */
+  const pegou=p.status==="em_producao"||(disp&&agora-disp<5*60e3);
+  if(pegou){
     if(inicio&&agora-inicio>25*60e3) return `<b>Demorando mais que o normal.</b> Se não chegar, vai na próxima janela.`;
     return `<b>Produzindo agora</b> · chega em ~10 min`;
   }

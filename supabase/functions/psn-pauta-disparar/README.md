@@ -10,7 +10,7 @@ O app chama depois de "Produzir/Ajustar". Se há pauta em `aprovada_producao` ou
 Resposta 200 `{disparou:true, sessao_url?}` ou `{disparou:false, motivo}` com motivo em
 `fila_vazia | debounce | teto_diario | nao_configurado | erro`. (500 `erro_interno` só se o banco falhar.)
 
-Regras: debounce de 2 min após um `disparado`; teto de 20 `disparado` por dia (America/Sao_Paulo); registros `ignorado`/`nao_configurado`
+Regras: debounce de 2 min após um `disparado` (só se a fila não tiver id novo desde ele); teto de 10 `disparado` por dia (America/Sao_Paulo); registros `ignorado`/`nao_configurado`
 no máximo 1 por minuto (anti-spam). O texto enviado contém só uuids da fila.
 
 ## Destinos (secret `PSN_PRODUCAO_MODO`)

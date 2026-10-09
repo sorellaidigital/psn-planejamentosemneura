@@ -1,5 +1,5 @@
 import { assert, assertEquals } from "jsr:@std/assert@1";
-import { type Db, handler, inicioDiaBRT, type StatusDisparo } from "./handler.ts";
+import { type Db, handler, inicioDiaBRT, type StatusDisparo, TETO_DIA } from "./handler.ts";
 
 const AGORA = new Date("2026-10-09T15:00:00Z");
 const ID = "e831a498-391b-4e29-ac66-194d3aa987c1";
@@ -15,6 +15,10 @@ class FakeDb implements Db {
   ultimo(st: StatusDisparo[]) {
     const r = this.regs.filter((x) => st.includes(x.status)).map((x) => x.criado_em).sort().pop();
     return Promise.resolve(r ?? null);
+  }
+  idsUltimoDisparado() {
+    const r = this.regs.filter((x) => x.status === "disparado").sort((a, b) => a.criado_em.localeCompare(b.criado_em)).pop();
+    return Promise.resolve(r?.ids ?? []);
   }
   contarDisparados(desde: string) {
     return Promise.resolve(this.regs.filter((x) => x.status === "disparado" && x.criado_em >= desde).length);
@@ -68,9 +72,20 @@ Deno.test("debounce: disparado há < 2 min => ignorado", async () => {
   assertEquals(chamadas.length, 0);
 });
 
-Deno.test("teto: 20 disparados hoje => ignorado 'teto diário'; ontem (BRT) não conta", async () => {
+Deno.test("debounce não segura item novo: fila com id fora do último disparo => dispara", async () => {
   const { db, deps, chamadas } = montar();
-  for (let i = 0; i < 20; i++) db.regs.push({ criado_em: ha(3 * 3600_000 + i * 1000), ids: [ID], status: "disparado" });
+  const NOVO = "0b5a3a52-8f3e-4f0e-9a3c-2d6f1c1e7a10";
+  db.filaIds = [ID, NOVO];
+  db.regs.push({ criado_em: ha(60_000), ids: [ID], status: "disparado" });
+  const r = await handler(post(), deps);
+  assertEquals((await r.json()).disparou, true);
+  assertEquals(chamadas.length, 1);
+});
+
+Deno.test("teto: TETO_DIA disparados hoje => ignorado 'teto diário'; ontem (BRT) não conta", async () => {
+  const { db, deps, chamadas } = montar();
+  assertEquals(TETO_DIA, 10);
+  for (let i = 0; i < TETO_DIA; i++) db.regs.push({ criado_em: ha(3 * 3600_000 + i * 1000), ids: [ID], status: "disparado" });
   const r = await handler(post(), deps);
   assertEquals((await r.json()).motivo, "teto_diario");
   assertEquals(db.regs.at(-1)?.motivo, "teto diário");

@@ -1,6 +1,6 @@
 // Lógica do psn-pauta-disparar (injeção de dependências para teste).
 export const DEBOUNCE_MS = 2 * 60_000;
-export const TETO_DIA = 20;
+export const TETO_DIA = 10; // o workflow ainda limita a 6 execuções com produção/dia e 3 itens por execução
 export const THROTTLE_MS = 60_000;
 export const ORIGENS = ["https://planejamento-sem-neura.netlify.app"];
 const FIRE = "https://api.anthropic.com/v1/claude_code/routines";
@@ -14,6 +14,8 @@ export interface Db {
   fila(): Promise<string[]>;
   /** criado_em (ISO) do último registro com esse status, ou null */
   ultimo(status: StatusDisparo[]): Promise<string | null>;
+  /** ids do último 'disparado' (para o debounce só segurar o que já foi mandado) */
+  idsUltimoDisparado(): Promise<string[]>;
   /** quantos 'disparado' desde o instante (ISO) */
   contarDisparados(desdeIso: string): Promise<number>;
   registrar(r: { ids: string[]; status: StatusDisparo; motivo?: string; sessao_url?: string }): Promise<void>;
@@ -69,7 +71,12 @@ export async function handler(req: Request, deps: Deps): Promise<Response> {
 
     if (ids.length === 0) return await semProducao("ignorado", "fila vazia");
 
-    if (ms(await db.ultimo(["disparado"])) < DEBOUNCE_MS) return await semProducao("ignorado", "debounce");
+    // Debounce só quando a fila não tem nada novo desde o último disparo: um item aprovado 1 min depois
+    // de outro precisa de um disparo próprio (o workflow enfileira pela concurrency e roda em seguida).
+    if (ms(await db.ultimo(["disparado"])) < DEBOUNCE_MS) {
+      const ja = new Set(await db.idsUltimoDisparado());
+      if (ids.every((i) => ja.has(i))) return await semProducao("ignorado", "debounce");
+    }
     if (await db.contarDisparados(inicioDiaBRT(agora)) >= TETO_DIA) return await semProducao("ignorado", "teto diário");
 
     const modo = (deps.env("PSN_PRODUCAO_MODO") || "github").toLowerCase();
