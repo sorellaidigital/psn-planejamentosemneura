@@ -2554,12 +2554,13 @@ function hjCenas(p){
   return [];
 }
 const hjPorQue=p=>Array.isArray(p.por_que)?p.por_que.map(x=>Array.isArray(x)?{tipo:x[0],texto:x[1]}:x).filter(x=>x&&x.texto):[];
-function hjSlideUrl(s){
+/* v = produzido_em: a refação sobrescreve <pauta>/NN.png (upsert); sem isso o navegador/CDN mostra a versão velha */
+function hjSlideUrl(s,v){
   const path=typeof s==="string"?s:(s&&(s.path||s.url))||""; if(!path) return "";
   if(/^(https?:|data:)/i.test(path)) return path;
-  return SB_URL+"/storage/v1/object/public/psn-pautas/"+path.replace(/^\/+/,"");
+  return SB_URL+"/storage/v1/object/public/psn-pautas/"+path.replace(/^\/+/,"")+(v?"?v="+encodeURIComponent(v):"");
 }
-const hjSlides=p=>Array.isArray(p.slides)?[...p.slides].sort((a,b)=>(a&&a.n||0)-(b&&b.n||0)).map(hjSlideUrl).filter(Boolean):[];
+const hjSlides=p=>Array.isArray(p.slides)?[...p.slides].sort((a,b)=>(a&&a.n||0)-(b&&b.n||0)).map(x=>hjSlideUrl(x,p.produzido_em)).filter(Boolean):[];
 const hjPermalink=p=>{ const m=p.ig_midia_id&&HJ.midias.find(x=>x.id===p.ig_midia_id); return m&&/^https:\/\//i.test(m.permalink||"")?m.permalink:"" };
 
 /* ---------- horários do público (psn_ig_horarios) ---------- */
