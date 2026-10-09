@@ -18,7 +18,7 @@ paralelo de 5 dias úteis com o Notion antes do corte.
 |---|---|
 | R0 base (repo central + inventário do Notion) | Feita em 08/10: histórico do `mecanismo-inst` neste repo, `main` criada; inventário de 19 linhas do Notion |
 | R1 escolher antes de produzir | **No ar desde 08/10 (noite).** Migrações `20261010_psn_pauta_v1.sql` + `20261011_psn_pauta_v1_1.sql`; app com Hoje/Calendário/Banco/Lixeira/ficha (PR #1, deploy conferido); backfill de 11 ideias + 4 pautas antigas do Notion; rotina "Pauta do Dia" em modo sugestões todo dia 05:47 (PR sorellaidigital/mecanismo-car#8). Disparo de teste 08/10 21h: 3 Reels novos + 3 estáticos repropostos do banco, `rotina_status=parcial` (radar só achou fonte para o Copilot) |
-| R2 produção sob demanda | Pendente: bucket `psn-pautas` + upload de PNGs no `pipeline.psn`, rotina "Produção da Pauta" (texto em `mecanismo-car/docs/ROTINAS-PAUTA.md`). Até lá, o que for para "Produzir" fica na fila |
+| R2 produção sob demanda | **No ar desde 09/10.** Bucket `psn-pautas`, Edge Functions `psn-pauta-upload` e `psn-pauta-disparar` (v2), app dispara ao tocar em Produzir/Ajustar; produção no GitHub Actions do `mecanismo-car` (`producao-pauta.yml`, reserva 08:30/13:30/18:30, tetos 3 itens × 6 execuções/dia). Falta a Duda cadastrar `ANTHROPIC_API_KEY` e `PSN_ROTINA_SEGREDO` (GitHub) e `PSN_GITHUB_TOKEN` (Supabase). Mapa: `docs/MAPA-PSN.html` |
 | R3 corte do Notion + Tempo 2 do repo | Depois do paralelo e do fim da C6 |
 
 ## Módulo Métricas: plano em camadas e onde estamos

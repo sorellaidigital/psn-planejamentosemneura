@@ -1,0 +1,186 @@
+<title>Mapa do PSN</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: faixa roxa de território no topo, área de trabalho em névoa; diagrama principal largo com rolagem própria, depois cartões por camada. Tema único (claro), como o app. */
+:root{
+  --territorio:#4A16A8; --nevoa:#F2EFFA; --cartao:#ffffff; --tinta:#1C1225;
+  --ganho:#D7FF3E; --bordo:#6E2639; --medio:#5a4f66; --linha:#ddd6ea;
+  --ok:#1f7a4d; --pend:#b25a00;
+  --f-display:'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --f-ui:'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--nevoa);color:var(--tinta);font-family:var(--f-ui);font-size:15px;line-height:1.5}
+.topo{background:var(--territorio);color:#fff;padding-block:28px 34px;padding-inline:16px;border-radius:0 0 28px 28px}
+.topo .w,.w{max-width:1080px;margin:0 auto}
+.main{padding-inline:16px;padding-block:24px 48px}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(28px,5vw,44px);line-height:1.05;margin:0 0 8px;text-wrap:balance}
+.topo p{margin:0;max-width:62ch;color:#e6ddff}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{font-size:12px;font-weight:600;letter-spacing:.02em;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.12);color:#fff}
+.chip.ok{background:var(--ganho);color:var(--tinta)}
+h2{font-family:var(--f-display);font-weight:700;font-size:24px;margin:36px 0 6px;text-wrap:balance}
+.sub{color:var(--medio);margin:0 0 14px;max-width:70ch}
+.diagrama{background:var(--cartao);border:1px solid var(--linha);border-radius:18px;padding:16px;overflow-x:auto}
+.diagrama pre{margin:0;min-width:760px}
+.grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.card{background:var(--cartao);border:1px solid var(--linha);border-radius:16px;padding:14px 16px;min-width:0}
+.card h3{margin:0 0 4px;font-size:16px;font-weight:700;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.card p{margin:0;color:var(--medio);font-size:14px}
+.card code{font-size:12.5px;background:var(--nevoa);padding:1px 5px;border-radius:5px;word-break:break-word}
+.tag{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:999px}
+.tag.ok{background:#e3f5ea;color:var(--ok)}
+.tag.pend{background:#fff0dc;color:var(--pend)}
+.tag.par{background:#efe8fb;color:var(--territorio)}
+table{width:100%;border-collapse:collapse;background:var(--cartao);font-size:14px}
+.tab{border:1px solid var(--linha);border-radius:16px;overflow-x:auto;background:var(--cartao)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--linha);vertical-align:top}
+th{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--medio);font-weight:600}
+td.h{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.leg{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:13px;color:var(--medio)}
+</style>
+
+<header class="topo"><div class="w">
+  <h1>Mapa do PSN</h1>
+  <p>Como o app Planejamento sem Neura funciona hoje (09/10/2026): o que você usa, onde os dados ficam e o que roda sozinho. Repositório central: sorellaidigital/psn-planejamentosemneura.</p>
+  <div class="chips">
+    <span class="chip ok">R1 no ar: Hoje, Calendário, Banco, Lixeira</span>
+    <span class="chip ok">R2 no ar: produção ao tocar em Produzir</span>
+    <span class="chip">Falta: 3 chaves (GitHub e Supabase)</span>
+    <span class="chip">Paralelo com o Notion até o seu ok</span>
+  </div>
+</div></header>
+
+<main class="main"><div class="w">
+
+<h2>Visão geral</h2>
+<p class="sub">Da esquerda para a direita: você no celular, o app, o banco no Supabase e o que trabalha nos bastidores. Setas tracejadas são temporárias (paralelo com o Notion e com o coletor antigo).</p>
+<div class="diagrama">
+<pre class="mermaid">
+flowchart LR
+  subgraph VOCE["Você"]
+    CEL["Celular / navegador"]
+    ATA["Atalho do iPhone<br/>Salvar ideia"]
+  end
+
+  subgraph APP["App PSN · Netlify<br/>planejamento-sem-neura.netlify.app"]
+    HOJE["Hoje<br/>sugestões, revisar, postar"]
+    CAL["Calendário<br/>2 vagas/dia + horários"]
+    BAN["Banco de ideias"]
+    LIX["Lixeira"]
+    FICHA["Ficha da pauta<br/>slides, legenda, Reels"]
+    IDE["Ideias<br/>referências salvas"]
+    PROD["Canais / Produção<br/>funil de 7 etapas"]
+    MET["Métricas"]
+  end
+
+  subgraph SB["Supabase · banco e funções"]
+    TP[("psn_pauta<br/>psn_pauta_dia")]
+    TI[("psn_ig_*<br/>conta, posts, análise, horários")]
+    TR[("psn_ideias<br/>psn_referencias<br/>psn_criadores")]
+    BK[["Storage<br/>psn-pautas · psn-referencias"]]
+    FD{{"psn-pauta-disparar"}}
+    FU{{"psn-pauta-upload"}}
+    FS{{"psn-ig-sync<br/>a cada 4 h"}}
+  end
+
+  subgraph BAST["Bastidores"]
+    RM["Rotina Métricas do Dia<br/>05:23 todo dia"]
+    RP["Rotina Pauta do Dia<br/>05:47 todo dia"]
+    GH["GitHub Actions<br/>Produção da Pauta"]
+    PI["Plugin insta-ops<br/>/insta-ops:fila"]
+  end
+
+  subgraph EXT["Fora"]
+    META["Instagram<br/>Meta Graph API"]
+    CL["Claude<br/>crédito de API → assinatura"]
+    NOT["Notion<br/>paralelo temporário"]
+  end
+
+  CEL --> HOJE
+  ATA --> IDE
+  HOJE & CAL & BAN & LIX & FICHA --> TP
+  MET --> TI
+  IDE & PROD --> TR
+  FICHA --> BK
+  HOJE -- "Produzir / Ajustar" --> FD
+  FD -- "dispara" --> GH
+  GH -- "skill producao-pauta" --> CL
+  GH -- "slides" --> FU --> BK
+  GH -- "entregar" --> TP
+  FS --> META
+  FS --> TI
+  RM --> TI
+  RP -- "3 estático + 3 Reels" --> TP
+  RP -. push no celular .-> CEL
+  PI --> TR
+  RM -.-> NOT
+  RP -.-> NOT
+</pre>
+</div>
+<div class="leg"><span>Retângulo: tela ou rotina</span><span>Cilindro: tabela</span><span>Hexágono: função do Supabase</span><span>Tracejado: temporário</span></div>
+
+<h2>O dia de uma pauta</h2>
+<p class="sub">Os dois portões: você escolhe antes de qualquer imagem ser feita, e revisa antes de postar.</p>
+<div class="diagrama">
+<pre class="mermaid">
+flowchart LR
+  A["05:23<br/>métricas e sinal"] --> B["05:47<br/>3 estático + 3 Reels<br/>status: sugerida"]
+  B --> C{"Você no Hoje"}
+  C -- "Produzir" --> D["aprovada_producao"]
+  C -- "Banco" --> E["ideia"]
+  C -- "Lixeira" --> F["descartado"]
+  E -- "Produzir depois" --> D
+  F -- "Restaurar" --> E
+  D -- "disparo imediato<br/>ou 08:30 · 13:30 · 18:30" --> G["em_producao<br/>deck editorial, render, conferir"]
+  G --> H["para_revisar<br/>slides no app"]
+  H -- "Ajustar + comentário" --> I["ajustar"] --> G
+  H -- "Aprovar" --> J["aprovado"]
+  J -- "post detectado ou<br/>Marquei como postado" --> K["postado"]
+</pre>
+</div>
+
+<h2>Telas do app</h2>
+<div class="grade">
+  <div class="card"><h3>Hoje <span class="tag ok">no ar</span></h3><p>Entrada do app. Placar do dia (estático e Reels), o que falta postar, o que está pronto para revisar, as 6 sugestões com Produzir · Banco · lixeira, "Produzindo agora" e o sinal das métricas. Rota <code>#/</code>.</p></div>
+  <div class="card"><h3>Calendário <span class="tag ok">no ar</span></h3><p>Semana e mês com 2 vagas por dia, status, horário e o que foi postado. Melhores horários aparecem quando houver dados. Rota <code>#/calendario</code>.</p></div>
+  <div class="card"><h3>Banco de ideias <span class="tag ok">no ar</span></h3><p>Ideias guardadas e do Notion, filtros por urgência, linha e formato, grupo das pautas antigas do Notion. Rota <code>#/banco</code>.</p></div>
+  <div class="card"><h3>Lixeira <span class="tag ok">no ar</span></h3><p>Descartadas, com Restaurar. Nada se apaga sozinho. Rota <code>#/lixeira</code>.</p></div>
+  <div class="card"><h3>Ficha da pauta <span class="tag ok">no ar</span></h3><p>Slides do depósito, legenda para copiar, roteiro de Reels, horário agendado, Aprovar · Ajustar · Postado e "Imagens para gerar" com copiar prompt. Rota <code>#/pauta/&lt;id&gt;</code>.</p></div>
+  <div class="card"><h3>Métricas <span class="tag ok">no ar</span></h3><p>Visão geral do Instagram pelo coletor próprio. Rota <code>#/metricas</code>.</p></div>
+  <div class="card"><h3>Ideias <span class="tag ok">no ar</span></h3><p>Referências de outros perfis salvas pelo Atalho do iPhone e analisadas pelo plugin insta-ops.</p></div>
+  <div class="card"><h3>Canais e Produção <span class="tag ok">no ar</span></h3><p>Diretório de canais e o funil de 7 etapas do curso. Rota <code>#/canais</code>.</p></div>
+</div>
+
+<h2>O que roda sozinho</h2>
+<div class="tab"><table>
+  <thead><tr><th>Quando (BRT)</th><th>O quê</th><th>Onde</th><th>Grava em</th></tr></thead>
+  <tbody>
+    <tr><td class="h">a cada 4 h</td><td>Coleta conta, posts e insights do Instagram</td><td>Edge Function psn-ig-sync (pg_cron)</td><td>psn_ig_*</td></tr>
+    <tr><td class="h">05:23</td><td>Métricas do Dia: análise e sinal para a pauta</td><td>Rotina na nuvem (repo mecanismo-car)</td><td>psn_ig_analise · Notion (paralelo)</td></tr>
+    <tr><td class="h">05:47</td><td>Pauta do Dia: 3 sugestões de estático e 3 de Reels, push no celular</td><td>Rotina na nuvem</td><td>psn_pauta, psn_pauta_dia · Notion (paralelo)</td></tr>
+    <tr><td class="h">ao tocar em Produzir</td><td>Produção: deck editorial, render, conferir, slides</td><td>GitHub Actions + Claude</td><td>psn_pauta, Storage psn-pautas</td></tr>
+    <tr><td class="h">08:30 · 13:30 · 18:30</td><td>Produção de reserva (só se houver fila)</td><td>GitHub Actions</td><td>idem</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Segurança e custo</h2>
+<div class="grade">
+  <div class="card"><h3>App sem login <span class="tag par">decisão sua</span></h3><p>O app só lê e muda status, comentário, horário e carimbos de tempo, nas transições permitidas. Inserir conteúdo exige o segredo da rotina.</p></div>
+  <div class="card"><h3>Chave do Claude <span class="tag par">só no GitHub</span></h3><p>Fica nos secrets do GitHub, nunca no app nem no Supabase. O Claude roda sem o segredo do PSN e com ferramentas restritas.</p></div>
+  <div class="card"><h3>Tetos de produção <span class="tag par">limite</span></h3><p>Até 3 itens por execução e 6 execuções com produção por dia (18 produções no pior caso). Disparos: até 10 por dia.</p></div>
+</div>
+
+<h2>Pendências</h2>
+<div class="grade">
+  <div class="card"><h3>3 chaves para cadastrar <span class="tag pend">você</span></h3><p>GitHub (mecanismo-car): <code>ANTHROPIC_API_KEY</code> e <code>PSN_ROTINA_SEGREDO</code>. Supabase: <code>PSN_GITHUB_TOKEN</code>. Sem elas, a produção não dispara.</p></div>
+  <div class="card"><h3>4 cenas do Gemini <span class="tag pend">você</span></h3><p>Gerar no GPT as cenas 34 a 37 (prompts em PROMPTS-NOVAS-CENAS.md) e me enviar.</p></div>
+  <div class="card"><h3>Horários do público <span class="tag pend">próxima rodada</span></h3><p>Coletor passa a gravar psn_ig_horarios (seguidores online ou histórico próprio) e a detectar "postado" sozinho.</p></div>
+  <div class="card"><h3>Fim do Notion <span class="tag pend">seu ok</span></h3><p>Pauta: 5 dias úteis de paralelo. Métricas: fim da C6 (15/10). Depois, o Notion sai das rotinas.</p></div>
+  <div class="card"><h3>Tempo 2 do repo <span class="tag pend">planejar</span></h3><p>Trazer o mecanismo-car (carrossel, skills, rotinas) para o repo central e arquivar os antigos.</p></div>
+  <div class="card"><h3>Limpeza de teste <span class="tag pend">SQL editor</span></h3><p>Pauta zz-teste-r2, 2 linhas em psn_pauta_disparo e 1 imagem de teste no Storage.</p></div>
+</div>
+
+</div></main>
