@@ -127,7 +127,7 @@ Reels "produzido" é **só texto**: roteiro completo em blocos + cenas + legenda
 | Estado | Quando | O que aparece |
 |---|---|---|
 | **Manhã com sugestões** | `psn_pauta_dia` do dia ok, há `sugerida` | header; faixas "estático de hoje 3/3" e "reels de hoje 3/3"; texto "Escolha 1 ou mais; o resto vai para o banco ou para a lixeira. Escolhendo até 10h, fica pronto para postar hoje." |
-| **Já escolheu** | há `aprovada_producao`/`em_producao` | resumo da escolha + "em produção": "Na fila da rodada das 08:00. **Pronto até ~08:30**" ou "A rotina das 08:00 está montando." "Não precisa fazer nada. Avisamos no celular quando chegar." Sugestões pendentes continuam nas faixas ("Produzir também funciona aqui") |
+| **Já escolheu** | há `aprovada_producao`/`em_producao` | resumo da escolha + "em produção": "**Produzindo agora** · chega em ~10 min" ou "Vai na próxima janela… **Próxima: hoje 13:30**" (4.4) "Não precisa fazer nada. Avisamos no celular quando chegar." Sugestões pendentes continuam nas faixas ("Produzir também funciona aqui") |
 | **Pronto para revisar** | há `para_revisar` | bloco no topo: "O que você escolheu chegou. Revise até as 10h para postar hoje." (depois das 10h: "Revise para postar hoje.") |
 | **Falta postar** | há `aprovado` | cartão com legenda copiável e "Marquei como postado"; o app costuma detectar sozinho (ver 5.1) |
 | **Tudo feito** | nada a postar, revisar, escolher ou acompanhar | "✓ nada esperando você". Com 1+1 postados: "Estático e Reels de hoje estão postados: o ideal do dia foi cumprido." Com só 1: "O Reels de hoje está postado: o mínimo do dia foi cumprido. Falta o estático para o ideal." Fecha com "Amanhã às 05:47 chegam 3 sugestões de estático e 3 de Reels…", "N ideias guardadas", "N de 7 dias com post nesta semana" |
@@ -141,10 +141,21 @@ preservada. O Hoje nunca acumula sugestão velha. (Regra da rotina, não do app.
 
 ### 4.4 Previsão de produção
 
-Rotina "Produção da Pauta" de hora em hora, **todos os dias, 07h–20h BRT** (plano, seção 2), ~30 min por carrossel (Reels, só texto, mais rápido).
-Previsão = próxima hora cheia dentro da janela + 30 min. Depois das 20h: "Pronto amanhã ~07:30".
-Texto: "Pronto até ~08:30" / "Pronto amanhã ~07:30". Reels: "Roteiro pronto até ~08:30". Se `em_producao` passar de 2 h sem virar
-`para_revisar`: "Está demorando mais que o normal. Se não chegar até HH:MM, a rotina tenta de novo." (precisa de `em_producao_em`).
+Modelo R2 (desde 09/10/2026): **disparo imediato + janelas de reserva**. Depois que o PATCH de Produzir/Ajustar grava, o app
+chama a Edge Function `psn-pauta-disparar` (fire-and-forget, debounce local de 3 s), que faz `workflow_dispatch` do
+`producao-pauta.yml` (repo `mecanismo-car`). Reserva: o mesmo workflow roda às **08:30, 13:30 e 18:30 BRT** (cron
+`30 11,16,21 * * *` UTC). Tetos: 3 itens por execução, 6 execuções com produção por dia, 10 disparos por dia na função;
+o que passar do teto espera a próxima janela.
+
+O estado vem do item e do último registro de `psn_pauta_disparo` (anon lê):
+
+| Situação | Texto |
+|---|---|
+| `em_producao`, ou último `disparado` posterior à decisão do item e com menos de 5 min | "**Produzindo agora** · chega em ~10 min" |
+| idem, mas iniciado há mais de 25 min | "**Demorando mais que o normal.** Se não chegar, vai na próxima janela." (a entrega com falha devolve o item à fila com o aviso) |
+| qualquer outro caso (disparo `ignorado`/`erro`/`nao_configurado`, teto, disparo que não pegou o item) | "Vai na próxima janela de produção (08:30, 13:30 ou 18:30). **Próxima: hoje 13:30**" / "amanhã 08:30" |
+
+Sem previsão de hora exata: os toasts dizem "Avisamos quando chegar" (Produzir) e "Ajuste enviado. Avisamos quando voltar".
 
 ## 5. Ficha (`#/pauta/<id>`)
 
@@ -288,12 +299,12 @@ Ver banco de ideias · Ver métricas → · Limpar filtros · escolher do banco 
 ### 8.2 Toasts (topo, 5 s quando há Desfazer, 2,6 s sem)
 | Ação | Toast |
 |---|---|
-| Produzir | "Na fila. Pronto até ~08:30" · com outra na fila: "Na fila (2 em produção). Pronto até ~08:30" · Reels: "Roteiro pronto até ~08:30" · depois das 20h: "Pronto amanhã ~07:30" · para outro dia: "… · agendado sex 9/10 12:00" — com **Desfazer** |
+| Produzir | "Na fila. Avisamos quando chegar" · com outra na fila: "Na fila (2 em produção). Avisamos quando chegar" · para outro dia: "… · para sex 9/10" — com **Desfazer**. Do Banco sem vaga: grava `data` = hoje (BRT) |
 | Banco | "Guardada no banco de ideias" — Desfazer |
 | Lixeira | "Foi para a Lixeira" — Desfazer |
 | Restaurar | "De volta ao banco" — Desfazer |
 | Aprovar | "Aprovado. Agora é postar." — Desfazer |
-| Enviar ajuste | "Ajuste enviado. Volta até ~11:30" — Desfazer |
+| Enviar ajuste | "Ajuste enviado. Avisamos quando voltar" — Desfazer |
 | Marquei como postado | "Marcado como postado. Conta no dia de hoje." — Desfazer |
 | Postado detectado (automático) | push/aviso "Detectado no Instagram: postado 19:42." |
 | Mudar horário | "Agendado para hoje 20:00" — Desfazer |
@@ -358,7 +369,7 @@ Conteúdo (tema, gancho, roteiro, cenas, legenda, slides) só pela rotina.
 | Campo | Tipo | Para quê |
 |---|---|---|
 | `formato` | text check (`'estatico'`,`'reels'`) | faixa do Hoje, vaga do Calendário; uma pauta = um formato (substitui o array `formatos`) |
-| `ordem` | smallint | posição 1–3 da sugestão **dentro do formato** no dia |
+| `ordem` | smallint | posição 1–3 da sugestão **dentro do formato** no dia. A ideia guarda a ordem antiga no Banco: o app só conta como "sugestão de hoje" quem tem `data` = hoje e está `sugerida` ou foi criada hoje (Produzir do Banco grava `data` = hoje e não pode aparecer na faixa) |
 | `data` | date | dia da vaga (dia da sugestão; ao produzir para outro dia, o dia escolhido) |
 | `agendado_para` | timestamptz | horário agendado (sugerido pela rotina, editável pela Duda) |
 | `horario_sugerido` | timestamptz | horário calculado pela rotina com `psn_ig_horarios`; permite saber se `agendado_para` foi editado |
