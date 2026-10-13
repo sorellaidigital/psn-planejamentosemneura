@@ -7,8 +7,7 @@ anexado (ferramenta `add_repo`, `owner=sorellaidigital`, `repo=mecanismo-car`; d
 
 ## 1. Estado em 13/10/2026
 
-- **Repo central:** `main` tem R0, R1 (PR #1, merge 08/10) e R2 (PR #2, merge 09/10). O branch `claude/wizardly-mayer-nxwfe0` tem a documentação
-  desta passagem (mapa, ESTADO, CONTINUAR, DECISOES) ainda fora da `main`: abrir o PR dele é o primeiro gesto.
+- **Repo central:** `main` tem R0, R1 (PR #1, merge 08/10) e R2 (PR #2, merge 09/10). A documentação desta passagem (mapa, ESTADO, CONTINUAR, DECISOES, README) entrou na `main` pelo PR #3 em 13/10.
 - **App no ar:** deploy de 09/10 = `main` d5b0dcb (conferido; só difere pelo comentário que o Netlify injeta). Hoje, Calendário, Banco, Lixeira,
   ficha, Métricas e Canais funcionam. Ações gravam depois de 5 s (Desfazer); Produzir/Ajustar chamam `psn-pauta-disparar` (debounce local de 3 s).
 - **Pauta do Dia:** a rotina roda todo dia às 05:47 e hoje há 6 pautas `sugerida`. `rotina_status` sai sempre `parcial` porque o radar de
@@ -18,7 +17,7 @@ anexado (ferramenta `add_repo`, `owner=sorellaidigital`, `repo=mecanismo-car`; d
 - **Dados no banco:** 18 ideias, 4 `para_revisar` antigas vindas do Notion (grupo recolhido no Banco), 1 descartada (`zz-teste-r2`).
   Pauta Gemini real `e831a498-391b-4e29-ac66-194d3aa987c1`: 11 slides no bucket, status `ajustar` (comentário da Duda pedindo cenas sobre o assunto;
   já respondido com os prompts cena-34..37 em `mecanismo-car/assets/fotos/PROMPTS-NOVAS-CENAS.md`).
-- **Paralelo com o Notion:** a pauta começou em 09/10 (5 dias úteis antes do corte); as métricas seguem até o fim da C6.
+- **Paralelo com o Notion:** a pauta começou em 09/10 (5 dias úteis: termina em 16/10, porque 12/10 é feriado); as métricas seguem até o fim da C6.
 
 ## 2. O que está parado e por quê
 
@@ -34,7 +33,7 @@ Só a Duda cadastra secrets; o Claude não deve pedir nem receber os valores.
 Quem age: **D** = Duda, **C** = Claude.
 
 1. **Ligar a produção** (D cadastra, C acompanha).
-   - *O que fazer:* D cria `ANTHROPIC_API_KEY` (de um workspace dedicado com limite de gasto no Console) e `PSN_ROTINA_SEGREDO` (mesmo valor do ambiente "Instagram") em
+   - *O que fazer:* D cria `ANTHROPIC_API_KEY` (de um workspace dedicado com limite de gasto no Console) e `PSN_ROTINA_SEGREDO` (mesmo valor do ambiente "Instagram") — para conferir sem expor o valor: se a 1ª execução iniciar os itens, bate; se aparecer "segredo inválido" (erro 42501), o valor está diferente em
      GitHub `mecanismo-car` > Settings > Secrets and variables > Actions; e `PSN_GITHUB_TOKEN` (fine-grained, só `mecanismo-car`, Actions read/write) em
      Supabase > Edge Functions > Secrets. Depois rodar o workflow à mão (Actions > Produção da Pauta > Run workflow) e passar o checklist abaixo.
    - *Onde:* `mecanismo-car/.github/workflows/producao-pauta.yml`, `mecanismo-car/docs/ROTINAS-PAUTA.md`, `mecanismo-car/pipeline/producao.py` (`TETO_RODADAS_DIA`, `MAX_POR_RODADA`).
@@ -54,7 +53,7 @@ Quem age: **D** = Duda, **C** = Claude.
    - *Onde:* texto em `docs/UX-HOJE.md` seção 8.4; implementar na rotina/Edge Function que dispara o push (definir no plano).
    - *Como conferir:* dia sem escolha recebe um push às 10:00; dia com escolha não recebe.
 6. **Corte do Notion** (D dá o ok, C executa).
-   - *Pauta:* depois de 5 dias úteis de paralelo (começou 09/10), com ok dela. *Métricas:* no fim da C6 (previsto 15/10), com ok dela.
+   - *Pauta:* depois de 5 dias úteis de paralelo (09, 13, 14, 15 e 16/10; 12/10 é feriado → termina em 16/10), com ok dela. *Métricas:* no fim da C6 (previsto 15/10), com ok dela.
    - *O que fazer:* parar de gravar no Notion; tirar a seção do paralelo da skill `pauta-do-dia` e os passos 1 e 6 da `metricas-do-dia`; recriar as rotinas sem o conector Notion
      (`update_trigger` não troca conector; perde o histórico de execuções); desligar o cron do coletor do VPS e arquivar `ig-analytics`, se ela não usar hub/agentes/CRM/radar lá.
    - *Como conferir:* rotinas seguem verdes sem Notion; comparação PSN × VPS × Notion ≤ 1% registrada antes do corte (somando os mesmos dias; o PSN usa a conta do último dia completo, D-1).
@@ -104,7 +103,7 @@ Objetivo: um repo só. Ordem sugerida:
 
 ```
 Leia CLAUDE.md, docs/CONTINUAR.md, docs/ESTADO.md e docs/DECISOES.md antes de agir. Continuamos a centralização do conteúdo da Duda no PSN.
-Comece por [tarefa: por exemplo, abrir o PR da documentação da passagem e depois o passo 1 de docs/CONTINUAR.md]. Se a tarefa tocar carrossel, skills, rotinas ou o workflow de produção, anexe o repo sorellaidigital/mecanismo-car (add_repo, depois clonar).
+Comece por [tarefa: por exemplo, o passo 1 de docs/CONTINUAR.md]. Se a tarefa tocar carrossel, skills, rotinas ou o workflow de produção, anexe o repo sorellaidigital/mecanismo-car (add_repo, depois clonar).
 Planeje antes de executar e delegue por capacidade (Haiku mecânico, Sonnet execução, Opus revisão). Português, sem preâmbulo, exceções em "Nota:" no fim. Nunca peça nem grave valor de secret.
 ```
 

@@ -1,4 +1,9 @@
-# Prompts das rotinas na C5 (aplicar com `update_trigger`, depois do merge de sorellaidigital/mecanismo-car#7)
+# Prompts das rotinas na C5 (histórico)
+
+> Histórico de 08/10. Os prompts vigentes estão em `docs/ROTINAS-PAUTA.md` do repo `mecanismo-car`: a Pauta do Dia roda **todos os dias** (05:47, modo sugestões) e usa o PSN como memória (`pipeline.psn pautas`), não o Notion; a Métricas do Dia lê o "postado" pelo `pipeline.psn postado`. Ver `docs/CONTINUAR.md`.
+
+<!-- título original abaixo -->
+# (aplicar com `update_trigger`, depois do merge de sorellaidigital/mecanismo-car#7)
 
 As rotinas partem do `main` do `mecanismo-car`: trocar o prompt antes do merge faz a rotina chamar
 `pipeline.psn`, que ainda não existe lá. Antes de aplicar, a variável `PSN_ROTINA_SEGREDO` precisa estar

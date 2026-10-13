@@ -22,7 +22,7 @@ Contexto de produto: `docs/PLANO-CENTRAL.md`. Coletor de métricas: `supabase/fu
 - Planejar antes de executar quando ela pedir. Todo módulo novo passa por spec + protótipo aprovado antes de código.
 - Delegar por capacidade: Haiku para o mecânico, Sonnet para execução bem definida, Opus para revisão.
 - Branch novo a partir de `main` para cada rodada, PR para `main`. Nunca commitar segredos (nem em docs).
-- App sem login por decisão dela (até a plataforma estar completa). `psn_ig_*`: anon só lê, escrita só service role.
+- App sem login por decisão dela (até a plataforma estar completa). `psn_ig_*`: anon só lê, escrita só service role. `psn_pauta`: anon só muda colunas de revisão nas transições do trigger. `psn_referencias`, `psn_ideias`, `psn_criadores` e o bucket `psn-referencias`: anon lê e escreve (módulo Ideias, sem login).
   `psn_pauta`: anon só muda colunas de revisão e só nas transições do trigger `psn_pauta_transicao`.
 - Antes de alterar dados reais: registrar hash/contagem e conferir depois. Testes com canais/pautas `zz-`, apagados no fim.
 - Conferir o site no ar contra o commit depois de cada deploy.
