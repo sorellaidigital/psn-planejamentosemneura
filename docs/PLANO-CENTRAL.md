@@ -51,7 +51,7 @@ O que está feito, parado e aberto: `docs/CONTINUAR.md`. Decisões datadas: `doc
 | **R0 base** | Feita em 08/10 | Tempo 1 do repo (histórico do `mecanismo-inst` aqui, `main` criada); inventário de 19 linhas do Notion |
 | **R1 escolher antes de produzir** | Feita em 08/10 (PR #1; mecanismo-car#8) | Migrações `psn_pauta_v1` e `v1_1`; app Hoje/Calendário/Banco/Lixeira/ficha; backfill de 11 ideias + 4 pautas; rotina Pauta do Dia em modo sugestões |
 | **R2 produção sob demanda** | Feita em 09/10 (PR #2; mecanismo-car#9). **No ar, aguardando secrets: produção parada em 13/10** | Bucket `psn-pautas`, Edge `psn-pauta-upload` e `psn-pauta-disparar`, workflow `producao-pauta.yml`, skill `producao-pauta`, ficha com slides |
-| **R3 corte do Notion** | Aberta | 5 dias úteis de paralelo da pauta (desde 09/10) e fim da C6 (previsto 15/10), cada um com ok da Duda; depois recriar as rotinas sem o conector Notion e desligar o VPS |
+| **R3 corte do Notion** | Aberta | 5 dias úteis de paralelo da pauta (09 a 16/10; 12/10 é feriado) e fim da C6 (previsto 15/10), cada um com ok da Duda; depois recriar as rotinas sem o conector Notion e desligar o VPS |
 | **Tempo 2** | Aberto | Trazer o `mecanismo-car` para o central; esboço em `docs/CONTINUAR.md` seção 5 |
 
 Feito fora do plano original: módulo Métricas completo (C1–C5, `psn-ig-sync`), ver `docs/ESTADO.md`.
