@@ -1,4 +1,6 @@
-# Estado do projeto (atualizado em 09/10/2026)
+# Estado do projeto (atualizado em 13/10/2026)
+
+Para retomar o trabalho: `docs/CONTINUAR.md` (passos) e `docs/DECISOES.md` (decisões). Mapa visual: `docs/MAPA-PSN.html`.
 
 ## Módulos entregues
 
@@ -8,9 +10,9 @@
 | **Produção** (funil de 7 etapas do curso) | No ar, sem mudanças. |
 | **Métricas** (visão geral do Instagram) | No ar desde 08/10/2026, em paralelo com os coletores antigos (camada C6 abaixo). |
 
-## Módulo Pauta (Notion → PSN): em planejamento desde 08/10/2026
+## Módulo Pauta (Notion → PSN): R1 e R2 no ar, produção parada (13/10/2026)
 
-Plano aprovado em `docs/PLANO-CENTRAL.md`: tela "Hoje" como entrada do app, Pauta do Dia em 2 portões (de manhã ≥3
+Plano em `docs/PLANO-CENTRAL.md`: tela "Hoje" como entrada do app, Pauta do Dia em 2 portões (de manhã ≥3
 sugestões sem render; a Duda escolhe no app; só o escolhido é produzido, no estilo editorial), banco de ideias,
 paralelo de 5 dias úteis com o Notion antes do corte.
 
@@ -18,8 +20,9 @@ paralelo de 5 dias úteis com o Notion antes do corte.
 |---|---|
 | R0 base (repo central + inventário do Notion) | Feita em 08/10: histórico do `mecanismo-inst` neste repo, `main` criada; inventário de 19 linhas do Notion |
 | R1 escolher antes de produzir | **No ar desde 08/10 (noite).** Migrações `20261010_psn_pauta_v1.sql` + `20261011_psn_pauta_v1_1.sql`; app com Hoje/Calendário/Banco/Lixeira/ficha (PR #1, deploy conferido); backfill de 11 ideias + 4 pautas antigas do Notion; rotina "Pauta do Dia" em modo sugestões todo dia 05:47 (PR sorellaidigital/mecanismo-car#8). Disparo de teste 08/10 21h: 3 Reels novos + 3 estáticos repropostos do banco, `rotina_status=parcial` (radar só achou fonte para o Copilot) |
-| R2 produção sob demanda | Pendente: bucket `psn-pautas` + upload de PNGs no `pipeline.psn`, rotina "Produção da Pauta" (texto em `mecanismo-car/docs/ROTINAS-PAUTA.md`). Até lá, o que for para "Produzir" fica na fila |
-| R3 corte do Notion + Tempo 2 do repo | Depois do paralelo e do fim da C6 |
+| R2 produção sob demanda | **No ar, aguardando secrets (produção parada em 13/10).** No ar desde 09/10 (PR #2). Bucket `psn-pautas`, Edge Functions `psn-pauta-upload` e `psn-pauta-disparar` (v2), app dispara ao tocar em Produzir/Ajustar; produção no GitHub Actions do `mecanismo-car` (`producao-pauta.yml`, reserva 08:30/13:30/18:30, tetos 3 itens × 6 execuções/dia). Falta a Duda cadastrar `ANTHROPIC_API_KEY` e `PSN_ROTINA_SEGREDO` (GitHub) e `PSN_GITHUB_TOKEN` (Supabase): as 10 execuções agendadas desde 09/10 terminaram "success" sem produzir (segredo vazio) e a fila tem 4 itens parados (3 `aprovada_producao`, 1 `ajustar`). Passos e checklist da 1ª execução: `docs/CONTINUAR.md`. Mapa: `docs/MAPA-PSN.html` |
+| R3 corte do Notion | Aberta. Pauta: 5 dias úteis de paralelo desde 09/10 (09, 13, 14, 15 e 16/10; 12/10 é feriado → termina em 16/10); métricas: fim da C6 (15/10); ambos com ok da Duda |
+| Tempo 2 do repo | Aberto. Trazer o `mecanismo-car` para o central (esboço em `docs/CONTINUAR.md` seção 5) |
 
 ## Módulo Métricas: plano em camadas e onde estamos
 
@@ -32,7 +35,7 @@ Plano completo aprovado: arquitetura, camadas e verificação estão nesta seç�
 | **C3 Coletor** | No ar. Edge Function `psn-ig-sync`, pg_cron `5 */4 * * *` UTC. Autenticação pelo segredo `psn_ig_cron` do Vault. Primeira coleta: 35 s, 66 chamadas, sem erro. |
 | **C4 Aba Métricas** | No ar. Números conferidos contra o banco. |
 | **C5 Rotinas apontando para o Supabase** | **Feita em 08/10.** Migração `20261009_psn_ig_c5.sql`, PR sorellaidigital/mecanismo-car#7 (merge feito), variável `PSN_ROTINA_SEGREDO` no ambiente "Instagram", prompts trocados por `update_trigger` (texto em `docs/ROTINAS-C5.md`). Disparo de teste da Métricas do Dia às 19:46 UTC gravou a linha de 08/10 em `psn_ig_analise` com os números do resumo. A Pauta do Dia é conferida na execução de 09/10 (05:47). |
-| **C6 Paralelo de 7 dias e desligamento** | **Em andamento.** Começa com as execuções de 09/10; previsão de fim em 15/10, depois o ok da Duda. |
+| **C6 Paralelo de 7 dias e desligamento** | **Em andamento (13/10).** Começou com as execuções de 09/10; fim previsto em 15/10, depois o ok da Duda. |
 
 ### Pendências do módulo Métricas
 
@@ -61,6 +64,8 @@ Plano completo aprovado: arquitetura, camadas e verificação estão nesta seç�
 7. **PR do branch `claude/psn-metricas` para `main`:** feito (sorellaidigital/mecanismo-inst#2, merge em 08/10).
 
 ## Próximos módulos (ideia da Duda: centralizar tudo no PSN)
+
+Ordem e responsáveis em `docs/CONTINUAR.md` (passos 1–12). Resumo do que vem depois da produção ligada e do Tempo 2: horários do público e "postado" automático no coletor, push das 10h, corte do Notion, abas Stories e Público, upload de imagem pelo app (proposto, não decidido).
 
 - Métricas: abas Posts/Reels, Stories e Público (fora da v1). **Fonte decidida: o `psn-ig-sync` estendido**, não MCP
   (avaliação em `docs/AVALIACAO-MCP-META.md`, PR #6). Plano para quando o C6 terminar:
@@ -93,9 +98,9 @@ Plano completo aprovado: arquitetura, camadas e verificação estão nesta seç�
 ## Fontes e acessos úteis
 
 - **Repositórios:**
-  - `sorellaidigital/psn-planejamentosemneura` (este, central desde 08/10/2026);
-  - `sorellaidigital/mecanismo-inst` (origem deste repo, histórico trazido inteiro; arquivar depois do Tempo 1);
+  - `sorellaidigital/psn-planejamentosemneura` (este: **fonte** do app, do banco, das Edge Functions e da documentação, central desde 08/10/2026);
+  - `sorellaidigital/mecanismo-inst` (origem deste repo, histórico trazido inteiro; arquivar depois do Tempo 2);
   - `sorellaidigital/ig-analytics` (VPS, `/opt/ig-analytics`, EasyPanel, `appig.mariafontes.tech`);
-  - `sorellaidigital/mecanismo-car` (rotinas Pauta do Dia e Métricas do Dia).
+  - `sorellaidigital/mecanismo-car` (motor do carrossel, skills, rotinas Pauta do Dia e Métricas do Dia, workflow de produção; entra no central no Tempo 2).
 - **Notion:** "Central de Conteúdo @dudafonte.s" → "Métricas IG" (`collection://4ed9f0d3-84b1-4dec-91ec-e840dcffafae`) e "Painel IG".
 - **Rede da sessão de nuvem:** precisa liberar os domínios do Supabase, TikTok/tiktokcdn, Netlify (`*.netlify.app`, `api.netlify.com`, `netlify-mcp.netlify.app`).

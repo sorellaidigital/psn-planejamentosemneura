@@ -94,7 +94,7 @@ Tokens e `access_token=...` são redigidos de qualquer texto gravado.
   Se a lista de mídias for interrompida no meio de uma re-varredura completa, `last_full_media_walk` não é atualizado e ela recomeça na próxima.
 - **Retry:** códigos 4, 17, 32, 613 com backoff 2s·2^n; falha de rede 1s·2^n; até 4 retries. Erro 190 não tem retry.
 - **Lock:** run `rodando` com menos de 20 min -> 409; `rodando` mais antigo é marcado `erro` (órfão). A checagem não é atômica:
-  duas chamadas simultâneas no mesmo instante poderiam passar, mas o pg_cron a cada 2h torna isso improvável (e os upserts são idempotentes).
+  duas chamadas simultâneas no mesmo instante poderiam passar, mas o pg_cron a cada 4h torna isso improvável (e os upserts são idempotentes).
 - A Meta limita consultas diárias da conta a ~30 dias; a janela usada é 28.
 - Métricas e erros da Graph mudam com frequência: a degradação evita que uma métrica inválida derrube a coleta, mas métricas novas exigem editar `DESEJADAS` em `metricas.ts`.
 
