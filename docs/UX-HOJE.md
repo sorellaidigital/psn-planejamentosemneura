@@ -43,7 +43,7 @@ Todas saem de colunas que o app ou o coletor já gravam (status e carimbos). Nen
 
 ## 2. Princípios
 
-1. **Hoje é a única entrada.** `#/` abre o Hoje. Calendário, banco, lixeira, métricas e canais são destinos a partir dele, nunca abas concorrentes.
+1. **Canais é a entrada (desde 14/10/2026); Hoje é uma tela por botão.** `#/` abre Canais (captura rápida de ideias); `#/hoje` abre o Hoje. Calendário, banco e lixeira são destinos a partir do Hoje, nunca abas concorrentes. (Originalmente, 08/10, o Hoje era a única entrada em `#/`; revertido, ver `docs/DECISOES.md`.)
 2. **Ação em 1 toque.** Produzir · Banco · Lixeira; Aprovar · Marquei como postado. Texto só no Ajustar (obrigatório) e no ajuste antes de produzir (opcional).
 3. **Sem confirmação, com Desfazer.** Toda ação mostra um toast de 5 s com "Desfazer". O app só grava depois dessa janela (ou na hora, se a página for escondida: `visibilitychange`).
 4. **Celular primeiro.** 390 px, botão de ação a um polegar, barra fixa com `env(safe-area-inset-bottom)`; desktop é a mesma coluna centralizada (máx. 720 px).
@@ -58,20 +58,21 @@ Todas saem de colunas que o app ou o coletor já gravam (status e carimbos). Nen
 
 | Rota | Tela | Como chega |
 |---|---|---|
-| `#/` | **Hoje** | abrir o app; link do push; ← de qualquer tela |
+| `#/` | **Canais** (home, `renderHome()`; `#/canais` é alias) | abrir o app; ← do Hoje e das Métricas |
+| `#/hoje` | **Hoje** | botão "Hoje" no topo de Canais; link do push; ← de Calendário, Banco e ficha |
 | `#/calendario` | **Calendário** (semana/mês, 2 vagas por dia) | placar do topo; atalho no rodapé do Hoje; voltar da ficha aberta por uma vaga |
 | `#/pauta/<id>` | Ficha (sugestão, ideia, pauta em produção ou produzida; mesma rota, corpo muda pelo status e pelo formato) | toque num cartão ou numa vaga; link do push |
 | `#/banco` | Banco de ideias | placar "no banco"; atalho no rodapé; aviso de rotina falhou; "escolher do banco" numa vaga vazia do Calendário |
 | `#/lixeira` | **Lixeira** (descartadas, com Restaurar) | link "Lixeira (N)" no Banco e no rodapé do Hoje |
 | `#/metricas` | Métricas (já existe) | cartão "ontem no instagram" e atalho |
-| `#/canais` | Diretório de canais atual (Ideias de referência + Produção) | atalho "Canais" no rodapé do Hoje |
+| `#/canais` | Alias de `#/` (links antigos) | atalho "Canais" no rodapé do Hoje |
 | `#/c/<id>` | Quadro do canal (já existe) | a partir de `#/canais` |
 | `#/capturar?ref=` | Captura do Atalho do iPhone (já existe) | inalterada; ao fechar, volta para `#/canais` |
 
 No protótipo as rotas são `#hoje`, `#calendario`, `#banco`, `#lixeira`, `#pauta-<id>`, `#metricas`, `#canais`.
 
-Mudanças no código existente: `renderHome()` vira `renderCanais()` em `#/canais`; o ← de Métricas e do quadro do canal volta
-para `#/` (Hoje) e `#/canais` respectivamente. O botão "Métricas" sai do topo do diretório.
+Mudanças no código existente: (atualizado 14/10/2026) `renderHome()` volta a ser a home em `#/` (Canais), com o botão "Hoje" que leva a `#/hoje`; o ← de Métricas volta
+para `#/` (Canais), o do Hoje também, e o de Calendário, Banco e ficha volta para `#/hoje`. O botão "Métricas" sai do topo do diretório.
 
 **Como os módulos ficam acessíveis sem virar abas:** 4 atalhos no fim do Hoje (Calendário · Banco de ideias · Métricas · Canais),
 um link "Lixeira (N)" logo abaixo, e os números do placar no header. Sem barra de abas inferior: barra de abas convida a "passear"
@@ -322,9 +323,9 @@ Ver banco de ideias · Ver métricas → · Limpar filtros · escolher do banco 
 Copiar: `navigator.clipboard.writeText` dentro do clique; no `catch`, o `<pre>` é expandido (abrindo o `<details>` pai) e todo selecionado com `Range`.
 
 ### 8.4 Push (rotinas)
-- 05:47: "Hoje: 3 sugestões de estático e 3 de Reels. Escolha até as 10h." → `#/`
+- 05:47: "Hoje: 3 sugestões de estático e 3 de Reels. Escolha até as 10h." → `#/hoje`
 - Produção entregue: "Seu carrossel chegou: ‘A IA concorda com você…’. Revisar →" / "Seu roteiro de Reels chegou…" → `#/pauta/<id>`
-- (Decisão 2 da seção 13) 10:00 sem escolha: "Ainda dá tempo: escolha 1 das sugestões de hoje." → `#/`
+- (Decisão 2 da seção 13) 10:00 sem escolha: "Ainda dá tempo: escolha 1 das sugestões de hoje." → `#/hoje`
 - Rotina falhou: sem push (o aviso fica no Hoje).
 
 ## 9. Status e transições
@@ -461,7 +462,7 @@ Candidatos já visíveis:
 
 ## 12. Decisões de UX tomadas (resumo)
 
-1. Hoje substitui o diretório em `#/`; canais vão para `#/canais`; Calendário, Banco, Métricas e Canais por 4 atalhos no rodapé, Lixeira por um link; placar leva ao Calendário. Sem barra de abas.
+1. (Superada em 14/10/2026: a home volta a ser Canais em `#/`, Hoje em `#/hoje`.) Hoje substitui o diretório em `#/`; canais vão para `#/canais`; Calendário, Banco, Métricas e Canais por 4 atalhos no rodapé, Lixeira por um link; placar leva ao Calendário. Sem barra de abas.
 2. Meta: mínimo 1 post/dia, ideal 1 estático + 1 Reels, todos os dias; placar "Hoje: Estático ✓/— · Reels ✓/—" + "Semana: N de 7 dias com post".
 3. 3 sugestões de estático + 3 de Reels por dia, em duas faixas de rolagem horizontal com snap; header do Hoje rola com a página.
 4. Destinos de cada sugestão: Produzir · Banco · Lixeira; Lixeira restaurável, nada se apaga sozinho; Desfazer de 5 s com gravação adiada.

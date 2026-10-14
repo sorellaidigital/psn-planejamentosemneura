@@ -1031,9 +1031,11 @@ function extrairUrl(s){
 
 /* ============ ROTAS ============ */
 function rota(){
+  /* demo com estado= e sem rota: abre o cenário do Hoje */
+  if(HJ_DEMO&&(location.hash===""||location.hash==="#")&&new URLSearchParams(location.search).has("estado")){ location.replace("#/hoje"); return }
   const hash=location.hash;
   hjLimpar();
-  /* Hoje (#/), #/calendario, #/banco, #/lixeira, #/pauta/<id>: módulo Pauta (ver bloco HOJE mais abaixo) */
+  /* Hoje (#/hoje), #/calendario, #/banco, #/lixeira, #/pauta/<id>: módulo Pauta (ver bloco HOJE mais abaixo) */
   if(hjEhRota(hash)){ atual=null; busca=""; hjEntrar(); window.scrollTo(0,0); return }
   if(hash==="#/metricas"){ atual=null; busca=""; renderMetricas(); window.scrollTo(0,0); return }
   const capMatch = hash.match(/^#\/capturar(?:\?(.*))?$/);
@@ -1112,7 +1114,6 @@ function renderHome(){
   }).length;
   $("#hd").innerHTML = `
     <div class="hrow marca">
-      <button class="icb" id="bHoje" aria-label="Voltar ao Hoje">←</button>
       <div class="selo"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="15"
         stroke="#4A16A8" stroke-width="6" stroke-dasharray="70 100" stroke-linecap="round"
         transform="rotate(-90 24 24)"/></svg></div>
@@ -1120,6 +1121,7 @@ function renderHome(){
         <div class="disp" style="font-size:var(--t-lg)">canais</div>
         <div class="rotulo" style="color:var(--texto-invertido-fraco);margin-top:2px">referências e funil</div>
       </div>
+      <button class="btn btn-fantasma-inv" id="bHoje" style="margin-left:auto;min-height:40px;padding:0 var(--e3)" aria-label="Ir para o Hoje">Hoje →</button>
     </div>
     <div class="placar">
       <div class="it"><span class="v num">${criadores.length}</span><span class="k">canais</span></div>
@@ -1130,7 +1132,7 @@ function renderHome(){
       <input class="campo campo-inv" id="hBusca" type="text" placeholder="Buscar canal"
       value="${esc(busca)}" autocomplete="off"></div>`:""}`;
   $("#abas").classList.add("hide");
-  $("#bHoje").onclick=()=>location.hash="#/";
+  $("#bHoje").onclick=()=>location.hash="#/hoje";
 
   const lista = busca ? criadores.filter(c=>nrm(c.nome+" "+(c.handle||"")).includes(nrm(busca))) : criadores;
   const view=$("#view"); view.className="territorio"; view.classList.remove("clara");
@@ -2411,7 +2413,7 @@ function metAnaliseHTML(a){
 function renderMetricas(){
   atual=null;
   $("#hd").innerHTML=`<div class="hrow">
-    <button class="icb" id="bVoltar" aria-label="Voltar ao Hoje">←</button>
+    <button class="icb" id="bVoltar" aria-label="Voltar">←</button>
     <div class="tt"><div class="n1">📊 Métricas</div><div class="n2">Instagram · visão geral</div></div></div>`;
   $("#bVoltar").onclick=()=>location.hash="#/";
   $("#abas").classList.add("hide"); $("#fabslot").innerHTML="";
@@ -2478,11 +2480,11 @@ function renderMetricas(){
 
 /* ============ HOJE · CALENDÁRIO · BANCO · LIXEIRA · FICHA (módulo Pauta em 2 portões) ============
    Spec: docs/UX-HOJE.md · protótipo aprovado: docs/prototipo-hoje.html · banco: supabase/migrations/20261010_psn_pauta_v1.sql
-   Rotas: #/ (Hoje) · #/calendario · #/banco · #/lixeira · #/pauta/<id>. O app (anon) só faz PATCH nas colunas liberadas
+   Rotas: #/ (Canais) · #/hoje (Hoje) · #/calendario · #/banco · #/lixeira · #/pauta/<id>. O app (anon) só faz PATCH nas colunas liberadas
    e nas transições permitidas pelo trigger; erro 42501 ou de rede reverte a tela e avisa. Toda ação tem Desfazer de 5 s
    e só grava depois dele (ou na hora, se a página for escondida).
 
-   MODO DE TESTE (só local): abra index.html?demo=1#/ (o ?demo=1 vem ANTES do #). O módulo usa dados em memória
+   MODO DE TESTE (só local): abra index.html?demo=1#/hoje (o ?demo=1 vem ANTES do #). O módulo usa dados em memória
    (copiados do protótipo), NÃO lê e NÃO grava no Supabase, fixa o relógio em 08/10/2026 e mostra a faixa "modo de teste".
    Estados da manhã: &estado=manha (padrão) | producao | revisar | feito | falhou. Serve só para conferência visual. */
 const HJ_DEMO=(()=>{ try{ return new URLSearchParams(location.search).get("demo")==="1" }catch(e){ return false } })();
@@ -2526,7 +2528,7 @@ function hjDiaTxt(iso){
 
 /* ---------- estado ---------- */
 const HJ={pautas:[],dia:null,analise:null,horarios:[],midias:[],ontem:null,pronto:false,carregando:false,erro:false,seq:0,mut:0,
-  carregadoEm:0,de:"#/",filtro:{u:"",l:"",f:"",ordem:"recentes"},alvo:null,ajuste:false,ajusteTxt:"",hora:false,cal:null,
+  carregadoEm:0,de:"#/hoje",filtro:{u:"",l:"",f:"",ordem:"recentes"},alvo:null,ajuste:false,ajusteTxt:"",hora:false,cal:null,
   pend:new Set(),cadeia:{},rascunho:{},vistoOk:false,horCache:null,disparo:null,dispT:null,dispVoo:false};
 const hjGet=id=>HJ.pautas.find(p=>p.id===id);
 /* pauta produzida na rotina antiga (Notion), nunca revisada: fica só no grupo recolhido do Banco */
@@ -2949,6 +2951,7 @@ function hjHdHoje(){
   const sem=hjDiasComPost(), eOk=hjPostadoHoje("estatico"), rOk=hjPostadoHoje("reels");
   const rev=hjAtivas().filter(p=>p.status==="para_revisar").length, banco=hjNoBanco().length;
   $("#hd").innerHTML=`<div class="hrow marca">
+     <button class="icb" data-hj="ir" data-v="#/" aria-label="Voltar para Canais">←</button>
      <div class="selo"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="15" stroke="#4A16A8" stroke-width="6" stroke-dasharray="70 100" stroke-linecap="round" transform="rotate(-90 24 24)"/></svg></div>
      <div class="tt"><div class="disp" style="font-size:var(--t-lg)">hoje</div>
        <div class="rotulo" style="color:var(--texto-invertido-fraco);margin-top:2px">PSN${HJ_DEMO?" · modo de teste":""}</div></div>
@@ -2958,7 +2961,7 @@ function hjHdHoje(){
      <span class="pill ${eOk?"on":""}">Estático ${eOk?"✓":"—"}</span><span class="pill ${rOk?"on":""}">Reels ${rOk?"✓":"—"}</span></button>
    <div class="placar">
      <button class="it ganho" data-hj="ir" data-v="#/calendario" aria-label="Semana: ${sem} de 7 dias com post. Abrir o calendário"><span class="v num">${sem}<small> de 7</small></span><span class="k">Semana:<br>dias com post</span></button>
-     <button class="it" data-hj="ir" data-v="#/"><span class="v num">${rev}</span><span class="k">para<br>revisar</span></button>
+     <button class="it" data-hj="ir" data-v="#/hoje"><span class="v num">${rev}</span><span class="k">para<br>revisar</span></button>
      <button class="it" data-hj="ir" data-v="#/banco"><span class="v num">${banco}</span><span class="k">no banco<br>de ideias</span></button>
    </div>
    <div class="hmeta">Mínimo: 1 post por dia · Ideal: 1 estático + 1 Reels</div>`;
@@ -3057,7 +3060,7 @@ function hjCardIdeia(p){
 }
 function hjRenderBanco(){
   const todas=hjNoBanco(), F=HJ.filtro, A=HJ.alvo; if(A) F.f=A.formato;
-  hjHdSub("Banco de ideias",A?`escolhendo para ${hjDiaTxt(A.dia)} · ${HJ_FORM[A.formato].nome}`:`${todas.length} ${todas.length===1?"guardada":"guardadas"} · produzir a qualquer dia`,A?"#/calendario":"#/");
+  hjHdSub("Banco de ideias",A?`escolhendo para ${hjDiaTxt(A.dia)} · ${HJ_FORM[A.formato].nome}`:`${todas.length} ${todas.length===1?"guardada":"guardadas"} · produzir a qualquer dia`,A?"#/calendario":"#/hoje");
   let L=todas.filter(p=>(!F.u||p.urgencia===F.u)&&(!F.l||p.linha===F.l)&&(!F.f||p.formato===F.f));
   const cr=p=>p.criado_em||"";
   if(F.ordem==="recentes") L.sort((a,b)=>cr(b).localeCompare(cr(a)));
@@ -3127,7 +3130,7 @@ function hjVagaHTML(dia,f){
     else hora=H.hm?`${H.editado?"agendado":"sugerido"} ${H.hm}`:"" }
   else if(v.midia){ const m=v.midia; tema=hjE((m.legenda||"Post no Instagram").replace(/\s+/g," ").slice(0,70)); hora=`postado ${hjHM(m.publicado_em)}`; div=true;
     if(/^https:\/\//i.test(m.permalink||"")) ig=`<a class="linkb" href="${hjE(m.permalink)}" target="_blank" rel="noopener">ver no Instagram ↗</a>` }
-  else if(v.estado==="sugerida"){ tema=`${v.pend} ${v.pend===1?"sugestão":"sugestões"} para escolher`; const s=hjSugHora(dia,f); hora=s?`sugerido ${s}`:""; abre=`data-hj="ir" data-v="#/"`; dentro=`<span class="semlink">ver no Hoje →</span>` }
+  else if(v.estado==="sugerida"){ tema=`${v.pend} ${v.pend===1?"sugestão":"sugestões"} para escolher`; const s=hjSugHora(dia,f); hora=s?`sugerido ${s}`:""; abre=`data-hj="ir" data-v="#/hoje"`; dentro=`<span class="semlink">ver no Hoje →</span>` }
   else if(futuro){ tema="Vaga livre"; const s=hjSugHora(dia,f); hora=s?`sugerido ${s}`:""; abre=`data-hj="escolher" data-v="${dia}|${f}"`; dentro=`<span class="semlink">escolher do banco →</span>` }
   else { tema="Sem post"; hora="sem registro"; div=true }
   const corpo=`<span class="vf">${fm.ic} ${fm.nome}</span><span class="chip ${cls}">${v.estado}${v.n>1?" +"+(v.n-1):""}</span><span class="vtema clamp2">${tema}</span>${hora?`<span class="vhora">${hora}</span>`:""}${dentro}`;
@@ -3135,7 +3138,7 @@ function hjVagaHTML(dia,f){
   return `<div class="vaga v-${HJ_VCLS[v.estado]}">${div?`<div class="vaga-b">${corpo}</div>`:`<button class="abre vaga-b" ${abre} aria-label="${hjE(rot)}">${corpo}</button>`}${ig}</div>`;
 }
 function hjRenderCalendario(){
-  hjHdSub("Calendário","2 vagas por dia · estático e Reels","#/");
+  hjHdSub("Calendário","2 vagas por dia · estático e Reels","#/hoje");
   const hoje=hjHoje(); if(!HJ.cal) HJ.cal={vista:"semana",ini:hjSegunda(hoje),mes:hoje.slice(0,7),sel:hoje};
   const C=HJ.cal, HH=hjHorarios(), dow=hjDow(hoje);
   const hor=`<div class="card hor"><div class="metas"><h3>Melhores horários do seu público</h3></div>
@@ -3184,9 +3187,9 @@ function hjHoraBloco(p){
 }
 function hjCenasHTML(p){ return hjCenas(p).map((c,i)=>`<div class="cena ${i===0?"gancho-cena":""}"><span class="cena-n">${i+1}</span><div><div class="cena-c">[${hjE(c.c)}]<span class="cena-t">${hjE(c.t)}</span></div><div class="cena-f">${i===0?"Gancho falado: ":""}“${hjE(c.f)}”</div></div></div>`).join("") }
 function hjRenderFicha(id){
-  const p=hjGet(id); if(!p){ location.replace("#/"); return null }
-  const conhecidas=["#/","#/banco","#/calendario","#/lixeira"];
-  const volta=conhecidas.includes(HJ.de)?HJ.de:(p.status==="descartado"?"#/lixeira":p.status==="ideia"?"#/banco":"#/");
+  const p=hjGet(id); if(!p){ location.replace("#/hoje"); return null }
+  const conhecidas=["#/hoje","#/banco","#/calendario","#/lixeira"];
+  const volta=conhecidas.includes(HJ.de)?HJ.de:(p.status==="descartado"?"#/lixeira":p.status==="ideia"?"#/banco":"#/hoje");
   const produzida=["para_revisar","ajustar","aprovado","postado"].includes(p.status), reels=p.formato==="reels";
   hjHdSub(produzida?(reels?"Reels":"Carrossel"):(p.status==="sugerida"?"Sugestão":"Pauta"),`${HJ_FORM[p.formato].nome} · ${HJ_STATUS_TX[p.status]||p.status}${p.data&&p.status!=="postado"?" · "+hjDM(p.data):""}`,volta);
   const tags=`<div class="metas">${hjChipF(p.formato)}${p.estrutura?`<span class="chip chip-neutro">${hjE(p.estrutura)}</span>`:""}${hjChipU(p.urgencia)}${hjChipL(p.linha)}${hjChipD(p.degrau)}</div>`;
@@ -3260,16 +3263,16 @@ function hjRenderFicha(id){
 }
 
 /* ---------- render e rotas ---------- */
-/* tudo que não é Canais, Métricas, Captura ou quadro de canal é do módulo (Hoje é o padrão) */
-function hjEhRota(h){ return !/^#\/(metricas|capturar|c\/|canais)/.test(h) }
+/* telas do módulo Pauta: #/hoje, #/calendario, #/banco, #/lixeira, #/pauta/<id> (a home #/ é Canais) */
+function hjEhRota(h){ return /^#\/(hoje|calendario|banco|lixeira|pauta\/)/.test(h) }
 function hjLimpar(){ $("#hd").className=""; document.querySelector("header").classList.remove("solta") }
 function hjRender(){
-  const h0=location.hash, h=(h0===""||h0==="#")?"#/":h0;
+  const h=location.hash;
   const view=$("#view"); view.className="clara hj"; $("#hd").className="hj"; $("#abas").classList.add("hide");
   const aviso=HJ_DEMO?`<div class="maviso" role="status"><b>Modo de teste.</b> Dados de exemplo em memória; nada é lido nem gravado no Supabase.</div>`:"";
   if(!HJ.pronto){
-    hjHdSub(h==="#/"?"Hoje":"PSN","",h==="#/"?"#/canais":"#/"); 
-    if(h==="#/"){ document.querySelector("header").classList.add("solta"); $("#hd").innerHTML=`<div class="hrow marca"><div class="selo"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="15" stroke="#4A16A8" stroke-width="6" stroke-dasharray="70 100" stroke-linecap="round" transform="rotate(-90 24 24)"/></svg></div><div class="tt"><div class="disp" style="font-size:var(--t-lg)">hoje</div><div class="rotulo" style="color:var(--texto-invertido-fraco);margin-top:2px">PSN</div></div></div><div style="height:var(--e4)"></div>` }
+    hjHdSub(h==="#/hoje"?"Hoje":"PSN","",h==="#/hoje"?"#/":"#/hoje"); 
+    if(h==="#/hoje"){ document.querySelector("header").classList.add("solta"); $("#hd").innerHTML=`<div class="hrow marca"><button class="icb" data-hj="ir" data-v="#/" aria-label="Voltar para Canais">←</button><div class="selo"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="15" stroke="#4A16A8" stroke-width="6" stroke-dasharray="70 100" stroke-linecap="round" transform="rotate(-90 24 24)"/></svg></div><div class="tt"><div class="disp" style="font-size:var(--t-lg)">hoje</div><div class="rotulo" style="color:var(--texto-invertido-fraco);margin-top:2px">PSN</div></div></div><div style="height:var(--e4)"></div>` }
     $("#fabslot").innerHTML="";
     view.innerHTML=`<div class="wrap" style="max-width:720px">${aviso}${HJ.erro
       ?`<div class="vazio"><h4>não consegui carregar</h4><p>Não consegui carregar o Hoje. Confira a conexão.</p><button class="btn btn-fantasma" data-hj="tentar">Tentar de novo</button></div>`
@@ -3317,7 +3320,7 @@ document.addEventListener("error",e=>{
 
 function hjSairDaFicha(){
   if(!location.hash.startsWith("#/pauta/")) return;
-  location.hash=["#/","#/banco","#/calendario","#/lixeira"].includes(HJ.de)?HJ.de:"#/";
+  location.hash=["#/hoje","#/banco","#/calendario","#/lixeira"].includes(HJ.de)?HJ.de:"#/hoje";
 }
 document.addEventListener("click",e=>{
   const t=e.target.closest("[data-hj]"); if(!t) return;
@@ -3348,7 +3351,7 @@ document.addEventListener("click",e=>{
     case "ffmt": HJ.filtro.f=v; hjAtualizarTela(); break;
     case "ordem": HJ.filtro.ordem=v; hjAtualizarTela(); break;
     case "limpar": HJ.filtro.u=HJ.filtro.l=""; if(!HJ.alvo) HJ.filtro.f=""; hjAtualizarTela(); break;
-    case "abrir": HJ.de=location.hash||"#/"; if(HJ.de==="#") HJ.de="#/"; location.hash="#/pauta/"+encodeURIComponent(id); break;
+    case "abrir": HJ.de=hjEhRota(location.hash)?location.hash:"#/hoje"; location.hash="#/pauta/"+encodeURIComponent(id); break;
     case "ir": location.hash=v; break;
     case "tentar": HJ.erro=false; hjCarregar(); hjAtualizarTela(); break;
   }

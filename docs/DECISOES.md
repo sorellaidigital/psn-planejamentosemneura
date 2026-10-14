@@ -26,6 +26,7 @@ Para mudar uma decisão, registrar a nova linha aqui com a data e dizer qual sub
 | Data | Decisão | Por quê / efeito | Onde |
 |---|---|---|---|
 | 08/10 | Hoje substitui o diretório em `#/`; canais vão para `#/canais`; atalhos para Calendário, Banco, Métricas e Canais; Lixeira por link | Uma tela de entrada com só o que pede ação | `docs/UX-HOJE.md` §3–4, §12.1; `app/index.html` |
+| 14/10 | Home do app volta a ser Canais (captura de ideias); Hoje vira botão (`#/hoje`). Substitui a decisão de 08/10 de Hoje em `#/`. `#/canais` segue como alias | O app foi criado para guardar ideias rápido; concentrar tudo no Hoje fez a Duda parar de usar. Nada foi desfeito, só mudou a ordem | `app/index.html` (`rota`, `hjEhRota`, `hjRender`, `renderHome` com o botão `#bHoje`), `docs/UX-HOJE.md` §2 e §3, `CLAUDE.md` (Rotas); link do push e do Notion em `mecanismo-car` aponta para `#/hoje` |
 | 08/10 | Meta: mínimo 1 post/dia, ideal 1 estático + 1 Reels, todos os dias; placar "Hoje: Estático ✓/— · Reels ✓/—" e "Semana: N de 7 dias com post" | Objetivo mensurável de uso | `docs/UX-HOJE.md` §1, §12.2 |
 | 08/10 | 3 sugestões de estático + 3 de Reels por dia, em faixas de rolagem horizontal com snap; rotina todos os dias, inclusive fim de semana | Escolha barata (menos de 2 min) | skill `pauta-do-dia`; `docs/UX-HOJE.md` §4.2 |
 | 08/10 | Gancho em fonte normal (sem serifada); sem tema escuro; sem estado de fim de semana | Consistência com o app atual | `docs/UX-HOJE.md` §11, §12.14 |
