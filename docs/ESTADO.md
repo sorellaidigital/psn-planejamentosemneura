@@ -12,7 +12,7 @@ Para retomar o trabalho: `docs/CONTINUAR.md` (passos) e `docs/DECISOES.md` (deci
 
 ## Módulo Pauta (Notion → PSN): R1 e R2 no ar, produção parada (13/10/2026)
 
-Plano em `docs/PLANO-CENTRAL.md`: tela "Hoje" como entrada do app, Pauta do Dia em 2 portões (de manhã ≥3
+Plano em `docs/PLANO-CENTRAL.md`: tela "Hoje" (`#/hoje`, por botão na home de Canais desde 14/10/2026), Pauta do Dia em 2 portões (de manhã ≥3
 sugestões sem render; a Duda escolhe no app; só o escolhido é produzido, no estilo editorial), banco de ideias,
 paralelo de 5 dias úteis com o Notion antes do corte.
 

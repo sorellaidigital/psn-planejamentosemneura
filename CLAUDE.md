@@ -32,7 +32,7 @@ Contexto de produto: `docs/PLANO-CENTRAL.md`. Coletor de métricas: `supabase/fu
 
 | Peça | Onde / como |
 |---|---|
-| **App PSN** | `app/index.html` (arquivo único, JS puro, sem build). Netlify, site `planejamento-sem-neura`, id `a67192c7-69f4-4be3-a5b4-853f32c9fb07`, https://planejamento-sem-neura.netlify.app. Rotas: `#/` Hoje, `#/calendario`, `#/banco`, `#/lixeira`, `#/pauta/<id>`, `#/canais` (diretório antigo), `#/c/<id>`, `#/metricas`, `#/capturar?ref=` (Atalho). `?demo=1` (antes do `#`) = dados de exemplo sem rede; `&estado=manha\|producao\|revisar\|feito\|falhou\|janela\|demora`. |
+| **App PSN** | `app/index.html` (arquivo único, JS puro, sem build). Netlify, site `planejamento-sem-neura`, id `a67192c7-69f4-4be3-a5b4-853f32c9fb07`, https://planejamento-sem-neura.netlify.app. Rotas: `#/` Canais (home; `#/canais` = alias), `#/hoje` Hoje (botão "Hoje" na home de Canais), `#/calendario`, `#/banco`, `#/lixeira`, `#/pauta/<id>`, `#/c/<id>`, `#/metricas`, `#/capturar?ref=` (Atalho). `?demo=1` (antes do `#`) = dados de exemplo sem rede; `&estado=manha\|producao\|revisar\|feito\|falhou\|janela\|demora`. |
 | **Supabase** | Projeto `financeiro.sorellai`, id `hvmmkwafzeqbjpusdmin`. Migrações em `supabase/migrations/`. |
 | Tabelas — Pauta | `psn_pauta` (status `ideia\|sugerida\|aprovada_producao\|em_producao\|para_revisar\|ajustar\|aprovado\|postado\|descartado`; formato `estatico\|reels`), `psn_pauta_dia` (1 linha/dia), `psn_pauta_disparo` (log do disparo), `psn_ig_horarios` (vazia). |
 | Tabelas — Métricas | `psn_ig_*` (conta, diária, mídia, insights, análise, sync, config). |
