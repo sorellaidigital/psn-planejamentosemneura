@@ -25,6 +25,8 @@ Para mudar uma decisão, registrar a nova linha aqui com a data e dizer qual sub
 
 | Data | Decisão | Por quê / efeito | Onde |
 |---|---|---|---|
+| 14/10 | Pauta do Dia passa a 1 Reels + 1 carrossel por dia (hoje 3 + 3). Ainda não implementado; vem depois do teste de modelos | Pauta com 6 sugestões por dia não virou post: só 1 de 8 posts desde 05/10 bateu com sugestão | skill `pauta-do-dia` (mecanismo-car); `docs/CONTINUAR.md` seção 3, passo 0 |
+| 14/10 | Base das sugestões = ideias salvas no raio (`psn_ideias`) + notícia do dia com fonte. Ainda não implementado | A Pauta não lia `psn_ideias` (49 ideias salvas, sem uso); a ideia que a Duda já guardou é o insumo | `pipeline/psn.py` (comando `ideias` a criar), skill `pauta-do-dia` (mecanismo-car); `docs/CONTINUAR.md` seção 1 |
 | 08/10 | Hoje substitui o diretório em `#/`; canais vão para `#/canais`; atalhos para Calendário, Banco, Métricas e Canais; Lixeira por link | Uma tela de entrada com só o que pede ação | `docs/UX-HOJE.md` §3–4, §12.1; `app/index.html` |
 | 14/10 | Home do app volta a ser Canais (captura de ideias); Hoje vira botão (`#/hoje`). Substitui a decisão de 08/10 de Hoje em `#/`. `#/canais` segue como alias | O app foi criado para guardar ideias rápido; concentrar tudo no Hoje fez a Duda parar de usar. Nada foi desfeito, só mudou a ordem | `app/index.html` (`rota`, `hjEhRota`, `hjRender`, `renderHome` com o botão `#bHoje`), `docs/UX-HOJE.md` §2 e §3, `CLAUDE.md` (Rotas); link do push e do Notion em `mecanismo-car` aponta para `#/hoje` |
 | 08/10 | Meta: mínimo 1 post/dia, ideal 1 estático + 1 Reels, todos os dias; placar "Hoje: Estático ✓/— · Reels ✓/—" e "Semana: N de 7 dias com post" | Objetivo mensurável de uso | `docs/UX-HOJE.md` §1, §12.2 |
@@ -45,6 +47,7 @@ Para mudar uma decisão, registrar a nova linha aqui com a data e dizer qual sub
 
 | Data | Decisão | Por quê / efeito | Onde |
 |---|---|---|---|
+| 14/10 | Antes de mudar a Pauta, varrer o banco de ideias e extrair modelos e temas para testar no perfil, mantendo a ID visual do editorial. Em andamento: mecanismo-car `modelos/` | Testar no perfil antes de mudar a Pauta; a ID visual do editorial fica igual no teste | `docs/CONTINUAR.md` seção 1 e passo 0 da seção 3; mecanismo-car `modelos/` |
 | 08/10 | Estilo editorial é o padrão do carrossel (cena em tela cheia, fundos chapados, Inter Bold + manuscrito, `serie` no topo); estático produzido pela rotina sempre editorial | Aprovado a partir do post de @juliawolfcruz | `entrada/ia-concorda-editorial.deck.json`, skill `design`, `marca/marca.json` (mecanismo-car) |
 | 08/10 | Marsala correto = `#5E0B1A` (o antigo `#7A0C2E` está aposentado) | Tom da camisa/blazer das fotos | `marca/marca.json`, `marca/PERFIL.md` (mecanismo-car) |
 | 08/10 | Combinado de trabalho no carrossel: ajustar um ponto por vez, mostrar o `contato.png` e esperar o ok; reprovação vai para o PERFIL | Evita retrabalho em cascata | `marca/PERFIL.md` (mecanismo-car) |
