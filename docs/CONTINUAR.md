@@ -5,7 +5,7 @@ Roteiro para um chat novo, aberto só neste repo, retomar sem perder nada. Compl
 Os arquivos de carrossel, skills, rotinas e workflow citados abaixo moram no repo `sorellaidigital/mecanismo-car`, que precisa ser
 anexado (ferramenta `add_repo`, `owner=sorellaidigital`, `repo=mecanismo-car`; depois clonar). Ver `CLAUDE.md`.
 
-## 1. Estado em 13/10/2026
+## 1. Estado em 14/10/2026
 
 - **Repo central:** `main` tem R0, R1 (PR #1, merge 08/10) e R2 (PR #2, merge 09/10). A documentação desta passagem (mapa, ESTADO, CONTINUAR, DECISOES, README) entrou na `main` pelo PR #3 em 13/10.
 - **App no ar:** deploy de 09/10 = `main` d5b0dcb (conferido; só difere pelo comentário que o Netlify injeta). Hoje, Calendário, Banco, Lixeira,
