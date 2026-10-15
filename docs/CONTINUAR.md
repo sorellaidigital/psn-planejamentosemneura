@@ -1,11 +1,11 @@
-# Continuar daqui (passagem em 13/10/2026)
+# Continuar daqui (passagem em 14/10/2026)
 
 Roteiro para um chat novo, aberto só neste repo, retomar sem perder nada. Complementos: `docs/ESTADO.md` (histórico por módulo),
 `docs/DECISOES.md` (decisões da Duda), `docs/UX-HOJE.md` (spec das telas), `docs/MAPA-PSN.html` (mapa).
 Os arquivos de carrossel, skills, rotinas e workflow citados abaixo moram no repo `sorellaidigital/mecanismo-car`, que precisa ser
 anexado (ferramenta `add_repo`, `owner=sorellaidigital`, `repo=mecanismo-car`; depois clonar). Ver `CLAUDE.md`.
 
-## 1. Estado em 13/10/2026
+## 1. Estado em 14/10/2026
 
 - **Repo central:** `main` tem R0, R1 (PR #1, merge 08/10) e R2 (PR #2, merge 09/10). A documentação desta passagem (mapa, ESTADO, CONTINUAR, DECISOES, README) entrou na `main` pelo PR #3 em 13/10.
 - **App no ar:** deploy de 09/10 = `main` d5b0dcb (conferido; só difere pelo comentário que o Netlify injeta). Hoje, Calendário, Banco, Lixeira,
@@ -18,6 +18,9 @@ anexado (ferramenta `add_repo`, `owner=sorellaidigital`, `repo=mecanismo-car`; d
   Pauta Gemini real `e831a498-391b-4e29-ac66-194d3aa987c1`: 11 slides no bucket, status `ajustar` (comentário da Duda pedindo cenas sobre o assunto;
   já respondido com os prompts cena-34..37 em `mecanismo-car/assets/fotos/PROMPTS-NOVAS-CENAS.md`).
 - **Paralelo com o Notion:** a pauta começou em 09/10 (5 dias úteis: termina em 16/10, porque 12/10 é feriado); as métricas seguem até o fim da C6.
+- **Home do app (14/10):** a home voltou a ser Canais (captura de ideias); o Hoje virou `#/hoje` (PR #4, deploy 14/10 = `main` 8713649, conferido: só as 3 linhas do Netlify diferem). O prompt da rotina Pauta do Dia já aponta para `#/hoje`.
+- **Diagnóstico da Pauta (14/10):** a Pauta não lê `psn_ideias` (49 ideias salvas pelo raio). Só 1 de 8 posts desde 05/10 bateu com uma sugestão. Reels alcançaram 2,6 mil a 74 mil e carrosséis 380 a 520.
+- **Em andamento (14/10):** catálogo de modelos (templates) extraído do banco de ideias, no mecanismo-car `modelos/`, para teste no perfil antes de mudar a Pauta.
 
 ## 2. O que está parado e por quê
 
@@ -31,6 +34,8 @@ Só a Duda cadastra secrets; o Claude não deve pedir nem receber os valores.
 ## 3. Próximos passos (em ordem)
 
 Quem age: **D** = Duda, **C** = Claude.
+
+0. **Catálogo de modelos → aprovação da Duda → teste de 2 semanas (1 Reels + 1 carrossel por dia) → Pauta v2** (lê `psn_ideias` com um comando `pipeline.psn ideias` e `psn_ig_*`; 1 + 1 por dia; cada sugestão = modelo aprovado + tema de ideia salva ou notícia com fonte; `estrutura` = id do modelo; atualizar o prompt da rotina com `update_trigger`).
 
 1. **Ligar a produção** (D cadastra, C acompanha).
    - *O que fazer:* D cria `ANTHROPIC_API_KEY` (de um workspace dedicado com limite de gasto no Console) e `PSN_ROTINA_SEGREDO` (mesmo valor do ambiente "Instagram") — para conferir sem expor o valor: se a 1ª execução iniciar os itens, bate; se aparecer "segredo inválido" (erro 42501), o valor está diferente em

@@ -70,7 +70,7 @@ A chave de API do workflow deve ser de um workspace próprio, com limite de gast
    `npx -y @netlify/mcp@latest --site-id ... --proxy-path "..."`.
 4. Rodar esse comando dentro da pasta temporária, com `NODE_USE_ENV_PROXY=1` (sem isso o fetch do Node ignora o proxy da sessão).
 5. Conferir: `curl -s https://planejamento-sem-neura.netlify.app/ | diff - app/index.html`. Só 3 linhas de comentário que o Netlify injeta devem diferir.
-6. Último deploy: 09/10 = `main` d5b0dcb.
+6. Último deploy: 14/10 = `main` 8713649.
 
 ## Armadilhas
 
